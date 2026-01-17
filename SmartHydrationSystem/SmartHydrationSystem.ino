@@ -492,18 +492,23 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
     scale.tare();
     saveScaleOffset(); // Persist the new tare
     mqtt.publish("hydration/status/message", "Scale tared and saved to NVM");
-  } else if (strcmp(topic, TOPIC_CMD_LED) == 0) {
-    if (message == "on") {
-      digitalWrite(LED_NOTIFICATION_PIN, HIGH);
-      delay(2000); // Manual override is still blocking/direct
-      digitalWrite(LED_NOTIFICATION_PIN, LOW);
-    }
-  } else if (strcmp(topic, TOPIC_CMD_BUZZER) == 0) {
-    if (message == "on") {
-      digitalWrite(BUZZER_PIN, HIGH);
-      delay(1000);
-      digitalWrite(BUZZER_PIN, LOW);
-    }
+  } else if (strcmp(topic, TOPIC_CMD_LED) == 0 && message == "on") {
+    Serial.println("[CMD] Manual LED test triggered");
+    triggerLED(2000);
+  } else if (strcmp(topic, TOPIC_CMD_BUZZER) == 0 && message == "on") {
+    Serial.println("[CMD] Manual Buzzer test triggered");
+    triggerBuzzer(1000);
+  } else if (strcmp(topic, TOPIC_CMD_RGB) == 0) {
+    if (message == "red")
+      setRGB(RGB_RED);
+    else if (message == "green")
+      setRGB(RGB_GREEN);
+    else if (message == "blue")
+      setRGB(RGB_BLUE);
+    else if (message == "off")
+      setRGB(RGB_OFF);
+    Serial.println("[CMD] RGB color manual override: " + message);
+    delay(2000); // Hold color for 2 seconds
   } else if (strcmp(topic, TOPIC_CMD_SNOOZE) == 0) {
     int minutes = message.toInt();
     if (minutes > 0) {
@@ -735,12 +740,14 @@ void setRGB(RGBColor color) {
 }
 
 void triggerLED(int duration) {
+  pinMode(LED_NOTIFICATION_PIN, OUTPUT);
   digitalWrite(LED_NOTIFICATION_PIN, HIGH);
   delay(duration);
   digitalWrite(LED_NOTIFICATION_PIN, LOW);
 }
 
 void triggerBuzzer(int duration) {
+  pinMode(BUZZER_PIN, OUTPUT);
   digitalWrite(BUZZER_PIN, HIGH);
   delay(duration);
   digitalWrite(BUZZER_PIN, LOW);
