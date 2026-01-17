@@ -141,6 +141,18 @@ void setup() {
     Serial.println("✓ Scale calibrated and saved to NVM");
   }
 
+  // Initialize weight baseline on boot
+  if (scale.wait_ready_timeout(1000)) {
+    float initialWeight = scale.get_units(10);
+    currentWeight = initialWeight;
+    previousWeight = initialWeight;
+    liveWeight = initialWeight;
+    Serial.printf("[INFO] Initial weight baseline set: %.1fg\n", initialWeight);
+  } else {
+    Serial.println("[WARN] Scale not ready for initial baseline - will "
+                   "auto-calibrate on first loop.");
+  }
+
   // Set initial RGB color
   setRGB(RGB_BLUE);
 
