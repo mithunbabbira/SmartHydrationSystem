@@ -46,9 +46,9 @@
 
 // ==================== System Parameters ====================
 // Timing
-// #define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
+#define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
 
-#define CHECK_INTERVAL_MS (1 * 20 * 1000)
+
 #define TELEMETRY_INTERVAL_MS (30 * 1000) // 30 seconds for live updates
 #define SLEEP_START_HOUR 23               // 11 PM
 #define SLEEP_END_HOUR 10                 // 10 AM
@@ -66,10 +66,10 @@
 #define ALERT_WAIT_TIME 10000         // 10 seconds between escalations
 #define ALERT_RETRY_INTERVAL_MS 10000 // 10 seconds retry if no drink detected
 #define BOTTLE_MISSING_TIMEOUT_MS                                              \
-  10000 // 3 minutes missing bottle timeout (3 * 60 * 1000 = 180000)
+  180000 // 3 minutes missing bottle timeout (3 * 60 * 1000 = 180000)
 
 // Snooze
-#define SNOOZE_DURATION_MS (15 * 60 * 1000) // 15 minutes
+#define SNOOZE_DURATION_MS (5 * 60 * 1000) // 5 minutes
 #define MAX_CONSECUTIVE_SNOOZES 3
 
 // Presence Detection (WiFi MAC - most reliable!)

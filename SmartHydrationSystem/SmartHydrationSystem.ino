@@ -241,12 +241,12 @@ void loop() {
     lastDayCheck = millis();
   }
 
-  // Read scale once per loop for consistency (if ready)
-  if (scale.is_ready()) {
+  // Read scale once per loop for consistency (with small timeout)
+  static bool bottleWasOff = false;
+  if (scale.wait_ready_timeout(1)) {
     liveWeight = scale.get_units(1); // Single sample for responsive loop
-    static bool bottleWasOff = false;
 
-    // Update last bottle presence time
+    // Update last bottle presence time if bottle is on scale
     if (liveWeight >= PICKUP_THRESHOLD) {
       if (bottleWasOff) {
         Serial.println(
@@ -263,15 +263,24 @@ void loop() {
       lastBottlePresentTime = millis();
     } else {
       bottleWasOff = true;
-      // Bottle is removed - check for missing alert
-      if (millis() - lastBottlePresentTime > BOTTLE_MISSING_TIMEOUT_MS) {
-        if (currentMode != MODE_BOTTLE_MISSING) {
-          Serial.printf(
-              "[ALERT] ⚠ CRITICAL: Bottle missing for over %lu seconds!\n",
-              BOTTLE_MISSING_TIMEOUT_MS / 1000);
-          currentMode = MODE_BOTTLE_MISSING;
-          mqtt.publish(TOPIC_ALERTS_BOTTLE_MISSING, "active");
-        }
+    }
+  } else {
+    // If scale isn't ready, we don't update liveWeight,
+    // but we check if the bottle was already off
+    if (liveWeight < PICKUP_THRESHOLD) {
+      bottleWasOff = true;
+    }
+  }
+
+  // GLOBAL BOTTLE MISSING CHECK (Ungated from scale hardware timing)
+  if (bottleWasOff || liveWeight < PICKUP_THRESHOLD) {
+    if (millis() - lastBottlePresentTime > BOTTLE_MISSING_TIMEOUT_MS) {
+      if (currentMode != MODE_BOTTLE_MISSING) {
+        Serial.printf(
+            "[ALERT] ⚠ CRITICAL: Bottle missing for over %lu seconds!\n",
+            BOTTLE_MISSING_TIMEOUT_MS / 1000);
+        currentMode = MODE_BOTTLE_MISSING;
+        mqtt.publish(TOPIC_ALERTS_BOTTLE_MISSING, "active");
       }
     }
   }
