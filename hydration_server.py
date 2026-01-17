@@ -254,7 +254,7 @@ def main():
     client.loop_start()
     
     # Interactive command loop
-    print("\n📋 Commands: stats, weight, tare, led, buzzer, snooze, reboot, quit\n")
+    print("\n📋 Commands: stats, weight, tare, led, buzzer, snooze, reset, reboot, quit\n")
     
     try:
         while True:
@@ -293,6 +293,11 @@ def main():
                 if confirm.lower() == 'y':
                     send_command(client, "reboot", "execute")
             
+            elif cmd == "reset":
+                confirm = input("⚠️  Reset daily consumption in ESP32 memory? (y/n): ")
+                if confirm.lower() == 'y':
+                    send_command(client, "reset_today", "execute")
+            
             elif cmd in ["quit", "exit", "q"]:
                 break
             
@@ -304,6 +309,7 @@ def main():
                 print("  led     - Test LED")
                 print("  buzzer  - Test buzzer")
                 print("  snooze  - Activate snooze (15 min)")
+                print("  reset   - Reset today's consumption to 0ml")
                 print("  reboot  - Reboot ESP32")
                 print("  quit    - Exit program\n")
             

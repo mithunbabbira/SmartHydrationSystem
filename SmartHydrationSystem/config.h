@@ -8,6 +8,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdint.h>
+
 // ==================== WiFi Configuration ====================
 #define WIFI_SSID "No 303"         // Replace with your WiFi name
 #define WIFI_PASSWORD "3.14159265" // Replace with your WiFi password
@@ -77,8 +79,9 @@
 
 // Misc
 #define SERIAL_BAUD_RATE 115200
-#define WEIGHT_READING_SAMPLES 10 // Average of 10 readings
-#define DAILY_GOAL_ML 2000        // 2L daily goal
+#define WEIGHT_READING_SAMPLES 10   // Average of 10 readings
+#define DAILY_GOAL_ML 2000          // 2L daily goal
+#define STOP_ALERTS_AFTER_GOAL true // Stop reminders if goal is reached
 
 // ==================== MQTT Topics ====================
 #define TOPIC_STATUS_ONLINE "hydration/status/online"
@@ -106,6 +109,7 @@
 #define TOPIC_CMD_RGB "hydration/commands/trigger_rgb"
 #define TOPIC_CMD_SNOOZE "hydration/commands/snooze"
 #define TOPIC_CMD_REBOOT "hydration/commands/reboot"
+#define TOPIC_CMD_RESET_CONSUMPTION "hydration/commands/reset_today"
 
 // ==================== RGB Colors (0-255) ====================
 struct RGBColor {

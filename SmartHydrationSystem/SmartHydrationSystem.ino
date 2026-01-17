@@ -67,6 +67,7 @@ unsigned long alertStartTime = 0;
 float preAlertWeight = 0;
 unsigned long nextAllowedAlertTime = 0;
 unsigned long lastBottlePresentTime = 0;
+unsigned long lastBottleReplacedTime = 0;
 
 // Flags
 bool phonePresent = false;
@@ -152,7 +153,7 @@ void setup() {
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {
     if (timeinfo.tm_mday != lastResetDay) {
-      Serial.printf("🌅 New day detected on boot! Resetting consumption. (Prev "
+      Serial.printf("[INFO] 🌅 New day detected! Resetting consumption. (Prev "
                     "Day: %d, Current: %d)\n",
                     lastResetDay, timeinfo.tm_mday);
       todayConsumptionML = 0;
@@ -161,7 +162,21 @@ void setup() {
     }
   }
 
-  Serial.println("\n✓✓✓ System Ready ✓✓✓\n");
+  // Final Boot Diagnostics
+  Serial.println("\n--- [SYSTEM DIAGNOSTICS] ---");
+  Serial.print("[INFO] IP Address: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("[INFO] Active Mode: ");
+  Serial.println(currentMode);
+  Serial.print("[INFO] Consumption: ");
+  Serial.print(todayConsumptionML);
+  Serial.println(" ml");
+  Serial.print("[INFO] Reset Day: ");
+  Serial.println(lastResetDay);
+  Serial.printf("[INFO] Monitoring Hours: %02d:00 - %02d:00\n", SLEEP_END_HOUR,
+                SLEEP_START_HOUR);
+  Serial.println("----------------------------\n");
+  Serial.println("[INFO] ✓✓✓ System Ready ✓✓✓\n");
 }
 
 // ==================== Main Loop ====================
@@ -171,10 +186,13 @@ void loop() {
   unsigned long loopStart = millis();
   loopCount++;
 
-  // Report loop frequency every 5 seconds
-  if (millis() - lastLoopReport >= 5000) {
-    Serial.printf("[PERF] Loop runs: %lu/5s (avg: %lums/loop)\n", loopCount,
-                  5000 / loopCount);
+  // Report loop frequency every 60 seconds (Reduced Noise)
+  if (millis() - lastLoopReport >= 60000) {
+    if (loopCount > 0) {
+      Serial.printf(
+          "[INFO] System Heartbeat | Loop: %lu/60s (avg: %lums/loop)\n",
+          loopCount, 60000 / loopCount);
+    }
     loopCount = 0;
     lastLoopReport = millis();
   }
@@ -208,7 +226,7 @@ void loop() {
     if (getLocalTime(&timeinfo)) {
       if (timeinfo.tm_mday != lastResetDay) {
         Serial.println(
-            "🌅 Midnight reset triggered! Starting fresh for the day.");
+            "[INFO] 🌅 Midnight reset triggered! Starting fresh for the day.");
         todayConsumptionML = 0;
         lastResetDay = timeinfo.tm_mday;
         saveConsumption();
@@ -226,21 +244,31 @@ void loop() {
   // Read scale once per loop for consistency (if ready)
   if (scale.is_ready()) {
     liveWeight = scale.get_units(1); // Single sample for responsive loop
+    static bool bottleWasOff = false;
 
     // Update last bottle presence time
     if (liveWeight >= PICKUP_THRESHOLD) {
-      lastBottlePresentTime = millis();
-      if (currentMode == MODE_BOTTLE_MISSING) {
-        Serial.println("✓ Bottle replaced - clearing missing alert");
-        currentMode = MODE_MONITORING;
-        mqtt.publish(TOPIC_ALERTS_BOTTLE_MISSING, "cleared");
+      if (bottleWasOff) {
+        Serial.println(
+            "[INFO] ✓ Bottle detected on scale - starting 2s stabilization");
+        lastBottleReplacedTime = millis();
+        bottleWasOff = false;
+
+        if (currentMode == MODE_BOTTLE_MISSING) {
+          Serial.println("[INFO] ✓ Bottle replaced - clearing missing alert");
+          currentMode = MODE_MONITORING;
+          mqtt.publish(TOPIC_ALERTS_BOTTLE_MISSING, "cleared");
+        }
       }
+      lastBottlePresentTime = millis();
     } else {
+      bottleWasOff = true;
       // Bottle is removed - check for missing alert
       if (millis() - lastBottlePresentTime > BOTTLE_MISSING_TIMEOUT_MS) {
         if (currentMode != MODE_BOTTLE_MISSING) {
-          Serial.printf("⚠ CRITICAL: Bottle missing for over %lu seconds!\n",
-                        BOTTLE_MISSING_TIMEOUT_MS / 1000);
+          Serial.printf(
+              "[ALERT] ⚠ CRITICAL: Bottle missing for over %lu seconds!\n",
+              BOTTLE_MISSING_TIMEOUT_MS / 1000);
           currentMode = MODE_BOTTLE_MISSING;
           mqtt.publish(TOPIC_ALERTS_BOTTLE_MISSING, "active");
         }
@@ -254,7 +282,8 @@ void loop() {
     unsigned long alertHandleStart = millis();
     handleAlertState(); // Now uses global liveWeight
     unsigned long alertHandleTime = millis() - alertHandleStart;
-    if (alertHandleTime > 50) {
+    if (alertHandleTime >
+        4000) { // Increased to 4s as evaluateDrinking is intentionaly slow
       Serial.printf("[PERF WARNING] handleAlertState took %lums\n",
                     alertHandleTime);
     }
@@ -275,16 +304,17 @@ void loop() {
     // Check daily refill reminder (once at 12 PM)
     checkDailyRefillReminder();
 
-    // Main weight check - ONLY run if bottle is present and not currently
-    // missing
-    if (liveWeight >= PICKUP_THRESHOLD && currentMode != MODE_BOTTLE_MISSING) {
+    // Main weight check - ONLY run if bottle is present, for at least 2 seconds
+    if (liveWeight >= PICKUP_THRESHOLD && currentMode != MODE_BOTTLE_MISSING &&
+        (millis() - lastBottleReplacedTime > 2000)) {
       if (millis() - lastCheckTime >= CHECK_INTERVAL_MS) {
         if (millis() >= nextAllowedAlertTime) {
           checkWeight(liveWeight); // Pass the already-read weight
           lastCheckTime = millis();
         } else {
-          Serial.printf("⏳ Waiting for retry interval (%lds remaining)\n",
-                        (nextAllowedAlertTime - millis()) / 1000);
+          Serial.printf(
+              "[INFO] ⏳ Waiting for retry interval (%lds remaining)\n",
+              (nextAllowedAlertTime - millis()) / 1000);
         }
       }
     }
@@ -304,7 +334,7 @@ void loop() {
 
 // ==================== Hardware Setup ====================
 void setupHardware() {
-  Serial.println("Setting up hardware...");
+  Serial.println("[INFO] Setting up hardware...");
 
   // LED pins
   pinMode(LED_NOTIFICATION_PIN, OUTPUT);
@@ -323,12 +353,12 @@ void setupHardware() {
   digitalWrite(BUZZER_PIN, LOW);
   setRGB(RGB_OFF);
 
-  Serial.println("✓ Hardware initialized");
+  Serial.println("[INFO] ✓ Hardware initialized");
 }
 
 // ==================== WiFi Setup ====================
 void setupWiFi() {
-  Serial.print("Connecting to WiFi: ");
+  Serial.print("[INFO] Connecting to WiFi: ");
   Serial.println(WIFI_SSID);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -341,12 +371,12 @@ void setupWiFi() {
   }
 
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\n✓ WiFi connected!");
-    Serial.print("IP Address: ");
+    Serial.println("\n[INFO] ✓ WiFi connected!");
+    Serial.print("[INFO] IP Address: ");
     Serial.println(WiFi.localIP());
 
     // Initialize NTP time sync with multiple servers for reliability
-    Serial.println("Synchronizing time via NTP...");
+    Serial.println("[INFO] Synchronizing time via NTP...");
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, "pool.ntp.org",
                "time.google.com");
 
@@ -363,13 +393,13 @@ void setupWiFi() {
     }
 
     if (timeinfo.tm_year + 1900 > 2020) {
-      Serial.println("\n✓ Time synchronized via NTP");
-      Serial.println("Current Time: " + getTimeString());
+      Serial.println("\n[INFO] ✓ Time synchronized via NTP");
+      Serial.println("[INFO] Current Time: " + getTimeString());
     } else {
-      Serial.println("\n⚠ NTP sync timed out - clock may be wrong!");
+      Serial.println("\n[WARN] ⚠ NTP sync timed out - clock may be wrong!");
     }
   } else {
-    Serial.println("\n✗ WiFi connection failed!");
+    Serial.println("\n[ERROR] ✗ WiFi connection failed!");
   }
 }
 
@@ -388,7 +418,7 @@ void reconnectMQTT() {
 
   // Only try once (non-blocking)
   if (!mqtt.connected()) {
-    Serial.print("Connecting to MQTT broker...");
+    Serial.print("[INFO] Connecting to MQTT broker...");
 
     // Connect without authentication (anonymous mode)
     if (mqtt.connect(MQTT_CLIENT_ID, TOPIC_STATUS_ONLINE, 0, true, "false")) {
@@ -404,12 +434,13 @@ void reconnectMQTT() {
       mqtt.subscribe(TOPIC_CMD_RGB);
       mqtt.subscribe(TOPIC_CMD_SNOOZE);
       mqtt.subscribe(TOPIC_CMD_REBOOT);
+      mqtt.subscribe(TOPIC_CMD_RESET_CONSUMPTION);
 
-      Serial.println("✓ Subscribed to command topics");
+      Serial.println("[INFO] ✓ Subscribed to command topics");
     } else {
-      Serial.print(" ✗ Failed, rc=");
+      Serial.print("[ERROR] ✗ Failed, rc=");
       Serial.println(mqtt.state());
-      Serial.println("⚠ System will continue without MQTT");
+      Serial.println("[WARN] ⚠ System will continue without MQTT");
     }
   }
 }
@@ -421,14 +452,14 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
     message += (char)payload[i];
   }
 
-  Serial.print("MQTT received [");
+  Serial.print("[MQTT] Received [");
   Serial.print(topic);
   Serial.print("]: ");
   Serial.println(message);
 
   // Handle commands
   if (strcmp(topic, TOPIC_CMD_TARE) == 0 && message == "execute") {
-    Serial.println("Remote tare requested!");
+    Serial.println("[CMD] Remote tare requested!");
     scale.tare();
     saveScaleOffset(); // Persist the new tare
     mqtt.publish("hydration/status/message", "Scale tared and saved to NVM");
@@ -449,7 +480,7 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
     if (minutes > 0) {
       snoozeUntil = millis() + (minutes * 60 * 1000);
       mqtt.publish(TOPIC_ALERTS_SNOOZE, "true");
-      Serial.printf("Snooze activated for %d minutes\n", minutes);
+      Serial.printf("[CMD] Snooze activated for %d minutes\n", minutes);
 
       // Clear any active alert
       if (currentMode == MODE_ALERTING || currentMode == MODE_PICKED_UP ||
@@ -460,8 +491,16 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
       }
     }
   } else if (strcmp(topic, TOPIC_CMD_REBOOT) == 0 && message == "execute") {
-    Serial.println("Reboot requested!");
+    Serial.println("[CMD] Reboot requested!");
     ESP.restart();
+  } else if (strcmp(topic, TOPIC_CMD_RESET_CONSUMPTION) == 0 &&
+             message == "execute") {
+    Serial.println("[CMD] Manual consumption reset triggered!");
+    todayConsumptionML = 0;
+    saveConsumption();
+    mqtt.publish(TOPIC_CONSUMPTION_TODAY, "0");
+    mqtt.publish("hydration/status/message",
+                 "Daily consumption manually reset");
   }
 }
 
@@ -476,7 +515,7 @@ void checkPhonePresence() {
       phonePresent = true;
       presenceFailCount = 0;
       mqtt.publish(TOPIC_STATUS_BT, "connected");
-      Serial.println("✓ User at home (WiFi connected)");
+      Serial.println("[PRESENCE] ✓ User at home (WiFi connected)");
     }
     presenceFailCount = 0; // Reset on success
   } else {
@@ -485,7 +524,7 @@ void checkPhonePresence() {
     if (presenceFailCount >= PRESENCE_TIMEOUT_COUNT && phonePresent) {
       phonePresent = false;
       mqtt.publish(TOPIC_STATUS_BT, "disconnected");
-      Serial.println("✗ User away (WiFi disconnected)");
+      Serial.println("[PRESENCE] ✗ User away (WiFi disconnected)");
     }
   }
 }
@@ -494,7 +533,7 @@ void checkPhonePresence() {
 void checkWeight(float weightAtCheck) {
   // Skip if snoozed
   if (millis() < snoozeUntil) {
-    Serial.println("⏸ Snoozed - skipping check");
+    Serial.println("[INFO] ⏸ Snoozed - skipping check");
     return;
   }
 
@@ -502,14 +541,14 @@ void checkWeight(float weightAtCheck) {
   int hour = getCurrentHour();
   if (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR) {
     currentMode = MODE_SLEEPING;
-    Serial.println("😴 Sleep mode active");
+    Serial.println("[INFO] 😴 Sleep mode active");
     return;
   }
 
   // Skip if user away
   if (!phonePresent) {
     currentMode = MODE_AWAY;
-    Serial.println("🚶 User away - skipping check");
+    Serial.println("[INFO] 🚶 User away - skipping check");
     return;
   }
 
@@ -521,7 +560,7 @@ void checkWeight(float weightAtCheck) {
   weightDelta = currentWeight - previousWeight;
 
   Serial.printf(
-      "Weight Check | Current: %.1fg | Previous: %.1fg | Delta: %.1fg\n",
+      "[INFO] Weight Check | Current: %.1fg | Previous: %.1fg | Delta: %.1fg\n",
       currentWeight, previousWeight, weightDelta);
 
   // Publish telemetry
@@ -529,11 +568,12 @@ void checkWeight(float weightAtCheck) {
 
   // Check for drinking
   if (weightDelta <= -DRINK_THRESHOLD_MIN) {
-    Serial.println("✓ User drank water!");
+    Serial.println("[INFO] ✓ User drank water!");
     setRGB(RGB_GREEN);
     delay(3000);
 
     todayConsumptionML += abs(weightDelta);
+    saveConsumption();
     mqtt.publish(TOPIC_CONSUMPTION_LAST, getTimeString().c_str());
     mqtt.publish(TOPIC_CONSUMPTION_INTERVAL, String(abs(weightDelta)).c_str());
     mqtt.publish(TOPIC_CONSUMPTION_TODAY, String(todayConsumptionML).c_str());
@@ -542,13 +582,20 @@ void checkWeight(float weightAtCheck) {
   }
   // Check for refill
   else if (weightDelta >= REFILL_THRESHOLD) {
-    Serial.println("🔄 Bottle refilled!");
+    Serial.println("[INFO] 🔄 Bottle refilled!");
     setRGB(RGB_CYAN);
     delay(2000);
   }
+  // No drinking - but check if goal is already hit
+  else if (STOP_ALERTS_AFTER_GOAL && todayConsumptionML >= DAILY_GOAL_ML) {
+    Serial.printf(
+        "[INFO] Daily goal reached (%.1fml) - skipping drink reminder.\n",
+        todayConsumptionML);
+    lastCheckTime = millis(); // Reset timer to avoid constant logging
+  }
   // No significant change - trigger alert
   else {
-    Serial.println("⚠ No drinking detected - entering alert mode");
+    Serial.println("[ALERT] ⚠ No drinking detected - entering alert mode");
     preAlertWeight = currentWeight;
     currentMode = MODE_ALERTING;
     alertStartTime = millis();
@@ -561,12 +608,12 @@ void escalateAlert() {
   if (currentAlertLevel == 0) {
     currentAlertLevel = 1;
     mqtt.publish(TOPIC_ALERTS_LEVEL, "1");
-    Serial.println("🔔 Alert Level 1 (LED)");
+    Serial.println("[ALERT] 🔔 Alert Level 1 (LED)");
   } else if (currentAlertLevel == 1) {
     currentAlertLevel = 2;
     mqtt.publish(TOPIC_ALERTS_LEVEL, "2");
     mqtt.publish(TOPIC_ALERTS_TRIGGERED, getTimeString().c_str());
-    Serial.println("🔔🔔 Alert Level 2 (LED + Buzzer)");
+    Serial.println("[ALERT] 🔔🔔 Alert Level 2 (LED + Buzzer)");
   }
 }
 
@@ -586,13 +633,13 @@ void checkDailyRefillReminder() {
     float weight = scale.get_units(WEIGHT_READING_SAMPLES);
 
     if (weight < REFILL_CHECK_MIN_WEIGHT) {
-      Serial.println("⚠ Daily refill check FAILED - bottle low!");
+      Serial.println("[ALERT] ⚠ Daily refill check FAILED - bottle low!");
       setRGB(RGB_MAGENTA);
       triggerLED(LED_ALERT_DURATION);
       triggerBuzzer(BUZZER_ALERT_DURATION);
       mqtt.publish(TOPIC_ALERTS_REFILL_CHECK, "failed");
     } else {
-      Serial.println("✓ Daily refill check PASSED");
+      Serial.println("[INFO] ✓ Daily refill check PASSED");
       mqtt.publish(TOPIC_ALERTS_REFILL_CHECK, "passed");
     }
   }
@@ -608,8 +655,8 @@ void handleSnoozeButton() {
         snoozeUntil = millis() + SNOOZE_DURATION_MS;
         consecutiveSnoozeCount++;
 
-        Serial.printf("⏸ Snooze activated (%d/%d)\n", consecutiveSnoozeCount,
-                      MAX_CONSECUTIVE_SNOOZES);
+        Serial.printf("[INFO] ⏸ Snooze activated (%d/%d)\n",
+                      consecutiveSnoozeCount, MAX_CONSECUTIVE_SNOOZES);
 
         mqtt.publish(TOPIC_ALERTS_SNOOZE, "true");
         setRGB(RGB_CYAN);
@@ -621,7 +668,7 @@ void handleSnoozeButton() {
           currentAlertLevel = 0;
         }
       } else {
-        Serial.println("⚠ Maximum snoozes reached!");
+        Serial.println("[WARN] ⚠ Maximum snoozes reached!");
       }
     }
   }
@@ -644,10 +691,10 @@ void publishTelemetry() {
       mqtt.publish(TOPIC_WEIGHT_CURRENT, String(telemetryWeight, 1).c_str());
     }
 
-    Serial.printf("📊 Live Telemetry | Weight: %.1fg | Mode: %d\n",
+    Serial.printf("[INFO] 📊 Live Telemetry | Weight: %.1fg | Mode: %d\n",
                   telemetryWeight, currentMode);
   } else {
-    Serial.println("⚠ Scale not ready for telemetry");
+    Serial.println("[WARN] ⚠ Scale not ready for telemetry");
   }
 }
 
@@ -700,15 +747,7 @@ void syncHardware() {
     bool ledState = (millis() % 1000) < 500;
     digitalWrite(LED_NOTIFICATION_PIN, ledState ? HIGH : LOW);
 
-    // Verify and debug occasionally
-    static unsigned long lastDebug = 0;
-    if (millis() - lastDebug > 2000) {
-      int pinState = digitalRead(LED_NOTIFICATION_PIN);
-      Serial.printf("[LED DEBUG] Mode=%d Level=%d Pin=%d State=%d\n",
-                    currentMode, currentAlertLevel, LED_NOTIFICATION_PIN,
-                    pinState);
-      lastDebug = millis();
-    }
+    // Verify and debug occasionally (removed for clean output)
   } else if (currentMode == MODE_BOTTLE_MISSING) {
     // Rapid flashing for missing bottle (200ms)
     digitalWrite(LED_NOTIFICATION_PIN, (millis() % 400 < 200) ? HIGH : LOW);
@@ -747,15 +786,15 @@ void handleAlertState() {
     // Check if picked up
     if (liveWeight < PICKUP_THRESHOLD) {
       unsigned long shutdownStart = millis();
-      Serial.printf("[PICKUP DETECTED] Weight=%.1fg Time=%lums\n", liveWeight,
-                    millis());
+      Serial.printf("[ALERT] [PICKUP DETECTED] Weight=%.1fg Time=%lums\n",
+                    liveWeight, millis());
 
       // INSTANT hardware shutdown - don't wait for syncHardware()
       digitalWrite(LED_NOTIFICATION_PIN, LOW);
       digitalWrite(BUZZER_PIN, LOW);
 
       unsigned long shutdownTime = millis() - shutdownStart;
-      Serial.printf("[SHUTDOWN] Hardware off in %lums\n", shutdownTime);
+      Serial.printf("[PERF] Hardware off in %lums\n", shutdownTime);
 
       currentMode = MODE_PICKED_UP;
       currentAlertLevel = 0;
@@ -771,27 +810,41 @@ void handleAlertState() {
   else if (currentMode == MODE_PICKED_UP) {
     // Check if put back
     if (liveWeight > PICKUP_THRESHOLD) {
-      Serial.println("✓ Bottle replaced - evaluating...");
+      Serial.println(
+          "[INFO] ✓ Bottle replaced - waiting 2s for stabilization...");
       currentMode = MODE_EVALUATING;
-      delay(1000); // Wait for stability
+      lastBottleReplacedTime = millis();
     }
   }
   // Case 3: Evaluating result
   else if (currentMode == MODE_EVALUATING) {
-    evaluateDrinking();
+    // Only proceed after 2s stabilization
+    if (millis() - lastBottleReplacedTime >= 2000) {
+      evaluateDrinking();
+    }
   }
 }
 
 void evaluateDrinking() {
   float endWeight = scale.get_units(WEIGHT_READING_SAMPLES);
+
+  // Ghost Drink Protection: If bottle was picked up again during evaluation
+  if (endWeight < PICKUP_THRESHOLD) {
+    Serial.printf("[WARN] Evaluation invalid - bottle removed (%.1fg). "
+                  "Returning to picked-up state.\n",
+                  endWeight);
+    currentMode = MODE_PICKED_UP;
+    return;
+  }
+
   float diff = endWeight - preAlertWeight;
 
-  Serial.printf("Evaluation | Start: %.1fg | End: %.1fg | Diff: %.1fg\n",
+  Serial.printf("[INFO] Evaluation | Start: %.1fg | End: %.1fg | Diff: %.1fg\n",
                 preAlertWeight, endWeight, diff);
 
   // Drink detected
   if (diff <= -DRINK_THRESHOLD_MIN) {
-    Serial.println("✅ User drank water!");
+    Serial.println("[INFO] ✅ User drank water!");
     setRGB(RGB_GREEN);
     delay(3000);
 
@@ -805,18 +858,31 @@ void evaluateDrinking() {
     consecutiveSnoozeCount = 0;
     currentAlertLevel = 0;
     currentMode = MODE_MONITORING;
+
+    // SYNC BASELINE: Tell the main loop we've already accounted for this weight
+    // change
+    currentWeight = endWeight;
+    previousWeight = endWeight;
+    lastCheckTime = millis(); // Reset periodic timer
   }
   // Refill detected
   else if (diff >= REFILL_THRESHOLD) {
-    Serial.println("🔄 Bottle refilled!");
+    Serial.println("[INFO] 🔄 Bottle refilled!");
     setRGB(RGB_CYAN);
     delay(2000);
     currentAlertLevel = 0;
     currentMode = MODE_MONITORING;
+
+    // SYNC BASELINE: Tell the main loop we've already accounted for this weight
+    // change
+    currentWeight = endWeight;
+    previousWeight = endWeight;
+    lastCheckTime = millis(); // Reset periodic timer
   }
-  // No significant change - retry in 1 minute
+  // No significant change - retry in 10 seconds
   else {
-    Serial.println("⚠ No drink detected - retrying alert in 10 seconds");
+    Serial.println(
+        "[ALERT] ⚠ No drink detected - retrying alert in 10 seconds");
     nextAllowedAlertTime = millis() + ALERT_RETRY_INTERVAL_MS;
     currentAlertLevel = 0;
     currentMode = MODE_MONITORING;
@@ -838,10 +904,23 @@ int getCurrentHour() {
 }
 
 void saveConsumption() {
+  static float lastSavedML = -1.0;
+  static int lastSavedDay = -1;
+
+  // Only save if day changed or consumption changed significantly (> 0.5ml)
+  if (abs(todayConsumptionML - lastSavedML) < 0.5 &&
+      lastResetDay == lastSavedDay) {
+    return;
+  }
+
   prefs.begin("hydration", false);
   prefs.putFloat("today_ml", todayConsumptionML);
   prefs.putInt("last_reset", lastResetDay);
   prefs.end();
+
+  lastSavedML = todayConsumptionML;
+  lastSavedDay = lastResetDay;
+  Serial.printf("[NVM] ✓ Consumption saved: %.1fml\n", todayConsumptionML);
 }
 
 void loadConsumption() {
@@ -849,7 +928,7 @@ void loadConsumption() {
   todayConsumptionML = prefs.getFloat("today_ml", 0);
   lastResetDay = prefs.getInt("last_reset", 0);
   prefs.end();
-  Serial.printf("📂 Loaded consumption: %.1fml (Last Reset Day: %d)\n",
+  Serial.printf("[NVM] ✓ Loaded consumption: %.1fml (Last Reset Day: %d)\n",
                 todayConsumptionML, lastResetDay);
 }
 
