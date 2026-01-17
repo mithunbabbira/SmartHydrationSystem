@@ -166,6 +166,10 @@ void setup() {
   Serial.println("\n--- [SYSTEM DIAGNOSTICS] ---");
   Serial.print("[INFO] IP Address: ");
   Serial.println(WiFi.localIP());
+
+  // Transition from INITIALIZING to MONITORING immediately
+  currentMode = MODE_MONITORING;
+
   Serial.print("[INFO] Active Mode: ");
   Serial.println(currentMode);
   Serial.print("[INFO] Consumption: ");
@@ -177,6 +181,10 @@ void setup() {
                 SLEEP_START_HOUR);
   Serial.println("----------------------------\n");
   Serial.println("[INFO] ✓✓✓ System Ready ✓✓✓\n");
+
+  // Force immediate telemetry and hardware sync
+  publishTelemetry();
+  syncHardware();
 }
 
 // ==================== Main Loop ====================
