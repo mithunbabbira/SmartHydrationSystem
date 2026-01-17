@@ -275,14 +275,17 @@ void loop() {
     // Check daily refill reminder (once at 12 PM)
     checkDailyRefillReminder();
 
-    // Main weight check
-    if (millis() - lastCheckTime >= CHECK_INTERVAL_MS) {
-      if (millis() >= nextAllowedAlertTime) {
-        checkWeight(liveWeight); // Pass the already-read weight
-        lastCheckTime = millis();
-      } else {
-        Serial.printf("⏳ Waiting for retry interval (%lds remaining)\n",
-                      (nextAllowedAlertTime - millis()) / 1000);
+    // Main weight check - ONLY run if bottle is present and not currently
+    // missing
+    if (liveWeight >= PICKUP_THRESHOLD && currentMode != MODE_BOTTLE_MISSING) {
+      if (millis() - lastCheckTime >= CHECK_INTERVAL_MS) {
+        if (millis() >= nextAllowedAlertTime) {
+          checkWeight(liveWeight); // Pass the already-read weight
+          lastCheckTime = millis();
+        } else {
+          Serial.printf("⏳ Waiting for retry interval (%lds remaining)\n",
+                        (nextAllowedAlertTime - millis()) / 1000);
+        }
       }
     }
   }
@@ -628,24 +631,21 @@ void handleSnoozeButton() {
 void publishTelemetry() {
   // Always try to read weight for live updates
   if (scale.wait_ready_timeout(500)) {
-    float liveWeight = scale.get_units(5); // Fast average of 5
-
-    // Maintain a local currentWeight for delta calculation consistency
-    currentWeight = liveWeight;
+    float telemetryWeight = scale.get_units(5); // Fast average of 5
 
     // JSON telemetry for Pi5 weight command
     char telemetryJson[128];
     snprintf(telemetryJson, sizeof(telemetryJson),
-             "{\"weight\":%.1f,\"delta\":%.1f,\"alert\":%d}", liveWeight,
+             "{\"weight\":%.1f,\"delta\":%.1f,\"alert\":%d}", telemetryWeight,
              weightDelta, currentAlertLevel);
 
     if (mqtt.connected()) {
       mqtt.publish("hydration/telemetry", telemetryJson);
-      mqtt.publish(TOPIC_WEIGHT_CURRENT, String(liveWeight, 1).c_str());
+      mqtt.publish(TOPIC_WEIGHT_CURRENT, String(telemetryWeight, 1).c_str());
     }
 
-    Serial.printf("📊 Live Telemetry | Weight: %.1fg | Mode: %d\n", liveWeight,
-                  currentMode);
+    Serial.printf("📊 Live Telemetry | Weight: %.1fg | Mode: %d\n",
+                  telemetryWeight, currentMode);
   } else {
     Serial.println("⚠ Scale not ready for telemetry");
   }
