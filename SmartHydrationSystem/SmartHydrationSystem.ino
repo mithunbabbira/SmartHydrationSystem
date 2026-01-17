@@ -44,6 +44,7 @@ float liveWeight = 0; // Globally updated once per loop
 
 // Consumption tracking
 float todayConsumptionML = 0;
+int lastResetDay = 0;
 struct tm lastDrinkTime;
 
 // System state
@@ -97,6 +98,8 @@ void handleAlertState();
 void evaluateDrinking();
 void saveScaleOffset();
 bool loadScaleOffset();
+void saveConsumption();
+void loadConsumption();
 void syncHardware();
 String getTimeString();
 int getCurrentHour();
@@ -143,8 +146,20 @@ void setup() {
   currentMode = MODE_MONITORING;
   lastCheckTime = millis();
 
-  // Trigger first telemetry shortly after boot
-  lastTelemetryTime = millis() - (TELEMETRY_INTERVAL_MS - 2000);
+  // Load consumption and handle daily reset
+  loadConsumption();
+
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    if (timeinfo.tm_mday != lastResetDay) {
+      Serial.printf("🌅 New day detected on boot! Resetting consumption. (Prev "
+                    "Day: %d, Current: %d)\n",
+                    lastResetDay, timeinfo.tm_mday);
+      todayConsumptionML = 0;
+      lastResetDay = timeinfo.tm_mday;
+      saveConsumption();
+    }
+  }
 
   Serial.println("\n✓✓✓ System Ready ✓✓✓\n");
 }
@@ -184,6 +199,28 @@ void loop() {
     currentMode = MODE_SLEEPING;
   } else if (currentMode == MODE_SLEEPING) {
     currentMode = MODE_MONITORING;
+  }
+
+  // Midnight Reset Logic
+  static unsigned long lastDayCheck = 0;
+  if (millis() - lastDayCheck > 60000) { // Check every minute
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+      if (timeinfo.tm_mday != lastResetDay) {
+        Serial.println(
+            "🌅 Midnight reset triggered! Starting fresh for the day.");
+        todayConsumptionML = 0;
+        lastResetDay = timeinfo.tm_mday;
+        saveConsumption();
+
+        if (mqtt.connected()) {
+          mqtt.publish(TOPIC_CONSUMPTION_TODAY, "0");
+          mqtt.publish("hydration/status/message",
+                       "Daily consumption reset at midnight");
+        }
+      }
+    }
+    lastDayCheck = millis();
   }
 
   // Read scale once per loop for consistency (if ready)
@@ -759,6 +796,8 @@ void evaluateDrinking() {
     delay(3000);
 
     todayConsumptionML += abs(diff);
+    saveConsumption();
+
     mqtt.publish(TOPIC_CONSUMPTION_LAST, getTimeString().c_str());
     mqtt.publish(TOPIC_CONSUMPTION_INTERVAL, String(abs(diff)).c_str());
     mqtt.publish(TOPIC_CONSUMPTION_TODAY, String(todayConsumptionML).c_str());
@@ -796,6 +835,22 @@ int getCurrentHour() {
   time_t now = time(nullptr);
   struct tm *timeinfo = localtime(&now);
   return timeinfo->tm_hour;
+}
+
+void saveConsumption() {
+  prefs.begin("hydration", false);
+  prefs.putFloat("today_ml", todayConsumptionML);
+  prefs.putInt("last_reset", lastResetDay);
+  prefs.end();
+}
+
+void loadConsumption() {
+  prefs.begin("hydration", true);
+  todayConsumptionML = prefs.getFloat("today_ml", 0);
+  lastResetDay = prefs.getInt("last_reset", 0);
+  prefs.end();
+  Serial.printf("📂 Loaded consumption: %.1fml (Last Reset Day: %d)\n",
+                todayConsumptionML, lastResetDay);
 }
 
 void saveScaleOffset() {
