@@ -897,6 +897,7 @@ void evaluateDrinking() {
 
     // SYNC BASELINE: Tell the main loop we've already accounted for this weight
     // change
+    weightDelta = diff;
     currentWeight = endWeight;
     previousWeight = endWeight;
     lastCheckTime = millis(); // Reset periodic timer
@@ -911,6 +912,7 @@ void evaluateDrinking() {
 
     // SYNC BASELINE: Tell the main loop we've already accounted for this weight
     // change
+    weightDelta = diff;
     currentWeight = endWeight;
     previousWeight = endWeight;
     lastCheckTime = millis(); // Reset periodic timer
