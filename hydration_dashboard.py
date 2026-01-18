@@ -61,9 +61,12 @@ def get_db_stats():
         return {"sessions": 0, "total_ml": 0.0}
 
 # ==================== MQTT Client ====================
-def on_connect(client, userdata, flags, rc):
-    print(f"MQTT Connected (rc: {rc})")
-    client.subscribe("hydration/#")
+def on_connect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
+        print(f"MQTT Connected (rc: {reason_code})")
+        client.subscribe("hydration/#")
+    else:
+        print(f"MQTT Connection failed with code: {reason_code}")
 
 def on_message(client, userdata, msg):
     global latest_telemetry
