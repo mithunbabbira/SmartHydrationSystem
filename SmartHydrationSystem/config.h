@@ -20,7 +20,7 @@
 #define DAYLIGHT_OFFSET_SEC 0
 
 // ==================== MQTT Configuration ====================
-#define MQTT_SERVER "192.168.0.114" // confirmed Pi5 IP address
+#define MQTT_SERVER "raspberrypi.local" // Use mDNS for portability
 #define MQTT_PORT 1883
 // #define MQTT_USER "babbira"        // Not needed - anonymous access enabled
 // #define MQTT_PASSWORD "3.14159265" // Not needed - anonymous access enabled

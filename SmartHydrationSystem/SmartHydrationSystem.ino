@@ -18,6 +18,7 @@
 
 #include "HX711.h"
 #include "config.h"
+#include <ESPmDNS.h>
 #include <Preferences.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
@@ -436,6 +437,11 @@ void setupWiFi() {
     } else {
       Serial.println("\n[WARN] ⚠ NTP sync timed out - clock may be wrong!");
     }
+
+    // Initialize mDNS
+    if (MDNS.begin("esp32_hydration")) {
+      Serial.println("[INFO] ✓ mDNS responder started");
+    }
   } else {
     Serial.println("\n[ERROR] ✗ WiFi connection failed!");
   }
@@ -443,7 +449,6 @@ void setupWiFi() {
 
 // ==================== MQTT Setup ====================
 void setupMQTT() {
-  mqtt.setServer(MQTT_SERVER, MQTT_PORT);
   mqtt.setCallback(mqttCallback);
   reconnectMQTT();
 }
@@ -456,6 +461,26 @@ void reconnectMQTT() {
 
   // Only try once (non-blocking)
   if (!mqtt.connected()) {
+    String server = MQTT_SERVER;
+    IPAddress mqttIP;
+
+    // Resolve mDNS hostname if needed
+    if (server.endsWith(".local")) {
+      String hostname = server.substring(0, server.length() - 6);
+      Serial.printf("[MQTT] Resolving mDNS: %s.local...", hostname.c_str());
+      mqttIP = MDNS.queryHost(hostname);
+      if (mqttIP.toString() != "0.0.0.0") {
+        Serial.printf(" ✓ Found: %s\n", mqttIP.toString().c_str());
+        mqtt.setServer(mqttIP, MQTT_PORT);
+      } else {
+        Serial.println(" ✗ Failed to resolve mDNS!");
+        // Fallback to original string just in case
+        mqtt.setServer(MQTT_SERVER, MQTT_PORT);
+      }
+    } else {
+      mqtt.setServer(MQTT_SERVER, MQTT_PORT);
+    }
+
     Serial.print("[INFO] Connecting to MQTT broker...");
 
     // Connect without authentication (anonymous mode)
