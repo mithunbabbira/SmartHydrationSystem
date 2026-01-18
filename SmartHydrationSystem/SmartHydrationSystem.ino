@@ -121,9 +121,6 @@ void setup() {
   // Initialize WiFi
   setupWiFi();
 
-  // Initialize MQTT
-  setupMQTT();
-
   // Ensure lastBottlePresentTime is initialized
   lastBottlePresentTime = millis();
 
@@ -154,13 +151,7 @@ void setup() {
                    "auto-calibrate on first loop.");
   }
 
-  // Set initial RGB color
-  setRGB(RGB_BLUE);
-
-  currentMode = MODE_MONITORING;
-  lastCheckTime = millis();
-
-  // Load consumption and handle daily reset
+  // Load consumption and handle daily reset BEFORE MQTT sync
   loadConsumption();
 
   struct tm timeinfo;
@@ -193,6 +184,13 @@ void setup() {
   Serial.printf("[INFO] Monitoring Hours: %02d:00 - %02d:00\n", SLEEP_END_HOUR,
                 SLEEP_START_HOUR);
   Serial.println("----------------------------\n");
+
+  // Set initial RGB color
+  setRGB(RGB_BLUE);
+
+  // NOW initialize MQTT and sync state
+  setupMQTT();
+
   Serial.println("[INFO] ✓✓✓ System Ready ✓✓✓\n");
 
   // Force immediate telemetry and hardware sync
