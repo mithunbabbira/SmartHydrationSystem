@@ -48,9 +48,7 @@
 // Timing
 #define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
 
-
 // #define CHECK_INTERVAL_MS (1 * 20 * 1000) // 30 minutes in milliseconds
-
 
 #define TELEMETRY_INTERVAL_MS (30 * 1000) // 30 seconds for live updates
 #define SLEEP_START_HOUR 23               // 11 PM
@@ -58,16 +56,17 @@
 #define REFILL_CHECK_HOUR 12              // 12 PM (noon)
 
 // Weight thresholds
-#define DRINK_THRESHOLD_MIN 90       // Minimum drink: 90g
+#define DRINK_THRESHOLD_MIN 30       // Minimum drink: 30g (was 90g)
 #define REFILL_THRESHOLD 100         // Minimum refill: 100g
 #define REFILL_CHECK_MIN_WEIGHT 1500 // Daily check: bottle must be ≥1.5kg
 #define PICKUP_THRESHOLD 50 // Bottle considered "removed" below this weight
 
 // Alert durations
-#define LED_ALERT_DURATION 10000      // 10 seconds (White LED)
-#define BUZZER_ALERT_DURATION 10000   // 10 seconds
-#define ALERT_WAIT_TIME 10000         // 10 seconds between escalations
-#define ALERT_RETRY_INTERVAL_MS 10000 // 10 seconds retry if no drink detected
+#define LED_ALERT_DURATION 10000    // 10 seconds (White LED)
+#define BUZZER_ALERT_DURATION 10000 // 10 seconds
+#define ALERT_WAIT_TIME 60000       // 1 minute between escalations (was 10s)
+#define ALERT_RETRY_INTERVAL_MS                                                \
+  300000 // 5 minutes retry if no drink detected (was 10s)
 #define BOTTLE_MISSING_TIMEOUT_MS                                              \
   180000 // 3 minutes missing bottle timeout (3 * 60 * 1000 = 180000)
 

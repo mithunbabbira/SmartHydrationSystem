@@ -118,13 +118,10 @@ void setup() {
   // Initialize hardware
   setupHardware();
 
-  // Initialize WiFi
-  setupWiFi();
+  // 1. Initial NVM Load (Consumption & Settings)
+  loadConsumption();
 
-  // Ensure lastBottlePresentTime is initialized
-  lastBottlePresentTime = millis();
-
-  // Initialize HX711
+  // 2. Initialize HX711 Sensors
   Serial.println("Initializing HX711...");
   scale.begin(HX711_DOUT_PIN, HX711_SCK_PIN);
   scale.set_scale(CALIBRATION_FACTOR);
@@ -139,7 +136,7 @@ void setup() {
     Serial.println("✓ Scale calibrated and saved to NVM");
   }
 
-  // Initialize weight baseline on boot
+  // 3. Initialize weight baseline on boot
   if (scale.wait_ready_timeout(1000)) {
     float initialWeight = scale.get_units(10);
     currentWeight = initialWeight;
@@ -151,9 +148,13 @@ void setup() {
                    "auto-calibrate on first loop.");
   }
 
-  // Load consumption and handle daily reset BEFORE MQTT sync
-  loadConsumption();
+  // 4. Initialize Network
+  setupWiFi();
 
+  // Ensure lastBottlePresentTime is initialized after networking
+  lastBottlePresentTime = millis();
+
+  // Handle daily reset logic
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {
     if (timeinfo.tm_mday != lastResetDay) {
