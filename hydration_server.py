@@ -127,6 +127,13 @@ def on_message(client, userdata, msg):
         except Exception as e:
             print(f"  ⚠ Telemetry parse error: {e}")
     
+    # Cache today's total for fast stats
+    if topic == "hydration/consumption/today_ml":
+        global last_today_ml
+        try:
+            last_today_ml = float(payload)
+        except: pass
+    
     # Process specific topics
     try:
         if topic == "hydration/weight/delta":
@@ -159,6 +166,30 @@ def on_message(client, userdata, msg):
     
     except Exception as e:
         print(f"  ⚠ Processing error: {e}")
+    
+    # Update Analytics Database
+    if ENABLE_DATABASE:
+        try:
+            conn = sqlite3.connect(DATABASE_FILE)
+            cursor = conn.cursor()
+            
+            if topic == "hydration/consumption/interval_ml":
+                ml = float(payload)
+                if ml > 0:
+                    cursor.execute('INSERT INTO hydration_events (event_type, weight_delta) VALUES (?, ?)', 
+                                   ('drink', -ml))
+                    print(f"  💾 Saved drink event: {ml}ml")
+            
+            elif topic == "hydration/alerts/level":
+                level = int(payload)
+                if level > 0:
+                    cursor.execute('INSERT INTO hydration_events (event_type, alert_level) VALUES (?, ?)', 
+                                   ('alert', level))
+            
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"  ⚠ Database event log failed: {e}")
 
 # ==================== Remote Control Functions ====================
 def send_command(client, command_topic, payload):
@@ -204,19 +235,25 @@ def get_today_stats():
         print(f"Stats error: {e}")
         return None
 
+# Global cache for the last reported daily total from ESP32
+last_today_ml = 0.0
+
 def print_stats():
     """Print current statistics"""
     stats = get_today_stats()
     if not stats:
         return
     
+    # Use the live value from ESP32 if database sum is lower (e.g. session started before DB)
+    display_ml = max(stats['total_ml'], last_today_ml)
+    
     print("\n" + "="*50)
     print("📊 TODAY'S HYDRATION STATS")
     print("="*50)
     print(f"Date: {stats['date']}")
-    print(f"Water consumed: {stats['total_ml']:.1f} ml")
+    print(f"Water consumed: {display_ml:.1f} ml")
     print(f"Drinking sessions: {stats['sessions']}")
-    print(f"Daily goal (2000ml): {'✅ MET' if stats['goal_met'] else '❌ NOT MET'}")
+    print(f"Daily goal (2000ml): {'✅ MET' if display_ml >= 2000 else '❌ NOT MET'}")
     print("="*50 + "\n")
 
 # ==================== Main Program ====================
