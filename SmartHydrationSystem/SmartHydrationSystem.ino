@@ -904,7 +904,7 @@ void evaluateDrinking() {
   }
   // Refill detected
   else if (diff >= REFILL_THRESHOLD) {
-    Serial.println("[INFO] 🔄 Bottle refilled!");
+    Serial.printf("[INFO] 🔄 Bottle refilled! (+%.1fg)\n", diff);
     setRGB(RGB_CYAN);
     delay(2000);
     currentAlertLevel = 0;

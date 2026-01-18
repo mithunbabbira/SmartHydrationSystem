@@ -35,6 +35,7 @@ last_weight = 0.0
 last_delta = 0.0
 last_alert = 0
 last_weight_time = None
+last_today_ml = 0.0  # Live cache from ESP32
 
 # ==================== Database Setup ====================
 def init_database():
@@ -235,9 +236,6 @@ def get_today_stats():
         print(f"Stats error: {e}")
         return None
 
-# Global cache for the last reported daily total from ESP32
-last_today_ml = 0.0
-
 def print_stats():
     """Print current statistics"""
     stats = get_today_stats()
@@ -245,13 +243,18 @@ def print_stats():
         return
     
     # Use the live value from ESP32 if database sum is lower (e.g. session started before DB)
-    display_ml = max(stats['total_ml'], last_today_ml)
+    source = "Database"
+    display_ml = stats['total_ml']
+    
+    if last_today_ml > display_ml:
+        display_ml = last_today_ml
+        source = "Live Cache (ESP32)"
     
     print("\n" + "="*50)
     print("📊 TODAY'S HYDRATION STATS")
     print("="*50)
     print(f"Date: {stats['date']}")
-    print(f"Water consumed: {display_ml:.1f} ml")
+    print(f"Water consumed: {display_ml:.1f} ml  ({source})")
     print(f"Drinking sessions: {stats['sessions']}")
     print(f"Daily goal (2000ml): {'✅ MET' if display_ml >= 2000 else '❌ NOT MET'}")
     print("="*50 + "\n")
