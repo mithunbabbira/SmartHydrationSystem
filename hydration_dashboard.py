@@ -3,9 +3,15 @@
 Smart Hydration System - Web Dashboard Backend
 ==============================================
 Flask + Socket.IO server to provide real-time updates and control.
-
-Author: Babbira
 """
+
+# CRITICAL: Monkey patch must happen BEFORE any other imports
+try:
+    import eventlet
+    eventlet.monkey_patch()
+    async_mode = 'eventlet'
+except ImportError:
+    async_mode = 'threading'
 
 import os
 import json
@@ -15,14 +21,6 @@ from datetime import datetime
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 import paho.mqtt.client as mqtt
-
-# Monkey patch for eventlet if installed
-try:
-    import eventlet
-    eventlet.monkey_patch()
-    async_mode = 'eventlet'
-except ImportError:
-    async_mode = 'threading'
 
 # ==================== Configuration ====================
 MQTT_BROKER = "localhost"
