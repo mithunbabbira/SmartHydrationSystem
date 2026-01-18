@@ -20,7 +20,7 @@
 #define DAYLIGHT_OFFSET_SEC 0
 
 // ==================== MQTT Configuration ====================
-#define MQTT_SERVER "raspberrypi.local" // Replace with your Pi5 IP address
+#define MQTT_SERVER "192.168.0.114" // confirmed Pi5 IP address
 #define MQTT_PORT 1883
 // #define MQTT_USER "babbira"        // Not needed - anonymous access enabled
 // #define MQTT_PASSWORD "3.14159265" // Not needed - anonymous access enabled
@@ -46,9 +46,9 @@
 
 // ==================== System Parameters ====================
 // Timing
-// #define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
+#define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
 
-#define CHECK_INTERVAL_MS (1 * 20 * 1000) // 30 minutes in milliseconds
+// #define CHECK_INTERVAL_MS (1 * 20 * 1000) // 30 minutes in milliseconds
 
 #define TELEMETRY_INTERVAL_MS (30 * 1000) // 30 seconds for live updates
 #define SLEEP_START_HOUR 23               // 11 PM
@@ -62,11 +62,10 @@
 #define PICKUP_THRESHOLD 50 // Bottle considered "removed" below this weight
 
 // Alert durations
-#define LED_ALERT_DURATION 10000    // 10 seconds (White LED)
-#define BUZZER_ALERT_DURATION 10000 // 10 seconds
-#define ALERT_WAIT_TIME 10000       // 
-#define ALERT_RETRY_INTERVAL_MS                                                \
-  10000 // 
+#define LED_ALERT_DURATION 10000      // 10 seconds (White LED)
+#define BUZZER_ALERT_DURATION 10000   // 10 seconds
+#define ALERT_WAIT_TIME 10000         //
+#define ALERT_RETRY_INTERVAL_MS 10000 //
 #define BOTTLE_MISSING_TIMEOUT_MS                                              \
   180000 // 3 minutes missing bottle timeout (3 * 60 * 1000 = 180000)
 
