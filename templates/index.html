@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div class="background-blobs">
         <div class="blob blob-1"></div>
@@ -41,8 +43,10 @@
                 <div class="progress-container">
                     <div class="progress-ring-wrapper">
                         <svg class="progress-ring" width="220" height="220">
-                            <circle class="progress-ring__circle-bg" stroke="#1e293b" stroke-width="12" fill="transparent" r="100" cx="110" cy="110"/>
-                            <circle class="progress-ring__circle" id="progress-circle" stroke="url(#gradient)" stroke-width="12" stroke-linecap="round" fill="transparent" r="100" cx="110" cy="110"/>
+                            <circle class="progress-ring__circle-bg" stroke="#1e293b" stroke-width="12"
+                                fill="transparent" r="100" cx="110" cy="110" />
+                            <circle class="progress-ring__circle" id="progress-circle" stroke="url(#gradient)"
+                                stroke-width="12" stroke-linecap="round" fill="transparent" r="100" cx="110" cy="110" />
                             <defs>
                                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                                     <stop offset="0%" stop-color="#3b82f6" />
@@ -74,16 +78,20 @@
                 </div>
 
                 <!-- Alert/Quick Stats Card -->
-                <div class="card glass">
+                <div class="card health-card glass">
                     <h3>System Health</h3>
-                    <div class="stats-list">
-                        <div class="stat-item">
-                            <span class="label">Alert Level</span>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span>Alert Level</span>
                             <span id="alert-level" class="status-pill status-ok">Normal</span>
                         </div>
-                        <div class="stat-item">
-                            <span class="label">Sessions</span>
-                            <span id="session-count" class="badge">0</span>
+                        <div class="status-item">
+                            <span>Presence</span>
+                            <span id="presence-status" class="status-pill status-unknown">Unknown</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Sessions</span>
+                            <span id="session-count" class="value">0</span>
                         </div>
                     </div>
                 </div>
@@ -128,4 +136,5 @@
 
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
+
 </html>

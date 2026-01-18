@@ -147,6 +147,30 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 3000);
 }
 
+// ==================== UI Updates ====================
+function updateSystemStatus(status) {
+    const badge = document.getElementById('system-status');
+    const label = badge.querySelector('.label');
+    const pulse = badge.querySelector('.pulse');
+
+    label.innerText = status.charAt(0).toUpperCase() + status.slice(1);
+    pulse.style.background = (status === 'online' || status === 'Online') ? '#10b981' : '#ef4444';
+}
+
+function updatePresence(presence) {
+    const el = document.getElementById('presence-status');
+    if (presence === 'home') {
+        el.innerText = '🏠 At Home';
+        el.className = 'status-pill status-ok';
+    } else if (presence === 'away') {
+        el.innerText = '🚗 Away';
+        el.className = 'status-pill status-alert';
+    } else {
+        el.innerText = 'Unknown';
+        el.className = 'status-pill status-unknown';
+    }
+}
+
 // ==================== Charts ====================
 function initHistoryChart() {
     const ctx = document.getElementById('history-chart').getContext('2d');

@@ -28,7 +28,8 @@ latest_telemetry = {
     "delta": 0.0,
     "alert": 0,
     "today_ml": 0.0,
-    "status": "online", # Assume online initially if server is up
+    "presence": "unknown", # Home/Away status
+    "status": "online",  # Assume online initially if server is up
     "last_update": None
 }
 
@@ -108,6 +109,12 @@ def on_message(client, userdata, msg):
     elif topic == "hydration/status/online":
         latest_telemetry["status"] = "online" if payload == "true" else "offline"
         socketio.emit('status_update', {"status": latest_telemetry["status"]})
+
+    elif topic == "hydration/status/bluetooth":
+        # Map "connected" to "home" and "disconnected" to "away"
+        presence = "home" if payload == "connected" else "away"
+        latest_telemetry["presence"] = presence
+        socketio.emit('presence_update', {"presence": presence})
 
 mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
