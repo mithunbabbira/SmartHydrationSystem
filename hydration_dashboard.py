@@ -125,6 +125,15 @@ mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
+# ==================== Socket.IO Events ====================
+@socketio.on('connect')
+def handle_connect():
+    print(f"[WS] 🟢 Browser connected! Pushing initial state...")
+    # Push immediate state so the browser doesn't wait for the next MQTT message
+    emit('status_update', {"status": latest_telemetry["status"]})
+    emit('telemetry_update', latest_telemetry)
+    emit('stats_update', latest_telemetry)
+
 # ==================== Flask Routes ====================
 @app.route('/')
 def index():

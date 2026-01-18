@@ -1,6 +1,19 @@
 // Socket.IO Connection
 const socket = io();
 
+socket.on('connect', () => {
+    console.log('✅ Connected to backend!');
+    showToast('Connected to system');
+});
+
+socket.on('disconnect', () => {
+    console.log('❌ Disconnected from backend!');
+    showToast('Connection lost');
+    const badge = document.getElementById('system-status');
+    badge.querySelector('.label').innerText = 'Reconnecting...';
+    badge.querySelector('.pulse').style.background = '#f59e0b';
+});
+
 // Constants
 const DAILY_GOAL = 2000;
 const circle = document.querySelector('.progress-ring__circle');
