@@ -133,6 +133,7 @@ def on_message(client, userdata, msg):
         global last_today_ml
         try:
             last_today_ml = float(payload)
+            print(f"  🏁 Synchronized today's consumption: {last_today_ml}ml")
         except: pass
     
     # Process specific topics

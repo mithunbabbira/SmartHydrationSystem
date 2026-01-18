@@ -98,6 +98,7 @@ void triggerBuzzer(int duration);
 void handleAlertState();
 void evaluateDrinking();
 void saveScaleOffset();
+void publishInitialState();
 bool loadScaleOffset();
 void saveConsumption();
 void loadConsumption();
@@ -466,6 +467,9 @@ void reconnectMQTT() {
       mqtt.subscribe(TOPIC_CMD_RESET_CONSUMPTION);
 
       Serial.println("[INFO] ✓ Subscribed to command topics");
+
+      // Sync state immediately on connection
+      publishInitialState();
     } else {
       Serial.print("[ERROR] ✗ Failed, rc=");
       Serial.println(mqtt.state());
@@ -751,6 +755,28 @@ void triggerBuzzer(int duration) {
   digitalWrite(BUZZER_PIN, HIGH);
   delay(duration);
   digitalWrite(BUZZER_PIN, LOW);
+}
+
+void publishInitialState() {
+  Serial.println("[MQTT] Publishing initial state...");
+
+  // Publish current mode
+  mqtt.publish(TOPIC_STATUS_ONLINE, "true", true);
+
+  // Publish current consumption
+  mqtt.publish(TOPIC_CONSUMPTION_TODAY, String(todayConsumptionML).c_str(),
+               true);
+
+  // Publish last drink time topic (best guess is just its existence)
+  mqtt.publish(TOPIC_CONSUMPTION_LAST, getTimeString().c_str());
+
+  // Publish presence if known
+  mqtt.publish(TOPIC_STATUS_BT, phonePresent ? "connected" : "disconnected");
+
+  // Force a telemetry packet
+  publishTelemetry();
+
+  Serial.println("[MQTT] ✓ Initial state synchronized");
 }
 
 void syncHardware() {
