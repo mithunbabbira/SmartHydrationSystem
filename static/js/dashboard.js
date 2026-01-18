@@ -128,6 +128,20 @@ socket.on('status_update', (data) => {
     pulse.style.background = data.status === 'online' ? '#10b981' : '#ef4444';
 });
 
+// Presence update listener
+socket.on('presence_update', (data) => {
+    console.log('[WS] Presence update:', data.presence);
+    if (data.presence) {
+        updatePresence(data.presence);
+    }
+});
+
+// Alert update listener
+socket.on('alert_update', (data) => {
+    console.log('[WS] Alert update:', data);
+    updateDiagnostics(data);
+});
+
 // ==================== Commands ====================
 function sendCommand(cmd, val) {
     fetch('/api/command', {
