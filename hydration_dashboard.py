@@ -10,10 +10,19 @@ Author: Babbira
 import os
 import json
 import sqlite3
+import socket
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 import paho.mqtt.client as mqtt
+
+# Monkey patch for eventlet if installed
+try:
+    import eventlet
+    eventlet.monkey_patch()
+    async_mode = 'eventlet'
+except ImportError:
+    async_mode = 'threading'
 
 # ==================== Configuration ====================
 MQTT_BROKER = "localhost"
@@ -24,7 +33,7 @@ DATABASE_FILE = "hydration.db"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hydration_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=async_mode)
 
 # Global state
 latest_telemetry = {
@@ -36,7 +45,30 @@ latest_telemetry = {
     "last_update": None
 }
 
-# ==================== Database Helpers ====================
+# ==================== Helpers ====================
+def get_ip_addresses():
+    """Detect local IP addresses to help the user connect"""
+    ips = []
+    try:
+        # Standard method
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ips.append(s.getsockname()[0])
+        s.close()
+    except:
+        pass
+    
+    # Fallback to hostname
+    try:
+        hostname = socket.gethostname()
+        host_ip = socket.gethostbyname(hostname)
+        if host_ip not in ips:
+            ips.append(host_ip)
+    except:
+        pass
+    
+    return ips
+
 def get_db_stats():
     """Get summarized stats from database"""
     try:
@@ -116,18 +148,31 @@ def api_command():
     value = data.get('value', 'execute')
     
     topic = f"hydration/commands/{cmd_type}"
+    print(f"[API] ➡️ Sending command: {topic} = {value}")
     mqtt_client.publish(topic, value)
     return jsonify({"status": "success", "topic": topic})
 
 # ==================== Main ====================
 if __name__ == '__main__':
-    mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    mqtt_client.loop_start()
+    # Initialize MQTT
+    try:
+        mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        mqtt_client.loop_start()
+    except Exception as e:
+        print(f"❌ MQTT Connection Error: {e}")
+
+    # Detect IPs
+    my_ips = get_ip_addresses()
     
-    print("\n" + "="*50)
-    print("🚀 Hydration Dashboard is RUNNING")
-    print(f"👉 Visit: http://localhost:5005")
-    print(f"👉 Or visit: http://<your-pi-ip>:5005")
-    print("="*50 + "\n")
+    print("\n" + "═"*50)
+    print(" 🚀 HYDRATION DASHBOARD SERVER IS STARTING")
+    print(" " + "═"*50)
+    print(f" 🌐 Access the dashboard at:")
+    for ip in my_ips:
+        print(f"    👉 http://{ip}:5005")
+    print(f"    👉 http://localhost:5005")
+    print("\n � Note: Keep this terminal OPEN while using the dashboard.")
+    print("═"*50 + "\n")
     
-    socketio.run(app, host='0.0.0.0', port=5005, debug=False)
+    # Run Flask with SocketIO
+    socketio.run(app, host='0.0.0.0', port=5005, debug=False, log_output=True)
