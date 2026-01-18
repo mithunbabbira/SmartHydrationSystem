@@ -772,8 +772,13 @@ void publishTelemetry() {
       mqtt.publish(TOPIC_WEIGHT_CURRENT, String(telemetryWeight, 1).c_str());
     }
 
-    Serial.printf("[INFO] 📊 Live Telemetry | Weight: %.1fg | Mode: %d\n",
-                  telemetryWeight, currentMode);
+    Serial.printf(
+        "[INFO] 📊 Live Telemetry | Weight: %.1fg | Mode: %d | Delta: %.1f\n",
+        telemetryWeight, currentMode, weightDelta);
+
+    // RESET DELTA: Once it has been reported in a telemetry packet,
+    // we reset it to 0 so it doesn't "stick" in the logs for 30 minutes.
+    weightDelta = 0;
   } else {
     Serial.println("[WARN] ⚠ Scale not ready for telemetry");
   }
