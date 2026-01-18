@@ -36,6 +36,7 @@ last_delta = 0.0
 last_alert = 0
 last_weight_time = None
 last_today_ml = 0.0  # Live cache from ESP32
+last_presence = "Unknown"  # Home or Away status
 
 # ==================== Database Setup ====================
 def init_database():
@@ -161,10 +162,13 @@ def on_message(client, userdata, msg):
                 print("  ⚠️ Daily refill check FAILED - bottle low!")
         
         elif topic == "hydration/status/bluetooth":
+            global last_presence
             if payload == "connected":
-                print("  👤 User at home")
+                last_presence = "Home"
+                print("  🏠 User at Home")
             else:
-                print("  🚶 User away")
+                last_presence = "Away"
+                print("  🚶 User Away")
     
     except Exception as e:
         print(f"  ⚠ Processing error: {e}")
@@ -336,6 +340,15 @@ def main():
                 else:
                     print("\n⚠️  No weight data received from ESP32 yet. Please wait (updates every 30s).\n")
             
+            elif cmd == "presence":
+                print(f"\n👤 Current User Presence: {last_presence}")
+                if last_presence == "Home":
+                    print("   Status: ✅ At Home (System monitoring active)\n")
+                elif last_presence == "Away":
+                    print("   Status: 🚶 Away (Alerts may be suspended)\n")
+                else:
+                    print("   Status: ❓ Unknown (Waiting for discovery)\n")
+            
             elif cmd == "tare":
                 send_command(client, "tare_scale", "execute")
             
@@ -367,9 +380,10 @@ def main():
             
             elif cmd == "help" or cmd == "?":
                 print("\n📋 Available Commands:")
-                print("  stats   - Show today's statistics")
-                print("  weight  - Show current bottle weight")
-                print("  tare    - Remotely tare the scale")
+                print("  stats     - Show today's statistics")
+                print("  weight    - Show current bottle weight")
+                print("  presence  - Check if user is Home or Away")
+                print("  tare      - Remotely tare the scale")
                 print("  led     - Test LED")
                 print("  buzzer  - Test buzzer")
                 print("  snooze  - Activate snooze (15 min)")
