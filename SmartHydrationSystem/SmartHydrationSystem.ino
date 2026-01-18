@@ -24,6 +24,12 @@
 #include <WiFi.h>
 #include <time.h>
 
+// Bluetooth Classic for presence detection
+#include "esp_bt_device.h"
+#include "esp_bt_main.h"
+#include "esp_err.h"
+#include "esp_gap_bt_api.h"
+
 // ==================== Global Objects ====================
 HX711 scale;
 WiFiClient espClient;
@@ -76,6 +82,11 @@ bool dailyRefillCheckDone = false;
 int presenceFailCount = 0;
 int consecutiveSnoozeCount = 0;
 
+// Bluetooth Classic presence detection
+esp_bd_addr_t phone_bt_addr = {0x48, 0xEF, 0x1C, 0x49, 0x6A, 0xE7};
+volatile bool bt_scan_finished = false;
+volatile bool bt_device_found = false;
+
 // Button debouncing
 unsigned long lastButtonPress = 0;
 const unsigned long debounceDelay = 200;
@@ -107,7 +118,21 @@ void syncHardware();
 String getTimeString();
 int getCurrentHour();
 
+// ==================== Bluetooth GAP Callback ====================
+void bt_gap_callback(esp_bt_gap_cb_event_t event,
+                     esp_bt_gap_cb_param_t *param) {
+  if (event == ESP_BT_GAP_READ_REMOTE_NAME_EVT) {
+    bt_scan_finished = true;
+    if (param->read_rmt_name.stat == ESP_BT_STATUS_SUCCESS) {
+      bt_device_found = true;
+    } else {
+      bt_device_found = false;
+    }
+  }
+}
+
 // ==================== Setup ====================
+
 void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
   delay(1000);
@@ -123,40 +148,70 @@ void setup() {
   loadConsumption();
 
   // 2. Initialize HX711 Sensors
-  Serial.println("Initializing HX711...");
+  Serial.println("[SETUP] ========== SCALE INITIALIZATION ===========");
+  Serial.println("[SETUP] Initializing HX711...");
   scale.begin(HX711_DOUT_PIN, HX711_SCK_PIN);
   scale.set_scale(CALIBRATION_FACTOR);
+  Serial.printf("[SETUP] Calibration factor: %.1f\n", CALIBRATION_FACTOR);
 
+  // CRITICAL: Load saved tare offset (if exists)
   if (loadScaleOffset()) {
-    Serial.println("✓ Loaded saved tare from NVM");
+    Serial.println("[SETUP] ✓ Loaded saved tare from NVM");
   } else {
-    Serial.println("⚠ No saved tare found! Taring scale... Remove all weight!");
+    Serial.println(
+        "[SETUP] ⚠ No saved tare found! Taring scale... Remove all weight!");
     delay(5000);
     scale.tare();
     saveScaleOffset();
-    Serial.println("✓ Scale calibrated and saved to NVM");
+    Serial.println("[SETUP] ✓ Scale calibrated and saved to NVM");
   }
 
   // 3. Initialize weight baseline on boot
+  Serial.println("[SETUP] ========== WEIGHT BASELINE SETUP ===========");
   if (scale.wait_ready_timeout(2000)) {
+    Serial.println("[SETUP] Scale is ready, reading current weight...");
+
+    // Read RAW value first (for debugging)
+    long rawValue = scale.read_average(10);
+    Serial.printf("[SETUP] Raw sensor value: %ld\n", rawValue);
+
+    // Get calibrated weight
     float initialWeight = scale.get_units(20);
-    // If weight is negative or clearly wrong (e.g. scale glitch), try to tare
-    // again or at least start with a clean baseline if bottle is present.
-    if (initialWeight < -50) {
-      Serial.println("[WARN] ⚖ Negative weight on boot! Re-taring...");
-      scale.tare();
-      initialWeight = 0;
+    Serial.printf("[SETUP] Calibrated weight reading: %.1fg\n", initialWeight);
+
+    // IMPORTANT: This is what the system thinks is the current state
+    Serial.println("[SETUP] -------------------------------------------");
+    if (initialWeight > PICKUP_THRESHOLD) {
+      Serial.printf(
+          "[SETUP] ⚠ BOTTLE DETECTED ON BOOT! (%.1fg > %dg threshold)\n",
+          initialWeight, PICKUP_THRESHOLD);
+      Serial.println("[SETUP] This weight will become the BASELINE for future "
+                     "comparisons.");
+      Serial.println("[SETUP] To prevent this, remove bottle before booting OR "
+                     "use remote tare.");
+    } else if (initialWeight < -50) {
+      Serial.printf("[SETUP] ⚠ NEGATIVE WEIGHT DETECTED! (%.1fg)\n",
+                    initialWeight);
+      Serial.println("[SETUP] Saved tare offset might be outdated.");
+      Serial.println("[SETUP] TIP: Use 'hydration/commands/tare_scale' to "
+                     "re-calibrate when empty.");
+    } else {
+      Serial.printf("[SETUP] ✓ Scale appears empty (%.1fg)\n", initialWeight);
     }
+    Serial.println("[SETUP] -------------------------------------------");
+
     currentWeight = initialWeight;
     previousWeight = initialWeight;
     liveWeight = initialWeight;
-    Serial.printf("[INFO] Initial weight baseline set: %.1fg\n", initialWeight);
+    Serial.printf("[SETUP] Initial weight baseline set: %.1fg\n",
+                  initialWeight);
   } else {
     Serial.println(
-        "[WARN] Scale not ready for initial baseline. Starting at 0g.");
+        "[SETUP] ⚠ Scale not ready for initial baseline. Starting at 0g.");
     currentWeight = 0;
     previousWeight = 0;
   }
+  Serial.println("[SETUP] ============================================\n");
 
   // 4. Initialize Network
   setupWiFi();
@@ -181,6 +236,22 @@ void setup() {
   Serial.println("\n--- [SYSTEM DIAGNOSTICS] ---");
   Serial.print("[INFO] IP Address: ");
   Serial.println(WiFi.localIP());
+
+  // Initialize Bluetooth Classic for presence detection
+  Serial.println("[INFO] Initializing Bluetooth Classic...");
+  if (btStart()) {
+    if (esp_bluedroid_init() == ESP_OK && esp_bluedroid_enable() == ESP_OK) {
+      esp_bt_gap_register_callback(bt_gap_callback);
+      Serial.println(
+          "[INFO] ✓ Bluetooth Classic initialized for presence detection");
+    } else {
+      Serial.println(
+          "[WARN] ⚠ Bluedroid init failed - presence detection unavailable");
+    }
+  } else {
+    Serial.println(
+        "[WARN] ⚠ BT controller start failed - presence detection unavailable");
+  }
 
   // Transition from INITIALIZING to MONITORING immediately
   currentMode = MODE_MONITORING;
@@ -575,27 +646,42 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
   }
 }
 
-// ==================== Check Phone Presence (Simplified) ====================
+// ==================== Check Phone Presence (Bluetooth Classic)
+// ====================
 void checkPhonePresence() {
-  // Simple approach: If ESP32 stays connected to WiFi, assume user is home
-  // This is reliable for home use - if you're away, your home WiFi isn't
-  // accessible
+  bt_scan_finished = false;
+  bt_device_found = false;
 
-  if (WiFi.status() == WL_CONNECTED) {
-    if (!phonePresent) {
-      phonePresent = true;
-      presenceFailCount = 0;
-      mqtt.publish(TOPIC_STATUS_BT, "connected");
-      Serial.println("[PRESENCE] ✓ User at home (WiFi connected)");
-    }
-    presenceFailCount = 0; // Reset on success
-  } else {
+  // Start remote name request (Bluetooth Classic ping)
+  esp_err_t ret = esp_bt_gap_read_remote_name(phone_bt_addr);
+  if (ret != ESP_OK) {
+    Serial.println("[PRESENCE] ✗ BT scan failed to start");
     presenceFailCount++;
+  } else {
+    // Wait for callback (max 8 seconds)
+    unsigned long start = millis();
+    while (!bt_scan_finished && (millis() - start < 8000)) {
+      delay(100);
+    }
 
-    if (presenceFailCount >= PRESENCE_TIMEOUT_COUNT && phonePresent) {
-      phonePresent = false;
-      mqtt.publish(TOPIC_STATUS_BT, "disconnected");
-      Serial.println("[PRESENCE] ✗ User away (WiFi disconnected)");
+    if (bt_device_found) {
+      if (!phonePresent) {
+        phonePresent = true;
+        presenceFailCount = 0;
+        mqtt.publish(TOPIC_STATUS_BT, "connected");
+        Serial.println("[PRESENCE] ✓ Samsung S25 Ultra detected (BT Classic)");
+      }
+      presenceFailCount = 0;
+    } else {
+      presenceFailCount++;
+      Serial.printf("[PRESENCE] Phone not found (fail count: %d/%d)\n",
+                    presenceFailCount, PRESENCE_TIMEOUT_COUNT);
+
+      if (presenceFailCount >= PRESENCE_TIMEOUT_COUNT && phonePresent) {
+        phonePresent = false;
+        mqtt.publish(TOPIC_STATUS_BT, "disconnected");
+        Serial.println("[PRESENCE] ✗ User marked as AWAY");
+      }
     }
   }
 }
@@ -770,6 +856,14 @@ void publishTelemetry() {
     if (mqtt.connected()) {
       mqtt.publish("hydration/telemetry", telemetryJson);
       mqtt.publish(TOPIC_WEIGHT_CURRENT, String(telemetryWeight, 1).c_str());
+
+      // Safety: If weight is heavily negative, notify user that tare might be
+      // needed
+      if (telemetryWeight < -50) {
+        mqtt.publish("hydration/status/message",
+                     "Scale shows negative weight. Please check if empty and "
+                     "re-tare if needed.");
+      }
     }
 
     Serial.printf(
@@ -1056,11 +1150,24 @@ bool loadScaleOffset() {
   prefs.begin("hydration", true);
   if (prefs.isKey("tare_offset")) {
     long offset = prefs.getLong("tare_offset");
+    Serial.println(
+        "[SETUP] ==================== TARE OFFSET =====================");
+    Serial.printf("[SETUP] Found saved tare offset in NVM: %ld\n", offset);
+    Serial.println(
+        "[SETUP] This offset was calibrated when the scale was EMPTY.");
+    Serial.println("[SETUP] Applying offset to scale...");
     scale.set_offset(offset);
+    Serial.println("[SETUP] ✓ Tare offset applied.");
+    Serial.println(
+        "[SETUP] The scale will now read 0g when empty (as calibrated).");
+    Serial.println(
+        "[SETUP] If bottle is ON the scale now, it will show bottle weight.");
+    Serial.println(
+        "[SETUP] ==========================================================\n");
     prefs.end();
-    Serial.printf("📂 Loaded tare offset from NVM: %ld\n", offset);
     return true;
   }
   prefs.end();
+  Serial.println("[SETUP] No saved tare offset found in NVM.\n");
   return false;
 }

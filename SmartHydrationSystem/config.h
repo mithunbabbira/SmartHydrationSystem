@@ -73,10 +73,11 @@
 #define SNOOZE_DURATION_MS (5 * 60 * 1000) // 5 minutes
 #define MAX_CONSECUTIVE_SNOOZES 3
 
-// Presence Detection (WiFi MAC - most reliable!)
-#define PRESENCE_CHECK_INTERVAL 10         // Check every 10 seconds
-#define PRESENCE_TIMEOUT_COUNT 30          // 30 failed checks = away (5 min)
-#define PHONE_WIFI_MAC "48:EF:1C:49:6A:E8" // Your phone's WiFi MAC address
+// Presence Detection (Bluetooth Classic - Samsung S25 Ultra)
+#define PRESENCE_CHECK_INTERVAL 10 // Check every 10 seconds
+#define PRESENCE_TIMEOUT_COUNT 30  // 30 failed checks = away (5 min)
+#define PHONE_BT_MAC                                                           \
+  {0x48, 0xEF, 0x1C, 0x49, 0x6A, 0xE7} // S25 Ultra BT MAC (defined in .ino)
 
 // Misc
 #define SERIAL_BAUD_RATE 115200
