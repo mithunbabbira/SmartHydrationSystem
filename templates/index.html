@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Hydration Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="dashboard-container">
+        <header>
+            <div class="logo-area">
+                <h1>Smart<span>Hydration</span></h1>
+                <div class="status-badge" id="system-status">
+                    <span class="pulse"></span>
+                    <span class="label">Connecting...</span>
+                </div>
+            </div>
+            <div class="header-info">
+                <p id="current-time"></p>
+                <div class="last-sync">Last sync: <span id="sync-time">Never</span></div>
+            </div>
+        </header>
+
+        <div class="grid-container">
+            <!-- Main Consumption Card -->
+            <div class="card card-hero glass">
+                <div class="card-header">
+                    <h2>Daily Progress</h2>
+                    <span class="goal-text">Goal: 2000ml</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-ring-wrapper">
+                        <svg class="progress-ring" width="220" height="220">
+                            <circle class="progress-ring__circle-bg" stroke="#1e293b" stroke-width="12" fill="transparent" r="100" cx="110" cy="110"/>
+                            <circle class="progress-ring__circle" id="progress-circle" stroke="url(#gradient)" stroke-width="12" stroke-linecap="round" fill="transparent" r="100" cx="110" cy="110"/>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#8b5cf6" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="progress-content">
+                            <span id="consumption-ml">0</span>
+                            <small>ml</small>
+                            <div class="percentage" id="consumption-pct">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Column -->
+            <div class="stats-column">
+                <!-- Weight Card -->
+                <div class="card glass">
+                    <h3>Bottle Weight</h3>
+                    <div class="weight-display">
+                        <div class="value" id="bottle-weight">0.0<small>g</small></div>
+                        <div class="delta" id="weight-delta">+0.0g</div>
+                    </div>
+                    <div class="sparkline-container">
+                        <canvas id="weight-mini-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Alert/Quick Stats Card -->
+                <div class="card glass">
+                    <h3>System Health</h3>
+                    <div class="stats-list">
+                        <div class="stat-item">
+                            <span class="label">Alert Level</span>
+                            <span id="alert-level" class="status-pill status-ok">Normal</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Sessions</span>
+                            <span id="session-count" class="badge">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Card -->
+            <div class="card controls-card glass">
+                <h3>Remote Control</h3>
+                <div class="control-grid">
+                    <button class="btn btn-primary" onclick="sendCommand('trigger_led', 'on')">
+                        <span class="icon">💡</span>
+                        Test LED
+                    </button>
+                    <button class="btn btn-secondary" onclick="sendCommand('trigger_buzzer', 'on')">
+                        <span class="icon">🔊</span>
+                        Test Buzzer
+                    </button>
+                    <button class="btn btn-danger" onclick="confirmReset()">
+                        <span class="icon">🔄</span>
+                        Reset Daily
+                    </button>
+                    <button class="btn btn-warning" onclick="confirmReboot()">
+                        <span class="icon">⚡</span>
+                        Reboot ESP
+                    </button>
+                </div>
+            </div>
+
+            <!-- History Chart -->
+            <div class="card history-card glass">
+                <div class="card-header">
+                    <h3>Consumption History</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="history-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

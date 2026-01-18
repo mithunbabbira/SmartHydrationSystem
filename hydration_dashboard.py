@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""
+Smart Hydration System - Web Dashboard Backend
+==============================================
+Flask + Socket.IO server to provide real-time updates and control.
+
+Author: Babbira
+"""
+
+import os
+import json
+import sqlite3
+from datetime import datetime
+from flask import Flask, render_template, jsonify, request
+from flask_socketio import SocketIO, emit
+import paho.mqtt.client as mqtt
+
+# ==================== Configuration ====================
+MQTT_BROKER = "localhost"
+MQTT_PORT = 1883
+MQTT_USER = "babbira"
+MQTT_PASSWORD = "3.14159265"
+DATABASE_FILE = "hydration.db"
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'hydration_secret_key'
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Global state
+latest_telemetry = {
+    "weight": 0.0,
+    "delta": 0.0,
+    "alert": 0,
+    "today_ml": 0.0,
+    "status": "offline",
+    "last_update": None
+}
+
+# ==================== Database Helpers ====================
+def get_db_stats():
+    """Get summarized stats from database"""
+    try:
+        conn = sqlite3.connect(DATABASE_FILE)
+        cursor = conn.cursor()
+        today = datetime.now().date()
+        
+        cursor.execute('''
+            SELECT COUNT(*), SUM(ABS(weight_delta)) 
+            FROM hydration_events 
+            WHERE DATE(timestamp) = ? AND event_type = 'drink'
+        ''', (today,))
+        
+        result = cursor.fetchone()
+        conn.close()
+        return {
+            "sessions": result[0] or 0,
+            "total_ml": result[1] or 0.0
+        }
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return {"sessions": 0, "total_ml": 0.0}
+
+# ==================== MQTT Client ====================
+def on_connect(client, userdata, flags, rc):
+    print(f"MQTT Connected (rc: {rc})")
+    client.subscribe("hydration/#")
+
+def on_message(client, userdata, msg):
+    global latest_telemetry
+    topic = msg.topic
+    payload = msg.payload.decode()
+    
+    # Update global state based on topic
+    if topic == "hydration/telemetry":
+        try:
+            data = json.loads(payload)
+            latest_telemetry.update(data)
+            latest_telemetry["last_update"] = datetime.now().strftime("%H:%M:%S")
+            socketio.emit('telemetry_update', latest_telemetry)
+        except: pass
+    
+    elif topic == "hydration/consumption/today_ml":
+        latest_telemetry["today_ml"] = float(payload)
+        socketio.emit('stats_update', latest_telemetry)
+        
+    elif topic == "hydration/status/online":
+        latest_telemetry["status"] = "online" if payload == "true" else "offline"
+        socketio.emit('status_update', {"status": latest_telemetry["status"]})
+
+mqtt_client = mqtt.Client()
+mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+mqtt_client.on_connect = on_connect
+mqtt_client.on_message = on_message
+
+# ==================== Flask Routes ====================
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/stats')
+def api_stats():
+    db_stats = get_db_stats()
+    return jsonify({
+        "live_ml": latest_telemetry["today_ml"],
+        "db_ml": db_stats["total_ml"],
+        "sessions": db_stats["sessions"]
+    })
+
+@app.route('/api/command', methods=['POST'])
+def api_command():
+    data = request.json
+    cmd_type = data.get('command')
+    value = data.get('value', 'execute')
+    
+    topic = f"hydration/commands/{cmd_type}"
+    mqtt_client.publish(topic, value)
+    return jsonify({"status": "success", "topic": topic})
+
+# ==================== Main ====================
+if __name__ == '__main__':
+    mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    mqtt_client.loop_start()
+    socketio.run(app, host='0.0.0.0', port=5005, debug=False)
