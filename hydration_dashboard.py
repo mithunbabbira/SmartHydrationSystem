@@ -123,4 +123,11 @@ def api_command():
 if __name__ == '__main__':
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
     mqtt_client.loop_start()
+    
+    print("\n" + "="*50)
+    print("🚀 Hydration Dashboard is RUNNING")
+    print(f"👉 Visit: http://localhost:5005")
+    print(f"👉 Or visit: http://<your-pi-ip>:5005")
+    print("="*50 + "\n")
+    
     socketio.run(app, host='0.0.0.0', port=5005, debug=False)
