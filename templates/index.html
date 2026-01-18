@@ -78,9 +78,21 @@
                 </div>
 
                 <!-- Alert/Quick Stats Card -->
+                <div class="card status-card glass">
+                    <h3>Last Activity</h3>
+                    <div class="weight-display">
+                        <span id="last-drink" class="value">0</span>
+                        <span class="unit">ml last drink</span>
+                    </div>
+                </div>
+
                 <div class="card health-card glass">
                     <h3>System Health</h3>
                     <div class="status-grid">
+                        <div class="status-item">
+                            <span>System Mode</span>
+                            <span id="system-mode" class="status-pill status-ok">Stable</span>
+                        </div>
                         <div class="status-item">
                             <span>Alert Level</span>
                             <span id="alert-level" class="status-pill status-ok">Normal</span>
@@ -88,6 +100,14 @@
                         <div class="status-item">
                             <span>Presence</span>
                             <span id="presence-status" class="status-pill status-unknown">Unknown</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Bottle Status</span>
+                            <span id="bottle-presence" class="status-pill status-ok">Present</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Snooze</span>
+                            <span id="snooze-status" class="status-pill status-unknown">Inactive</span>
                         </div>
                         <div class="status-item">
                             <span>Sessions</span>

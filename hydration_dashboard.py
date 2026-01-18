@@ -28,8 +28,12 @@ latest_telemetry = {
     "delta": 0.0,
     "alert": 0,
     "today_ml": 0.0,
-    "presence": "unknown", # Home/Away status
-    "status": "online",  # Assume online initially if server is up
+    "last_drink_ml": 0.0,
+    "presence": "unknown",     # Home/Away
+    "system_mode": "Unknown",  # Monitoring, Sleeping, etc.
+    "snooze_active": False,
+    "bottle_missing": False,
+    "status": "online",        # Server <-> ESP link
     "last_update": None
 }
 
@@ -115,6 +119,22 @@ def on_message(client, userdata, msg):
         presence = "home" if payload == "connected" else "away"
         latest_telemetry["presence"] = presence
         socketio.emit('presence_update', {"presence": presence})
+        
+    elif topic == "hydration/status/mode":
+        latest_telemetry["system_mode"] = payload
+        socketio.emit('telemetry_update', latest_telemetry)
+        
+    elif topic == "hydration/alerts/snooze_active":
+        latest_telemetry["snooze_active"] = (payload.lower() == "true")
+        socketio.emit('telemetry_update', latest_telemetry)
+
+    elif topic == "hydration/alerts/bottle_missing":
+        latest_telemetry["bottle_missing"] = (payload.lower() == "true")
+        socketio.emit('telemetry_update', latest_telemetry)
+
+    elif topic == "hydration/consumption/last_drink":
+        latest_telemetry["last_drink_ml"] = float(payload)
+        socketio.emit('telemetry_update', latest_telemetry)
 
 mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)

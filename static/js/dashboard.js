@@ -171,6 +171,40 @@ function updatePresence(presence) {
     }
 }
 
+function updateDiagnostics(data) {
+    // Mode Mapping (if numeric from ESP, convert to labels)
+    const modes = ["Initializing", "Monitoring", "Sleeping", "Away", "Snoozed", "Alerting", "Picked Up", "Evaluating", "Bottle Missing"];
+    const modeLabel = typeof data.system_mode === 'number' ? modes[data.system_mode] : data.system_mode;
+
+    const modeEl = document.getElementById('system-mode');
+    if (modeEl) {
+        modeEl.innerText = modeLabel || 'Unknown';
+        modeEl.className = `status-pill ${modeLabel === 'Alerting' ? 'status-alert' : 'status-ok'}`;
+    }
+
+    // Bottle Presence
+    const bottleEl = document.getElementById('bottle-presence');
+    if (bottleEl) {
+        const isMissing = data.bottle_missing === true || data.bottle_missing === "true";
+        bottleEl.innerText = isMissing ? '❌ Missing' : '✅ Present';
+        bottleEl.className = `status-pill ${isMissing ? 'status-alert' : 'status-ok'}`;
+    }
+
+    // Snooze
+    const snoozeEl = document.getElementById('snooze-status');
+    if (snoozeEl) {
+        const isActive = data.snooze_active === true || data.snooze_active === "true";
+        snoozeEl.innerText = isActive ? '🔔 Snoozed' : 'Inactive';
+        snoozeEl.className = `status-pill ${isActive ? 'status-warning' : 'status-unknown'}`;
+    }
+
+    // Last Drink
+    const lastDrinkEl = document.getElementById('last-drink');
+    if (lastDrinkEl && data.last_drink_ml !== undefined) {
+        lastDrinkEl.innerText = Math.abs(data.last_drink_ml).toFixed(0);
+    }
+}
+
 // ==================== Charts ====================
 function initHistoryChart() {
     const ctx = document.getElementById('history-chart').getContext('2d');
