@@ -40,12 +40,33 @@ function updateTime() {
 }
 
 function fetchInitialStats() {
+    console.log('[API] 🔄 Fetching initial stats...');
     fetch('/api/stats')
         .then(res => res.json())
         .then(data => {
+            console.log('[API] ✅ Stats received:', data);
             updateConsumption(data.live_ml);
             document.getElementById('session-count').innerText = data.sessions;
+
+            // If we can reach the API, the system is at least partially online
+            const badge = document.getElementById('system-status');
+            if (badge.querySelector('.label').innerText === 'Connecting...') {
+                updateSystemStatus('Online');
+            }
+        })
+        .catch(err => {
+            console.error('[API] ❌ Fetch error:', err);
+            showToast('Fallback API unreachable');
         });
+}
+
+function updateSystemStatus(status) {
+    const badge = document.getElementById('system-status');
+    const label = badge.querySelector('.label');
+    const pulse = badge.querySelector('.pulse');
+
+    label.innerText = status;
+    pulse.style.background = (status === 'Online' || status === 'online') ? '#10b981' : '#ef4444';
 }
 
 function setProgress(percent) {

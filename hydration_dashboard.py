@@ -1,22 +1,9 @@
-#!/usr/bin/env python3
-"""
-Smart Hydration System - Web Dashboard Backend
-==============================================
-Flask + Socket.IO server to provide real-time updates and control.
-"""
-
-# CRITICAL: Monkey patch must happen BEFORE any other imports
-try:
-    import eventlet
-    eventlet.monkey_patch()
-    async_mode = 'eventlet'
-except ImportError:
-    async_mode = 'threading'
-
+# Standard imports
 import os
 import json
 import sqlite3
 import socket
+import sys
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
@@ -31,7 +18,9 @@ DATABASE_FILE = "hydration.db"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hydration_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode=async_mode)
+
+# Using 'threading' by default for better compatibility on Pi
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Global state
 latest_telemetry = {
@@ -39,7 +28,7 @@ latest_telemetry = {
     "delta": 0.0,
     "alert": 0,
     "today_ml": 0.0,
-    "status": "offline",
+    "status": "online", # Assume online initially if server is up
     "last_update": None
 }
 
@@ -137,11 +126,17 @@ def handle_connect():
 # ==================== Flask Routes ====================
 @app.route('/')
 def index():
+    print(f"[HTTP] 🌐 Dashboard page requested (index.html)")
     return render_template('index.html')
 
 @app.route('/api/stats')
 def api_stats():
     db_stats = get_db_stats()
+    # Update our live cache with DB total if it's higher (standard safety)
+    if db_stats["total_ml"] > latest_telemetry["today_ml"]:
+        latest_telemetry["today_ml"] = db_stats["total_ml"]
+        
+    print(f"[HTTP] 📊 API stats requested | Cache: {latest_telemetry['today_ml']}ml | DB: {db_stats['total_ml']}ml")
     return jsonify({
         "live_ml": latest_telemetry["today_ml"],
         "db_ml": db_stats["total_ml"],
@@ -161,6 +156,12 @@ def api_command():
 
 # ==================== Main ====================
 if __name__ == '__main__':
+    # Initialize state from database so we don't start at zero
+    print("[INIT] 🛠️  Syncing initial state from database...")
+    initial_stats = get_db_stats()
+    latest_telemetry["today_ml"] = initial_stats["total_ml"]
+    print(f"[INIT] ✓ Starting with initial total: {latest_telemetry['today_ml']}ml")
+
     # Initialize MQTT
     try:
         mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
