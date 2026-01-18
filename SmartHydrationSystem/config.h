@@ -46,9 +46,9 @@
 
 // ==================== System Parameters ====================
 // Timing
-#define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
+// #define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
 
-// #define CHECK_INTERVAL_MS (1 * 20 * 1000) // 30 minutes in milliseconds
+#define CHECK_INTERVAL_MS (1 * 20 * 1000) // 30 minutes in milliseconds
 
 #define TELEMETRY_INTERVAL_MS (30 * 1000) // 30 seconds for live updates
 #define SLEEP_START_HOUR 23               // 11 PM
@@ -64,9 +64,9 @@
 // Alert durations
 #define LED_ALERT_DURATION 10000    // 10 seconds (White LED)
 #define BUZZER_ALERT_DURATION 10000 // 10 seconds
-#define ALERT_WAIT_TIME 60000       // 1 minute between escalations (was 10s)
+#define ALERT_WAIT_TIME 10000       // 
 #define ALERT_RETRY_INTERVAL_MS                                                \
-  300000 // 5 minutes retry if no drink detected (was 10s)
+  10000 // 
 #define BOTTLE_MISSING_TIMEOUT_MS                                              \
   180000 // 3 minutes missing bottle timeout (3 * 60 * 1000 = 180000)
 

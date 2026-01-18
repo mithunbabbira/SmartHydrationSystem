@@ -137,15 +137,24 @@ void setup() {
   }
 
   // 3. Initialize weight baseline on boot
-  if (scale.wait_ready_timeout(1000)) {
-    float initialWeight = scale.get_units(10);
+  if (scale.wait_ready_timeout(2000)) {
+    float initialWeight = scale.get_units(20);
+    // If weight is negative or clearly wrong (e.g. scale glitch), try to tare
+    // again or at least start with a clean baseline if bottle is present.
+    if (initialWeight < -50) {
+      Serial.println("[WARN] ⚖ Negative weight on boot! Re-taring...");
+      scale.tare();
+      initialWeight = 0;
+    }
     currentWeight = initialWeight;
     previousWeight = initialWeight;
     liveWeight = initialWeight;
     Serial.printf("[INFO] Initial weight baseline set: %.1fg\n", initialWeight);
   } else {
-    Serial.println("[WARN] Scale not ready for initial baseline - will "
-                   "auto-calibrate on first loop.");
+    Serial.println(
+        "[WARN] Scale not ready for initial baseline. Starting at 0g.");
+    currentWeight = 0;
+    previousWeight = 0;
   }
 
   // 4. Initialize Network
@@ -599,6 +608,16 @@ void checkWeight(float weightAtCheck) {
   Serial.printf(
       "[INFO] Weight Check | Current: %.1fg | Previous: %.1fg | Delta: %.1fg\n",
       currentWeight, previousWeight, weightDelta);
+
+  // SANITY CHECK: If delta is impossible (e.g. > 1kg jump in a single check
+  // without PICKUP) it might be a sensor glitch or boot-time baseline error.
+  // Sync but don't treat as a goal-blocking refill.
+  if (abs(weightDelta) > 1000 && (currentMode != MODE_PICKED_UP)) {
+    Serial.println(
+        "[WARN] ⚖ Impossible weight jump detected! Syncing baseline only.");
+    previousWeight = currentWeight;
+    weightDelta = 0;
+  }
 
   // Publish telemetry
   publishTelemetry();
