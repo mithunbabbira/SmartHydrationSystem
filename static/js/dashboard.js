@@ -83,13 +83,22 @@ function updateConsumption(ml) {
 
 // ==================== Socket.IO Listeners ====================
 socket.on('telemetry_update', (data) => {
-    document.getElementById('bottle-weight').innerHTML = `${data.weight.toFixed(1)}<small>g</small>`;
+    // Basic weight telemetry
+    if (data.weight !== undefined) {
+        document.getElementById('bottle-weight').innerHTML = `${data.weight.toFixed(1)}<small>g</small>`;
+    }
 
-    const deltaEl = document.getElementById('weight-delta');
-    deltaEl.innerText = (data.delta >= 0 ? '+' : '') + data.delta.toFixed(1) + 'g';
-    deltaEl.style.color = data.delta < -30 ? '#10b981' : (data.delta > 50 ? '#06b6d4' : '#94a3b8');
+    if (data.delta !== undefined) {
+        const deltaEl = document.getElementById('weight-delta');
+        deltaEl.innerText = (data.delta >= 0 ? '+' : '') + data.delta.toFixed(1) + 'g';
+        // Green for drinking (-30g), blue for refill (+50g), grey for noise
+        deltaEl.style.color = data.delta < -30 ? '#10b981' : (data.delta > 50 ? '#06b6d4' : '#94a3b8');
+    }
 
-    document.getElementById('sync-time').innerText = data.last_update;
+    if (data.last_update) {
+        document.getElementById('sync-time').innerText = data.last_update;
+        document.getElementById('last-sync').innerText = data.last_update;
+    }
 
     const alertEl = document.getElementById('alert-level');
     if (data.alert > 0) {
@@ -99,6 +108,9 @@ socket.on('telemetry_update', (data) => {
         alertEl.innerText = 'Normal';
         alertEl.className = 'status-pill status-ok';
     }
+
+    // Run full diagnostics update
+    updateDiagnostics(data);
 });
 
 socket.on('stats_update', (data) => {
