@@ -87,7 +87,7 @@ def on_message(client, userdata, msg):
         latest_telemetry["status"] = "online" if payload == "true" else "offline"
         socketio.emit('status_update', {"status": latest_telemetry["status"]})
 
-mqtt_client = mqtt.Client()
+mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
