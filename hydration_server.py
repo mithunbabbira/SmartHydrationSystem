@@ -237,6 +237,25 @@ def get_today_stats():
         print(f"Stats error: {e}")
         return None
 
+def clear_database_today():
+    """Clear today's hydration events from the database"""
+    if not ENABLE_DATABASE:
+        return
+    
+    try:
+        conn = sqlite3.connect(DATABASE_FILE)
+        cursor = conn.cursor()
+        today = datetime.now().date()
+        
+        # We only delete drinks to reset consumption; we keep alerts for history
+        cursor.execute("DELETE FROM hydration_events WHERE DATE(timestamp) = ? AND event_type = 'drink'", (today,))
+        
+        conn.commit()
+        conn.close()
+        print("✓ Today's drinking history cleared from database")
+    except Exception as e:
+        print(f"✗ Database reset error: {e}")
+
 def print_stats():
     """Print current statistics"""
     stats = get_today_stats()
@@ -335,9 +354,13 @@ def main():
                     send_command(client, "reboot", "execute")
             
             elif cmd == "reset":
-                confirm = input("⚠️  Reset daily consumption in ESP32 memory? (y/n): ")
+                confirm = input("⚠️  Reset daily consumption? This will clear ESP32 memory AND Pi database. (y/n): ")
                 if confirm.lower() == 'y':
                     send_command(client, "reset_today", "execute")
+                    if ENABLE_DATABASE:
+                        clear_database_today()
+                    global last_today_ml
+                    last_today_ml = 0.0 # Clear live cache immediately
             
             elif cmd in ["quit", "exit", "q"]:
                 break
