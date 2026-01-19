@@ -318,7 +318,7 @@ def main():
     client.loop_start()
     
     # Interactive command loop
-    print("\n📋 Commands: stats, weight, tare, led, buzzer, snooze, reset, reboot, quit\n")
+    print("\n📋 Commands: stats, weight, tare, led, buzzer, ir, relay, snooze, reset, reboot, quit\n")
     
     try:
         while True:
