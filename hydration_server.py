@@ -134,6 +134,15 @@ def on_message(client, userdata, msg):
             last_delta = data.get('delta', 0.0)
             last_alert = data.get('alert', 0)
             last_weight_time = datetime.now()
+            
+            # Failsafe: If meaningful weight detected, bottle is definitely present
+            if last_weight > 100.0 and is_bottle_missing:
+                print("  ⚖️  Auto-correct: Bottle detected via weight. Clearing missing status.")
+                is_bottle_missing = False
+                
+            # Always sync lights on telemetry update to ensure responsiveness
+            update_light_mode(client)
+            
         except Exception as e:
             print(f"  ⚠ Telemetry parse error: {e}")
     
