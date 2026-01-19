@@ -377,6 +377,21 @@ def main():
                 else:
                     print("Usage: ir <hex_code>  (e.g., ir 0xF7F00F)")
             
+            elif cmd.startswith("relay "):
+                # Usage: relay 1 on
+                parts = cmd.split()
+                if len(parts) == 3:
+                    rid = parts[1] # 1-4
+                    state = parts[2].upper() # ON/OFF
+                    if state in ["ON", "OFF"] and rid in ["1", "2", "3", "4"]:
+                        payload = f"{rid}:{state}"
+                        client.publish("hydration/commands/relay_control", payload)
+                        print(f"✓ Relay Command: {payload}")
+                    else:
+                        print("Invalid args. IDs: 1-4, State: ON/OFF")
+                else:
+                    print("Usage: relay <id> <on/off>  (e.g., relay 1 on)")
+
             elif cmd == "reset":
                 confirm = input("⚠️  Reset daily consumption? This will clear ESP32 memory AND Pi database. (y/n): ")
                 if confirm.lower() == 'y':
@@ -398,6 +413,7 @@ def main():
                 print("  led       - Test LED")
                 print("  buzzer    - Test buzzer")
                 print("  ir <code> - Transmit IR Code (hex)")
+                print("  relay <id> <st> - Control Relay (1-4) on/off")
                 print("  snooze    - Activate snooze (15 min)")
                 print("  reset     - Reset today's consumption to 0ml")
                 print("  reboot    - Reboot ESP32")

@@ -19,9 +19,14 @@ const int mqtt_port = 1883;
 
 // Topics
 const char *topic_ir_transmit = "hydration/commands/ir_transmit";
+const char *topic_relay_control = "hydration/commands/relay_control";
 
 // IR Pin
 const uint16_t IR_SEND_PIN = 4; // D2
+
+// Relay Pins
+const uint8_t RELAY_PINS[4] = {5, 14, 12, 13}; // D1, D5, D6, D7
+// D1=GPIO5, D5=GPIO14, D6=GPIO12, D7=GPIO13
 
 // Objects
 WiFiClient espClient;
@@ -77,6 +82,31 @@ void callback(char *topic, byte *payload, unsigned int length) {
     } else {
       Serial.println("Invalid code received.");
     }
+  } else if (strcmp(topic, topic_relay_control) == 0) {
+    // Payload format: "1:ON" or "2:OFF"
+    // Parse Relay ID
+    if (length >= 4) {
+      char cId = message[0];
+      int relayId = cId - '0'; // '1' -> 1
+
+      if (relayId >= 1 && relayId <= 4) {
+        int pinIdx = relayId - 1;
+
+        // Parse State (Check for 'O' 'N' or 'O' 'F' 'F')
+        // message[2] is start of state
+        if (strstr(message, "ON") != NULL) {
+          digitalWrite(RELAY_PINS[pinIdx], LOW); // Active LOW -> ON
+          Serial.print("Relay ");
+          Serial.print(relayId);
+          Serial.println(" ON");
+        } else if (strstr(message, "OFF") != NULL) {
+          digitalWrite(RELAY_PINS[pinIdx], HIGH); // Active LOW -> OFF
+          Serial.print("Relay ");
+          Serial.print(relayId);
+          Serial.println(" OFF");
+        }
+      }
+    }
   }
 }
 
@@ -84,7 +114,8 @@ boolean reconnect() {
   if (client.connect("ESP8266_IR_Transmitter")) {
     Serial.println("Connected to MQTT broker");
     client.subscribe(topic_ir_transmit);
-    Serial.println("Subscribed to: hydration/commands/ir_transmit");
+    client.subscribe(topic_relay_control);
+    Serial.println("Subscribed to hydration/commands/...");
   }
   return client.connected();
 }
@@ -93,6 +124,20 @@ void setup() {
   Serial.begin(9600);
 
   irSender.begin();
+
+  // Initialize Relays (Active LOW is common for modules, but we start HIGH=OFF
+  // usually? actually most modules are Active LOW (LOW=ON). Let's assume Active
+  // LOW: OFF = HIGH. User asked for "on/off", I will map "ON" -> LOW, "OFF" ->
+  // HIGH.
+  for (int i = 0; i < 4; i++) {
+    pinMode(RELAY_PINS[i], OUTPUT);
+    digitalWrite(RELAY_PINS[i], HIGH); // Default OFF if active low
+  }
+
+  // BOOT IR Signal
+  Serial.println("Sending Boot IR Signal...");
+  irSender.sendNEC(0xF7F00F, 32);
+  Serial.println("Boot Signal Sent.");
 
   setup_wifi();
 

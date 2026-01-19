@@ -1,28 +1,35 @@
-# MQTT IR Transmitter
+# MQTT IR Transmitter & Relay Control
 
-This project allows an ESP8266 to transmit IR codes received via MQTT from a Raspberry Pi server.
+This project allows an ESP8266 to:
+1. Transmit IR codes received via MQTT.
+2. Control 4 Relays via MQTT.
+3. Transmit a boot IR signal (ON) at startup.
 
 ## Hardware Setup
 - **Microcontroller**: NodeMCU ESP8266
-- **IR Transmitter**: Connect to **Pin D2** (GPIO 4)
-- **Power**: USB or 3.3V/5V
+- **IR Transmitter**: **D2** (GPIO 4)
+- **4-Channel Relay**:
+    - Relay 1: **D1** (GPIO 5)
+    - Relay 2: **D5** (GPIO 14)
+    - Relay 3: **D6** (GPIO 12)
+    - Relay 4: **D7** (GPIO 13)
+    - *Note: Logic is Active LOW (LOW = ON)*
 
 ## Software Setup
 1. **Upload Code**:
-   - Open `ir_mqtt_transmitter.ino` in Arduino IDE.
-   - Install required libraries (`PubSubClient`, `IRremoteESP8266`).
-   - Select your Board (NodeMCU 1.0) and Port.
-   - Upload.
+   - Open `ir_mqtt_transmitter.ino`.
+   - Install libraries (`PubSubClient`, `IRremoteESP8266`).
+   - Upload to NodeMCU.
 
 2. **Server Update**:
-   - The `hydration_server.py` has been updated to support IR commands.
-   - Restart the server if it's running.
+   - `hydration_server.py` now supports the `relay` command.
 
 ## Usage
 1. **Start Server**: `python3 hydration_server.py`
-2. **Send Command**:
-   - In the server console, type: `ir <HEX_CODE>`
-   - Example: `ir 0xF7F00F`
-3. **Verify**:
-   - The ESP8266 should blink/transmit.
-   - Serial Monitor on ESP8266 will confirm reception: `Transmitting NEC: 0xF7F00F`.
+2. **IR Command**:
+   - `ir 0xF7F00F` -> Transmits code.
+3. **Relay Command**:
+   - `relay 1 on` -> Turns Relay 1 ON.
+   - `relay 3 off` -> Turns Relay 3 OFF.
+4. **Boot Behavior**:
+   - Immediately upon power-up, it sends `0xF7F00F` via IR.
