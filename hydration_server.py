@@ -249,6 +249,7 @@ def update_light_mode(client):
         client.publish("hydration/commands/ir_transmit", target_mode)
         mode_name = "FLASH (Alert)" if target_mode == IR_FLASH else "SMOOTH (Normal)"
         print(f"  💡 Auto-Switching IR to: {mode_name}")
+    # Else: Do nothing, we are already in the correct mode
 
 # ==================== Analytics Functions ====================
 def get_today_stats():
