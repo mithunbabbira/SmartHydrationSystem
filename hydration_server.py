@@ -37,6 +37,12 @@ last_alert = 0
 last_weight_time = None
 last_today_ml = 0.0  # Live cache from ESP32
 last_presence = "Unknown"  # Home or Away status
+is_bottle_missing = False # Track bottle presence
+current_ir_mode = None    # Track current IR mode to avoid spamming
+
+# IR Constants
+IR_SMOOTH = "0xF7F00F" # Default/Idle
+IR_FLASH  = "0xF7D02F" # Alert/Action needed
 
 # ==================== Database Setup ====================
 def init_database():
@@ -148,12 +154,28 @@ def on_message(client, userdata, msg):
         
         elif topic == "hydration/alerts/level":
             level = int(payload)
+            # Update global alert state and check lights
+            global last_alert
+            last_alert = level
+            update_light_mode(client)
+            
             if level == 3:
                 print("  🚨 ALERT LEVEL 3: User not responding!")
             elif level == 2:
                 print("  ⚠️ Alert Level 2: Buzzer")
             elif level == 1:
                 print("  🔔 Alert Level 1: LED")
+        
+        elif topic == "hydration/alerts/bottle_missing":
+             # "true" or "false" string payload
+             global is_bottle_missing
+             is_active = (payload == "true")
+             
+             if is_bottle_missing != is_active:
+                 is_bottle_missing = is_active
+                 state_str = "MISSING" if is_active else "RETURNED"
+                 print(f"  🧴 Bottle Status: {state_str}")
+                 update_light_mode(client)
         
         elif topic == "hydration/alerts/daily_refill_check":
             if payload == "passed":
@@ -203,6 +225,22 @@ def send_command(client, command_topic, payload):
     full_topic = f"hydration/commands/{command_topic}"
     client.publish(full_topic, payload)
     print(f"✓ Command sent: {command_topic} = {payload}")
+
+def update_light_mode(client):
+    """Update IR light mode based on system state"""
+    global current_ir_mode
+    
+    # Logic: Alert active OR Bottle Missing -> FLASH, Else -> SMOOTH
+    target_mode = IR_SMOOTH
+    
+    if last_alert > 0 or is_bottle_missing:
+        target_mode = IR_FLASH
+        
+    if current_ir_mode != target_mode:
+        current_ir_mode = target_mode
+        client.publish("hydration/commands/ir_transmit", target_mode)
+        mode_name = "FLASH (Alert)" if target_mode == IR_FLASH else "SMOOTH (Normal)"
+        print(f"  💡 Auto-Switching IR to: {mode_name}")
 
 # ==================== Analytics Functions ====================
 def get_today_stats():
