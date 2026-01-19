@@ -298,11 +298,11 @@ void loop() {
     lastLoopReport = millis();
   }
 
-  // Maintain MQTT connection - GLOBAL THROTTLING to prevent 5s lag
+  // Maintain MQTT connection - GLOBAL THROTTLING to prevent lag
   static unsigned long lastMqttAttempt = 0;
   if (!mqtt.connected()) {
-    // Only try reconnecting every 60 seconds if it's failing
-    if (millis() - lastMqttAttempt >= 60000) {
+    // Retry every 5 seconds (was 60s)
+    if (millis() - lastMqttAttempt >= 5000) {
       reconnectMQTT();
       lastMqttAttempt = millis();
     }
