@@ -167,8 +167,8 @@ def on_message(client, userdata, msg):
                 print("  🔔 Alert Level 1: LED")
         
         elif topic == "hydration/alerts/bottle_missing":
-             # "true" or "false" string payload
-             is_active = (payload == "true")
+             # "active" or "cleared" string payload
+             is_active = (payload == "active")
              
              if is_bottle_missing != is_active:
                  is_bottle_missing = is_active
