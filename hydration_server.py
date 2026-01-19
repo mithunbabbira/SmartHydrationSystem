@@ -104,6 +104,9 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     """Callback when MQTT message received"""
+    # Global declarations at top of function
+    global last_weight, last_delta, last_alert, last_weight_time, last_today_ml, last_presence, is_bottle_missing
+    
     topic = msg.topic
     payload = msg.payload.decode('utf-8')
     
@@ -127,7 +130,6 @@ def on_message(client, userdata, msg):
     if topic == "hydration/telemetry":
         try:
             data = json.loads(payload)
-            global last_weight, last_delta, last_alert, last_weight_time
             last_weight = data.get('weight', 0.0)
             last_delta = data.get('delta', 0.0)
             last_alert = data.get('alert', 0)
@@ -137,7 +139,6 @@ def on_message(client, userdata, msg):
     
     # Cache today's total for fast stats
     if topic == "hydration/consumption/today_ml":
-        global last_today_ml
         try:
             last_today_ml = float(payload)
             print(f"  🏁 Synchronized today's consumption: {last_today_ml}ml")
@@ -155,7 +156,6 @@ def on_message(client, userdata, msg):
         elif topic == "hydration/alerts/level":
             level = int(payload)
             # Update global alert state and check lights
-            global last_alert
             last_alert = level
             update_light_mode(client)
             
@@ -168,7 +168,6 @@ def on_message(client, userdata, msg):
         
         elif topic == "hydration/alerts/bottle_missing":
              # "true" or "false" string payload
-             global is_bottle_missing
              is_active = (payload == "true")
              
              if is_bottle_missing != is_active:
