@@ -365,6 +365,17 @@ def main():
                 confirm = input("⚠️  Reboot ESP32? (y/n): ")
                 if confirm.lower() == 'y':
                     send_command(client, "reboot", "execute")
+
+            elif cmd.startswith("ir "):
+                # Usage: ir 0xF7F00F
+                parts = cmd.split()
+                if len(parts) == 2:
+                    code = parts[1]
+                    # Publish to the specific IR topic directly since send_command adds prefix
+                    client.publish("hydration/commands/ir_transmit", code)
+                    print(f"✓ IR Command sent: {code}")
+                else:
+                    print("Usage: ir <hex_code>  (e.g., ir 0xF7F00F)")
             
             elif cmd == "reset":
                 confirm = input("⚠️  Reset daily consumption? This will clear ESP32 memory AND Pi database. (y/n): ")
@@ -384,12 +395,13 @@ def main():
                 print("  weight    - Show current bottle weight")
                 print("  presence  - Check if user is Home or Away")
                 print("  tare      - Remotely tare the scale")
-                print("  led     - Test LED")
-                print("  buzzer  - Test buzzer")
-                print("  snooze  - Activate snooze (15 min)")
-                print("  reset   - Reset today's consumption to 0ml")
-                print("  reboot  - Reboot ESP32")
-                print("  quit    - Exit program\n")
+                print("  led       - Test LED")
+                print("  buzzer    - Test buzzer")
+                print("  ir <code> - Transmit IR Code (hex)")
+                print("  snooze    - Activate snooze (15 min)")
+                print("  reset     - Reset today's consumption to 0ml")
+                print("  reboot    - Reboot ESP32")
+                print("  quit      - Exit program\n")
             
             elif cmd:
                 print(f"❓ Unknown command: {cmd} (type 'help' for commands)")

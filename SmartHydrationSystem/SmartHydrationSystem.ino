@@ -418,14 +418,9 @@ void loop() {
     if (liveWeight >= PICKUP_THRESHOLD && currentMode != MODE_BOTTLE_MISSING &&
         (millis() - lastBottleReplacedTime > 2000)) {
       if (millis() - lastCheckTime >= CHECK_INTERVAL_MS) {
-        if (millis() >= nextAllowedAlertTime) {
-          checkWeight(liveWeight); // Pass the already-read weight
-          lastCheckTime = millis();
-        } else {
-          Serial.printf(
-              "[INFO] ⏳ Waiting for retry interval (%lds remaining)\n",
-              (nextAllowedAlertTime - millis()) / 1000);
-        }
+        // NO TIMEOUT RESTRICTION - AC powered, check immediately
+        checkWeight(liveWeight); // Pass the already-read weight
+        lastCheckTime = millis();
       }
     }
   }
@@ -1085,13 +1080,16 @@ void evaluateDrinking() {
     previousWeight = endWeight;
     lastCheckTime = millis(); // Reset periodic timer
   }
-  // No significant change - retry in 10 seconds
+  // No significant change - immediately restart alert (AC powered, no battery
+  // concern)
   else {
     Serial.println(
-        "[ALERT] ⚠ No drink detected - retrying alert in 10 seconds");
-    nextAllowedAlertTime = millis() + ALERT_RETRY_INTERVAL_MS;
+        "[ALERT] ⚠ No drink detected - restarting alert immediately");
+    // NO TIMEOUT - restart alert immediately since AC powered
     currentAlertLevel = 0;
-    currentMode = MODE_MONITORING;
+    currentMode = MODE_ALERTING; // Go back to alerting immediately
+    alertStartTime = millis();   // Reset alert timer
+    escalateAlert();             // Restart Level 1
   }
 }
 

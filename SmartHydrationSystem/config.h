@@ -53,8 +53,7 @@
 #define TELEMETRY_INTERVAL_MS (30 * 1000) // 30 seconds for live updates
 #define SLEEP_START_HOUR 23               // 11 PM
 #define SLEEP_END_HOUR 10                 // 10 AM
-#define REFILL_CHECK_HOUR 12              // 12 PM (noon)
-
+#define REFILL_CHECK_HOUR 11              // 
 // Weight thresholds
 #define DRINK_THRESHOLD_MIN 30       // Minimum drink: 30g (was 90g)
 #define REFILL_THRESHOLD 100         // Minimum refill: 100g
