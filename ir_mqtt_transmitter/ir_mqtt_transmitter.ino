@@ -135,6 +135,8 @@ void setup() {
   }
 
   // BOOT IR Signal
+  Serial.println("Waiting 2s before Boot IR...");
+  delay(2000);
   Serial.println("Sending Boot IR Signal...");
   irSender.sendNEC(0xF7F00F, 32);
   Serial.println("Boot Signal Sent.");
