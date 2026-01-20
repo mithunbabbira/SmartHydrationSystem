@@ -255,7 +255,7 @@ def update_light_mode(client):
         if target_mode == IR_FLASH:
             # Alert Mode: Seven Color Jump (Mode 56) for continuous blinking
             send_strip_command(client, "mode", "56") 
-            send_strip_command(client, "speed", "5") # Low value = Fast
+            send_strip_command(client, "speed", "1") # 1 = Max Speed
             print("  🚨 LED Strip: Syncing to FLASH (Jump) mode")
         else:
             # Normal Mode: Rainbow/Flow (Mode 37)
