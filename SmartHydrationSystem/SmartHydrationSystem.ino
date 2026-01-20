@@ -986,6 +986,8 @@ void handleAlertState() {
 
       currentMode = MODE_PICKED_UP;
       currentAlertLevel = 0;
+      // Immediately notify server to stop flashing IR
+      mqtt.publish(TOPIC_ALERTS_LEVEL, "0");
     }
     // Check for escalation (every 10 seconds)
     if (millis() - alertStartTime > ALERT_WAIT_TIME && currentAlertLevel < 2) {
