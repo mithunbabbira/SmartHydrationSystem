@@ -253,14 +253,14 @@ def update_light_mode(client):
         
         # Sync BLE LED Strip
         if target_mode == IR_FLASH:
-            # Alert Mode: Flash/Strobe (Mode 48)
-            send_strip_command(client, "mode", "48") 
-            send_strip_command(client, "speed", "100") # Fast
-            print("  🚨 LED Strip: Syncing to FLASH mode")
+            # Alert Mode: Seven Color Jump (Mode 56) for continuous blinking
+            send_strip_command(client, "mode", "56") 
+            send_strip_command(client, "speed", "5") # Low value = Fast
+            print("  🚨 LED Strip: Syncing to FLASH (Jump) mode")
         else:
             # Normal Mode: Rainbow/Flow (Mode 37)
             send_strip_command(client, "mode", "37")
-            send_strip_command(client, "speed", "20") # Slow/Smooth
+            send_strip_command(client, "speed", "80") # High value = Slow
             print("  🌈 LED Strip: Syncing to RAINBOW mode")
     # Else: Do nothing, we are already in the correct mode
 
@@ -495,9 +495,8 @@ def main():
                 elif sub == "rg_fade": send_strip_command(client, "mode", "45")
                 elif sub == "rb_fade": send_strip_command(client, "mode", "46")
                 elif sub == "gb_fade": send_strip_command(client, "mode", "47")
-                elif sub == "gb_fade": send_strip_command(client, "mode", "47")
                 elif sub == "strobe": send_strip_command(client, "mode", "48")
-                elif sub == "flash": send_strip_command(client, "mode", "48")
+                elif sub == "flash": send_strip_command(client, "mode", "56")
 
                 else:
                      print("Usage:")
