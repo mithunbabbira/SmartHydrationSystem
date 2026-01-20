@@ -652,6 +652,13 @@ void checkPhonePresence() {
       if (!phonePresent) {
         phonePresent = true;
         presenceFailCount = 0;
+
+        // IMMEDIATE MODE UPDATE
+        if (currentMode == MODE_AWAY) {
+          currentMode = MODE_MONITORING;
+          Serial.println("[PRESENCE] ✓ Returning from AWAY mode");
+        }
+
         mqtt.publish(TOPIC_STATUS_BT, "connected");
         Serial.println("[PRESENCE] ✓ Samsung S25 Ultra detected (BT Classic)");
       }

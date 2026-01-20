@@ -46,9 +46,9 @@
 
 // ==================== System Parameters ====================
 // Timing
-// #define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
+#define CHECK_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
 
-#define CHECK_INTERVAL_MS (1 * 20 * 1000) // 30 minutes in milliseconds
+// #define CHECK_INTERVAL_MS (1 * 20 * 1000) // 30 minutes in milliseconds 
 
 #define TELEMETRY_INTERVAL_MS (30 * 1000) // 30 seconds for live updates
 #define SLEEP_START_HOUR 23               // 11 PM

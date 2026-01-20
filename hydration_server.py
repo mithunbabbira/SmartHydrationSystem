@@ -251,6 +251,12 @@ def update_light_mode(client):
         print(f"  💡 Auto-Switching IR to: {mode_name}")
     # Else: Do nothing, we are already in the correct mode
 
+def send_strip_command(client, subtopic, payload):
+    """Send command to BLE LED Strip"""
+    topic = f"hydration/commands/led_strip/{subtopic}"
+    client.publish(topic, payload)
+    print(f"✓ LED Strip Command: {subtopic} = {payload}")
+
 # ==================== Analytics Functions ====================
 def get_today_stats():
     """Get today's consumption statistics"""
@@ -439,6 +445,53 @@ def main():
                 else:
                     print("Usage: relay <id> <on/off>  (e.g., relay 1 on)")
 
+            elif cmd.startswith("strip "):
+                # Usage: strip on|off|color|mode
+                parts = cmd.split()
+                sub = parts[1].lower()
+                
+                if sub == "on":
+                     send_strip_command(client, "power", "ON")
+                elif sub == "off":
+                     send_strip_command(client, "power", "OFF")
+                elif sub == "color" and len(parts) == 3:
+                     # strip color FF0000
+                     send_strip_command(client, "color", parts[2])
+                elif sub == "mode" and len(parts) >= 3:
+                     # strip mode 37 [speed]
+                     send_strip_command(client, "mode", parts[2])
+                     if len(parts) == 4:
+                         send_strip_command(client, "speed", parts[3])
+                # Convenient aliases for common patterns
+                elif sub == "rainbow":
+                     send_strip_command(client, "mode", "37") # 0x25 = 37 (Seven color cross fade)
+                elif sub == "pulse":
+                     send_strip_command(client, "mode", "38") # Red gradual change? Need to verify IDs. 38 is "Seven color strobe flash" usually.
+                     # Let's assume generic Mode IDs from Utils.py exist
+                elif sub == "flow":
+                     send_strip_command(client, "mode", "37") # Just mapping flow to rainbow for now
+                
+                # Manual Pattern Aliases
+                elif sub == "red_fade": send_strip_command(client, "mode", "38")
+                elif sub == "green_fade": send_strip_command(client, "mode", "39")
+                elif sub == "blue_fade": send_strip_command(client, "mode", "40")
+                elif sub == "yellow_fade": send_strip_command(client, "mode", "41")
+                elif sub == "cyan_fade": send_strip_command(client, "mode", "42")
+                elif sub == "purple_fade": send_strip_command(client, "mode", "43")
+                elif sub == "white_fade": send_strip_command(client, "mode", "44")
+                elif sub == "rg_fade": send_strip_command(client, "mode", "45")
+                elif sub == "rb_fade": send_strip_command(client, "mode", "46")
+                elif sub == "gb_fade": send_strip_command(client, "mode", "47")
+                elif sub == "strobe": send_strip_command(client, "mode", "48")
+
+                else:
+                     print("Usage:")
+                     print("  strip on/off")
+                     print("  strip color <hex>")
+                     print("  strip mode <id> [speed]")
+                     print("  strip rainbow | strobe")
+                     print("  strip [red|green|blue|yellow|cyan|purple|white]_fade")
+
             elif cmd == "reset":
                 confirm = input("⚠️  Reset daily consumption? This will clear ESP32 memory AND Pi database. (y/n): ")
                 if confirm.lower() == 'y':
@@ -460,6 +513,7 @@ def main():
                 print("  led       - Test LED")
                 print("  buzzer    - Test buzzer")
                 print("  ir <code> - Transmit IR Code (hex)")
+                print("  strip ... - Control BLE LED Strip (on, off, color, mode)")
                 print("  relay <id> <st> - Control Relay (1-4) on/off")
                 print("  snooze    - Activate snooze (15 min)")
                 print("  reset     - Reset today's consumption to 0ml")
