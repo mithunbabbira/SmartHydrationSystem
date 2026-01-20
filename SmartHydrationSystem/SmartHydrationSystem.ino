@@ -376,12 +376,18 @@ void loop() {
   // GLOBAL BOTTLE MISSING CHECK (Ungated from scale hardware timing)
   if (bottleWasOff || liveWeight < PICKUP_THRESHOLD) {
     if (millis() - lastBottlePresentTime > BOTTLE_MISSING_TIMEOUT_MS) {
-      if (currentMode != MODE_BOTTLE_MISSING) {
-        Serial.printf(
-            "[ALERT] ⚠ CRITICAL: Bottle missing for over %lu seconds!\n",
-            BOTTLE_MISSING_TIMEOUT_MS / 1000);
-        currentMode = MODE_BOTTLE_MISSING;
+      // Throttle alerts to every 5 seconds to prevent network flooding
+      static unsigned long lastBottleMissingReport = 0;
+      if (millis() - lastBottleMissingReport >= 5000) {
+        if (currentMode != MODE_BOTTLE_MISSING) {
+          Serial.printf(
+              "[ALERT] ⚠ CRITICAL: Bottle missing for over %lu seconds!\n",
+              BOTTLE_MISSING_TIMEOUT_MS / 1000);
+          currentMode = MODE_BOTTLE_MISSING;
+        }
+        // Publish status every 5s if condition persists
         mqtt.publish(TOPIC_ALERTS_BOTTLE_MISSING, "active");
+        lastBottleMissingReport = millis();
       }
     }
   }
