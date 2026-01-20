@@ -376,16 +376,16 @@ void loop() {
   // GLOBAL BOTTLE MISSING CHECK (Ungated from scale hardware timing)
   if (bottleWasOff || liveWeight < PICKUP_THRESHOLD) {
     if (millis() - lastBottlePresentTime > BOTTLE_MISSING_TIMEOUT_MS) {
-      // Throttle alerts to every 5 seconds to prevent network flooding
+      // Throttle alerts to every 2 seconds (requested)
       static unsigned long lastBottleMissingReport = 0;
-      if (millis() - lastBottleMissingReport >= 5000) {
+      if (millis() - lastBottleMissingReport >= 2000) {
         if (currentMode != MODE_BOTTLE_MISSING) {
           Serial.printf(
               "[ALERT] ⚠ CRITICAL: Bottle missing for over %lu seconds!\n",
               BOTTLE_MISSING_TIMEOUT_MS / 1000);
           currentMode = MODE_BOTTLE_MISSING;
         }
-        // Publish status every 5s if condition persists
+        // Publish status every 2s if condition persists
         mqtt.publish(TOPIC_ALERTS_BOTTLE_MISSING, "active");
         lastBottleMissingReport = millis();
       }
@@ -988,10 +988,20 @@ void handleAlertState() {
       currentAlertLevel = 0;
     }
     // Check for escalation (every 10 seconds)
-    else if (millis() - alertStartTime > ALERT_WAIT_TIME &&
-             currentAlertLevel < 2) {
+    if (millis() - alertStartTime > ALERT_WAIT_TIME && currentAlertLevel < 2) {
       escalateAlert();
       alertStartTime = millis();
+    }
+
+    // Re-send alert level every 2 seconds to ensure IR blaster receives it
+    static unsigned long lastAlertLevelReport = 0;
+    if (millis() - lastAlertLevelReport >= 2000) {
+      if (currentAlertLevel > 0) {
+        char levelStr[2];
+        itoa(currentAlertLevel, levelStr, 10);
+        mqtt.publish(TOPIC_ALERTS_LEVEL, levelStr);
+      }
+      lastAlertLevelReport = millis();
     }
   }
   // Case 2: Bottle is picked up
