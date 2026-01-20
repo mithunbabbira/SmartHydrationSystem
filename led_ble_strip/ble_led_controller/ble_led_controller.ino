@@ -155,7 +155,7 @@ void applyState() {
 
   // Always send power first
   sendPower(currentState.isOn);
-  delay(50); // Small delay to ensure processing
+  delay(300); // Increased delay to prevent flooding the controller
 
   if (currentState.isOn) {
     if (currentState.mode == 0) {
@@ -186,8 +186,10 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
       currentState.isOn = newState;
       stateChanged = true;
       // Immediate effect logic
-      if (connected)
+      if (connected) {
         sendPower(newState);
+        delay(200);
+      }
       // If turning ON, we might need to resend color/mode after power
       if (newState && connected) {
         delay(100);
@@ -316,6 +318,8 @@ void setupWifi() {
   Serial.print("\nConnecting to WiFi: ");
   Serial.println(wifi_ssid);
 
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false); // CRITICAL: Fixes WiFi+BLE Coexistence instability
   WiFi.begin(wifi_ssid, wifi_password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -326,9 +330,14 @@ void setupWifi() {
   Serial.println("IP: " + WiFi.localIP().toString());
 }
 
+long lastMqttReconnectAttempt = 0;
+
 void reconnectMqtt() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
+  // Non-blocking reconnect
+  long now = millis();
+  if (now - lastMqttReconnectAttempt > 5000) {
+    lastMqttReconnectAttempt = now;
+
     Serial.print("Attempting MQTT connection...");
     if (client.connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD)) {
       Serial.println("connected");
@@ -337,12 +346,10 @@ void reconnectMqtt() {
       String sub = String(topic_commands_root) + "#";
       client.subscribe(sub.c_str());
       Serial.println("Subscribed to: " + sub);
-
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
+      Serial.println(" try again in 5s");
     }
   }
 }
@@ -370,11 +377,12 @@ long lastBleCheck = 0;
 bool stateAppliedAfterConnect = false;
 
 void loop() {
-  // 1. Maintain WiFi/MQTT
+  // 1. Maintain WiFi/MQTT (Non-blocking)
   if (!client.connected()) {
     reconnectMqtt();
+  } else {
+    client.loop();
   }
-  client.loop();
 
   // 2. Maintain BLE Connection
   long now = millis();

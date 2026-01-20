@@ -247,8 +247,21 @@ def update_light_mode(client):
     if current_ir_mode != target_mode:
         current_ir_mode = target_mode
         client.publish("hydration/commands/ir_transmit", target_mode)
+        
         mode_name = "FLASH (Alert)" if target_mode == IR_FLASH else "SMOOTH (Normal)"
         print(f"  💡 Auto-Switching IR to: {mode_name}")
+        
+        # Sync BLE LED Strip
+        if target_mode == IR_FLASH:
+            # Alert Mode: Flash/Strobe (Mode 48)
+            send_strip_command(client, "mode", "48") 
+            send_strip_command(client, "speed", "100") # Fast
+            print("  🚨 LED Strip: Syncing to FLASH mode")
+        else:
+            # Normal Mode: Rainbow/Flow (Mode 37)
+            send_strip_command(client, "mode", "37")
+            send_strip_command(client, "speed", "20") # Slow/Smooth
+            print("  🌈 LED Strip: Syncing to RAINBOW mode")
     # Else: Do nothing, we are already in the correct mode
 
 def send_strip_command(client, subtopic, payload):
@@ -482,7 +495,9 @@ def main():
                 elif sub == "rg_fade": send_strip_command(client, "mode", "45")
                 elif sub == "rb_fade": send_strip_command(client, "mode", "46")
                 elif sub == "gb_fade": send_strip_command(client, "mode", "47")
+                elif sub == "gb_fade": send_strip_command(client, "mode", "47")
                 elif sub == "strobe": send_strip_command(client, "mode", "48")
+                elif sub == "flash": send_strip_command(client, "mode", "48")
 
                 else:
                      print("Usage:")
