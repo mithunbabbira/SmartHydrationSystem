@@ -30,11 +30,11 @@
 #define REFILL_THRESHOLD 100.0   // 100g
 
 // Timing
-#define WEIGHT_SAMPLE_INTERVAL 500       // 0.5s check
-#define TELEMETRY_INTERVAL 5000          // 5s report
-//#define CHECK_INTERVAL_MS 1800000    
-#define CHECK_INTERVAL_MS 20000         // 30 mins hydration check
-#define BOTTLE_MISSING_TIMEOUT_MS 10000 // 3 mins
+#define WEIGHT_SAMPLE_INTERVAL 500 // 0.5s check
+#define TELEMETRY_INTERVAL 5000    // 5s report
+// #define CHECK_INTERVAL_MS 1800000
+#define CHECK_INTERVAL_MS 200000         // 30 mins hydration check
+#define BOTTLE_MISSING_TIMEOUT_MS 100000 // 3 mins
 
 // Alert Patterns
 #define ALERT_BLINK_WARNING_MS 1000
@@ -43,8 +43,8 @@
 #define ALERT_WAIT_TIME_MS 10000
 
 // Schedule (IST +5:30 handled in Logic)
-#define SLEEP_START_HOUR 23 // 11 PM
-#define SLEEP_END_HOUR 10   // 10 AM
+#define SLEEP_START_HOUR 0 // 12 AM (Midnight)
+#define SLEEP_END_HOUR 10  // 10 AM
 
 // ==================== Network Security ====================
 const uint8_t PRODUCTION_MASTER_MAC[] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4};

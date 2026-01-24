@@ -90,18 +90,21 @@ void loop() {
       if (!is_missing) {
         // Just lifted. Start Timer.
         missing_start_time = now;
-        Serial.println("ℹ Bottle Lifted (Timer Started)");
+        Serial.print(logicMgr.getFormattedTime());
+        Serial.println(" ℹ Bottle Lifted (Timer Started)");
       }
       // Only Alert if Timeout Exceeded
       else if (now - missing_start_time > BOTTLE_MISSING_TIMEOUT_MS) {
         if (alertMgr.currentLevel != 2) {
-          Serial.println("⚠ Bottle Missing Timeout: Alert!");
+          Serial.print(logicMgr.getFormattedTime());
+          Serial.println(" ⚠ Bottle Missing Timeout: Alert!");
           alertMgr.setLevel(2);
         }
       }
     } else if (is_missing) { // currently_missing is False
       // Replaced. Silence and Reset.
-      Serial.println("✓ Bottle Replaced: Silence");
+      Serial.print(logicMgr.getFormattedTime());
+      Serial.println(" ✓ Bottle Replaced: Silence");
       alertMgr.setLevel(0);
       // Force Telemetry
       netMgr.sendTelemetry(current_weight, weight_delta, 0, false);

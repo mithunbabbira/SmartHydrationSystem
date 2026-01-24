@@ -22,6 +22,20 @@ public:
     _comms->sendQuery(2);
   }
 
+  // Helper for Timestamping Logs (HH:MM:SS)
+  String getFormattedTime() {
+    if (_serverEpoch == 0)
+      return "[No Time]";
+    uint32_t local =
+        _serverEpoch + ((millis() - _lastEpochSync) / 1000) + 19800; // IST
+    uint8_t h = (local % 86400) / 3600;
+    uint8_t m = (local % 3600) / 60;
+    uint8_t s = (local % 60);
+    char buf[16];
+    sprintf(buf, "[%02d:%02d:%02d]", h, m, s);
+    return String(buf);
+  }
+
   void update(float currentWeight, bool isMissing) {
     unsigned long now = millis();
 
@@ -45,10 +59,10 @@ public:
     }
 
     // 3. Weight Stabilization (Debounce)
-    // Only process logic if weight is stable for STABILITY_DELAY (e.g. 2s)
     if (abs(currentWeight - _lastRawWeight) > 5.0) { // 5g noise threshold
       _stabilityStartTime = now;
       _lastRawWeight = currentWeight;
+      // Serial.println("Unstable...");
       return; // Unstable
     }
 
@@ -59,7 +73,33 @@ public:
     // Weight is STABLE. Use it.
     float stableWeight = currentWeight;
 
-    // 4. Hydration Logic
+    // 4. Sleep Check (With Logging)
+    if (isSleeping()) {
+      if (now - _lastSleepLog > 60000) { // Log once a minute
+        _lastSleepLog = now;
+        Serial.print(getFormattedTime());
+        Serial.println(" Status: Sleeping (Logic Paused)");
+      }
+      if (_alerts->currentLevel != 0)
+        _alerts->setLevel(0);
+      return;
+    }
+
+    // 5. Presence Check (With Logging)
+    // Only skip checks if CONFIRMED Away (default True)
+    // If we haven't synced presence yet, assume Home.
+    if (_serverEpoch > 0 && !_isHome) {
+      if (now - _lastPresenceLog > 60000) {
+        _lastPresenceLog = now;
+        Serial.print(getFormattedTime());
+        Serial.println(" Status: Away (Logic Paused)");
+      }
+      if (_alerts->currentLevel != 0)
+        _alerts->setLevel(0);
+      return;
+    }
+
+    // 6. Hydration Logic
     if (_lastWeight == 0) {
       _lastWeight = stableWeight;
       if (_intervalStartWeight == 0)
@@ -71,7 +111,8 @@ public:
 
     // Refill Detection (Significant Increase)
     if (delta >= REFILL_THRESHOLD) {
-      Serial.println("Refill Detected -> Resetting Interval Baseline.");
+      Serial.print(getFormattedTime());
+      Serial.println(" Refill Detected -> Resetting Interval Baseline.");
       _intervalStartWeight = stableWeight;
       _lastWeight = stableWeight;
       _alerts->setLevel(0);
@@ -80,30 +121,35 @@ public:
     // Drink Detection (Significant Decrease)
     else if (delta <= -DRINK_THRESHOLD_MIN) {
       float amount = abs(delta);
-      Serial.print("Drink Detected: ");
+      Serial.print(getFormattedTime());
+      Serial.print(" Drink Detected: ");
       Serial.println(amount);
       _lastWeight = stableWeight;
       _alerts->setLevel(0);
       _lastDrinkTime = now;
     }
 
-    // 5. Interval Check (Only check if stable)
-    if (_serverEpoch > 0 && _isHome && !isSleeping()) {
+    // 7. Interval Check (Only check if stable)
+    // We use Epoch for robust interval timing across reboots
+    if (_serverEpoch > 0) {
       if (_lastCheckEpoch == 0)
         _lastCheckEpoch = _currentEpoch;
 
       if (_currentEpoch - _lastCheckEpoch > (CHECK_INTERVAL_MS / 1000)) {
-        Serial.println("Performing Hydration Check...");
+        Serial.print(getFormattedTime());
+        Serial.println(" Performing Hydration Check...");
 
         if (_intervalStartWeight == 0)
           _intervalStartWeight = stableWeight;
         float consumption = _intervalStartWeight - stableWeight;
 
         if (consumption >= DRINK_THRESHOLD_MIN) {
-          Serial.printf("✓ Goal Met (Consumed %.1fg)\n", consumption);
+          Serial.print(getFormattedTime());
+          Serial.printf(" ✓ Goal Met (Consumed %.1fg)\n", consumption);
           _alerts->setLevel(0);
         } else {
-          Serial.printf("❌ Goal Not Met (Only %.1fg)\n", consumption);
+          Serial.print(getFormattedTime());
+          Serial.printf(" ❌ Goal Not Met (Only %.1fg)\n", consumption);
           _alerts->setLevel(1);
         }
 
@@ -135,6 +181,9 @@ private:
   unsigned long _lastSync = 0;
   unsigned long _stabilityStartTime = 0;
   unsigned long _lastDrinkTime = 0;
+
+  unsigned long _lastSleepLog = 0;
+  unsigned long _lastPresenceLog = 0;
 
   uint32_t _serverEpoch = 0;
   unsigned long _lastEpochSync = 0;
