@@ -18,6 +18,7 @@ static BLEUUID serviceUUID("FFD5");
 static BLEUUID charUUID("FFD9");
 String targetAddress = "ff:ff:bc:09:a5:b9";
 BLERemoteCharacteristic *pRemoteCharacteristic;
+BLEClient *pClient = nullptr;
 bool connected = false;
 
 // --- State ---
@@ -26,17 +27,26 @@ unsigned long last_send_time = 0;
 
 // --- BLE Functions ---
 bool connectToBLE() {
-  BLEClient *pClient = BLEDevice::createClient();
+  if (pClient == nullptr) {
+    pClient = BLEDevice::createClient();
+  }
+
+  if (pClient->isConnected())
+    return true;
+
+  Serial.printf("Attempting BLE connection to %s...\n", targetAddress.c_str());
   if (pClient->connect(BLEAddress(targetAddress.c_str()))) {
     BLERemoteService *pRemoteService = pClient->getService(serviceUUID);
     if (pRemoteService != nullptr) {
       pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
       if (pRemoteCharacteristic != nullptr) {
         connected = true;
+        Serial.println("✓ BLE Connected to Strip");
         return true;
       }
     }
   }
+  Serial.println("✗ BLE Connection Failed");
   return false;
 }
 
@@ -99,8 +109,20 @@ void setup() {
 }
 
 void loop() {
+  // Warn if user accidentally connects Slave to Pi
+  if (Serial.available()) {
+    while (Serial.available())
+      Serial.read();
+    Serial.println("{\"warning\":\"Slave connected to Serial. Please connect "
+                   "Master gateway to Pi instead.\"}");
+  }
+
   if (!connected) {
-    connectToBLE();
+    static unsigned long last_connect_attempt = 0;
+    if (millis() - last_connect_attempt > 10000) { // Retry every 10s
+      last_connect_attempt = millis();
+      connectToBLE();
+    }
   }
 
   // Heartbeat every 5s for discovery

@@ -90,6 +90,10 @@ def connect_serial():
         time.sleep(2)
 
 def send_command(dst, cmd, val=None):
+    if not gateway_verified:
+        # print("✗ Command ignored: Gateway not verified yet.")
+        return
+
     if serial_conn and serial_conn.is_open:
         try:
             payload = {"dst": dst, "cmd": cmd}
@@ -99,6 +103,7 @@ def send_command(dst, cmd, val=None):
             print(f"Sent Command: {payload}")
         except Exception as e:
             print(f"Send failed: {e}")
+            gateway_verified = False
 
 def serial_reader():
     global latest_telemetry, gateway_verified, serial_conn
