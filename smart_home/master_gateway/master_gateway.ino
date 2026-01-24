@@ -100,8 +100,35 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     }
     doc["raw"] = rawHex;
 
+  } else if (header->msg_type == MSG_TYPE_COMMAND &&
+             len == sizeof(GenericCommand)) {
+    // Parse Command packets (includes queries)
+    GenericCommand *cmd = (GenericCommand *)data;
+
+    if (cmd->command_id == 10) {
+      // Query packet
+      doc["type"] = "query";
+      doc["src"] = header->slave_id;
+      doc["query_id"] = cmd->val; // 1=TIME, 2=PRESENCE
+    } else {
+      // Other commands
+      doc["type"] = "packet";
+      doc["msg_type"] = header->msg_type;
+      doc["src"] = header->slave_id;
+      doc["command_id"] = cmd->command_id;
+      doc["val"] = cmd->val;
+    }
+
+    String rawHex = "";
+    for (int i = 0; i < len; i++) {
+      if (data[i] < 16)
+        rawHex += "0";
+      rawHex += String(data[i], HEX);
+    }
+    doc["raw"] = rawHex;
+
   } else {
-    // Generic packet (non-telemetry)
+    // Generic packet (non-telemetry, non-command)
     doc["type"] = "packet";
     doc["msg_type"] = header->msg_type;
     doc["src"] = header->slave_id;
