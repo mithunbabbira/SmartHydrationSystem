@@ -45,8 +45,9 @@ def check_presence():
     global is_user_home
     while True:
         try:
-            # Using hcitool name is low-impact presence check
-            result = subprocess.check_output(["hcitool", "name", PHONE_MAC], timeout=5)
+            # Use hcitool to check RSSI (fast check)
+            cmd = ["hcitool", "rssi", config.PHONE_MAC]
+            result = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode()
             new_state = bool(result.strip())
             
             if new_state != is_user_home:
@@ -81,7 +82,7 @@ def connect_serial():
         for port in ports:
             try:
                 print(f"Attempting connection to {port}...")
-                serial_conn = serial.Serial(port, BAUD_RATE, timeout=0.1)
+                serial_conn = serial.Serial(port, config.SERIAL_BAUD, timeout=0.1)
                 print(f"✓ Opened {port}. Waiting for Gateway Identity...")
                 gateway_verified = False
                 return # Successfully opened
