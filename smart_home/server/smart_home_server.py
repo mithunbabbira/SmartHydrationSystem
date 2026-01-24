@@ -10,8 +10,8 @@ import json
 import time
 import subprocess
 import threading
-import sqlite3
 import os
+from datetime import datetime
 from datetime import datetime
 
 import glob
@@ -19,7 +19,7 @@ import glob
 # --- Configuration ---
 BAUD_RATE = 115200
 PHONE_MAC = "48:EF:1C:49:6A:E7" # User's device
-DATABASE_FILE = "smart_home.db"
+PHONE_MAC = "48:EF:1C:49:6A:E7" # User's device
 
 # --- Globals ---
 is_user_home = False
@@ -37,6 +37,29 @@ def find_serial_port():
     
     # Filter out common non-ESP32 ports if necessary, but usually USB* is correct
     return ports
+
+# --- Presence Detection ---
+def check_presence():
+    global is_user_home
+    while True:
+        try:
+            # Using hcitool name is low-impact presence check
+            result = subprocess.check_output(["hcitool", "name", PHONE_MAC], timeout=5)
+            new_state = bool(result.strip())
+            
+            if new_state != is_user_home:
+                is_user_home = new_state
+                print(f"Presence Change: {'HOME' if is_user_home else 'AWAY'}")
+                # Forward presence to Hydration Slave if needed
+                send_command(1, "presence", "home" if is_user_home else "away")
+                
+        except Exception as e:
+            # hcitool might return error if device not found
+            if is_user_home:
+                is_user_home = False
+                print("Presence Change: AWAY (Detection Error/Timeout)")
+        
+        time.sleep(10)
 
 # --- Serial Communication ---
 def connect_serial():
@@ -110,7 +133,6 @@ def serial_reader():
                     if m_type == "telemetry":
                         src = data["src"]
                         latest_telemetry[src] = data["data"]
-                        log_event(src, "telemetry", data["data"])
                     elif m_type == "gateway_id":
                         if not gateway_verified:
                             print(f"✓ VERIFIED: Smart Home Master Gateway connected on {serial_conn.port}")
@@ -132,7 +154,6 @@ def serial_reader():
 
 # --- Main Logic ---
 def main():
-    init_db()
     
     print("Smart Home Server Starting...")
     print("Searching for Master Gateway on USB/Serial...")
