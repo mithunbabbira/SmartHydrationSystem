@@ -143,14 +143,13 @@ void handleAlerts() {
       digitalWrite(PIN_ALERT_LED, LOW);
     }
 
-    // Optional: Also blink RGB Blue for Level 1, Red for Level 2?
-    // Legacy only used PIN_ALERT_LED (25) for Notification.
-    // Let's stick to legacy behavior mostly, but maybe keep RGB off to avoid
-    // confusion? User complaint was "led stopped working".
+    // Dual Alert: Blink White LED (25) AND RGB (Legacy + Modern)
     if (alert_level == 1) {
-      // digitalWrite(PIN_BLUE, state);
+      digitalWrite(PIN_BLUE, state); // Warning: Blue + White
+      digitalWrite(PIN_RED, LOW);
     } else {
-      // digitalWrite(PIN_RED, state);
+      digitalWrite(PIN_RED, state); // Critical: Red + White
+      digitalWrite(PIN_BLUE, LOW);
     }
 
     // Audio Alert (Only beep on ON cycle for Critical)
