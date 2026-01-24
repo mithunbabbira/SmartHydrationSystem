@@ -12,8 +12,9 @@
 // ==================== Hardware Pins ====================
 // Load Cell (HX711)
 // NOTE: These are the working pins from previous successful tests
-#define LOADCELL_DOUT_PIN 23
-#define LOADCELL_SCK_PIN 22
+// Load Cell (HX711) - Restored from legacy config
+#define LOADCELL_DOUT_PIN 32
+#define LOADCELL_SCK_PIN 33
 
 // RGB LED (Common Cathode/Anode)
 #define PIN_RED 5
@@ -23,14 +24,14 @@
 // Buzzer (Active/Passive)
 #define PIN_BUZZER 18
 
-// Button (Snooze/Reset) - Currently used for Tare/Snooze command locally?
+// Button (Snooze/Reset) - Currently used for Tare/Snooze command
 #define PIN_BTN 19
 
 // ==================== Sensor Calibration ====================
 // Calibration factor: Adjust this using a known weight (e.g. 100g object)
 // Process: Scale reading / Known weight = Factor
-// Value from previous calibration: 420.0 (or 350.3 from old config)
-#define CALIBRATION_FACTOR 420.0
+// Value from previous calibration: 350.3 (Legacy)
+#define CALIBRATION_FACTOR 350.3
 
 // ==================== System Thresholds ====================
 // Weight Sensing (Grams)

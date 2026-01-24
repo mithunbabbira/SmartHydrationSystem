@@ -172,8 +172,21 @@ void setup() {
 
   // Non-blocking wait (2 seconds max)
   if (scale.wait_ready_timeout(2000)) {
-    scale.tare();
-    Serial.println("✓ Scale calibrated.");
+    // NVM Logic: Load saved tare if available
+    prefs.begin("hydration", false);
+    long savedOffset = prefs.getLong("tareOffset", 0);
+
+    if (savedOffset != 0) {
+      scale.set_offset(savedOffset);
+      Serial.printf("✓ Loaded saved tare offset: %ld\n", savedOffset);
+    } else {
+      Serial.println("⚠ No saved tare. Taring now...");
+      scale.tare();
+      long newOffset = scale.get_offset();
+      prefs.putLong("tareOffset", newOffset);
+      Serial.printf("✓ New tare saved: %ld\n", newOffset);
+    }
+    prefs.end();
   } else {
     Serial.println(
         "⚠ Scale NOT ready! Check wiring. Continuing without calibration...");
