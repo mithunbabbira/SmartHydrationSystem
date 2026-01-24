@@ -239,13 +239,13 @@ void loop() {
         delay(300); // CRITICAL: LED controller needs 300ms between commands
       } else {
         sendPowerToStrip(true);
-        delay(300); // First send power with proper delay
+        delay(150); // OPTIMIZED: Reduced from 300ms to 150ms for speed
         if (current_state.mode > 0) {
           sendModeToStrip(current_state.mode, current_state.speed);
         } else {
           sendColorToStrip(current_state.r, current_state.g, current_state.b);
         }
-        delay(200); // Extra delay after color/mode
+        delay(50); // OPTIMIZED: Reduced from 200ms to 50ms
       }
       Serial.println("✓ BLE Command Sent to Strip");
       Serial.printf("[HEAP] Free heap: %d bytes\n", ESP.getFreeHeap());
