@@ -72,26 +72,52 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     known_slaves[idx].last_seen = millis();
   }
 
-  // Forward ALL packets to Pi as JSON (Transparent Bridge)
-  // if (header->msg_type == MSG_TYPE_TELEMETRY) { // Removed filter
+  // Forward packets to Pi as JSON
   StaticJsonDocument<1024> doc;
-  doc["type"] = "packet";             // Generic type
-  doc["msg_type"] = header->msg_type; // Include actual type
-  doc["src"] = header->slave_id;
-  doc["ver"] = header->version;
 
-  // Generic Raw Forwarding
-  String rawHex = "";
-  for (int i = 0; i < len; i++) {
-    if (data[i] < 16)
-      rawHex += "0";
-    rawHex += String(data[i], HEX);
+  // Parse Telemetry packets
+  if (header->msg_type == MSG_TYPE_TELEMETRY) {
+    doc["type"] = "telemetry";
+    doc["src"] = header->slave_id;
+
+    // Parse Hydration Telemetry
+    if (header->slave_id == SLAVE_ID_HYDRATION &&
+        len == sizeof(HydrationTelemetry)) {
+      HydrationTelemetry *telem = (HydrationTelemetry *)data;
+      JsonObject dataObj = doc.createNestedObject("data");
+      dataObj["weight"] = telem->weight;
+      dataObj["delta"] = telem->delta;
+      dataObj["alert_level"] = telem->alert_level;
+      dataObj["is_missing"] = telem->bottle_missing;
+    }
+
+    // Include raw hex for debugging
+    String rawHex = "";
+    for (int i = 0; i < len; i++) {
+      if (data[i] < 16)
+        rawHex += "0";
+      rawHex += String(data[i], HEX);
+    }
+    doc["raw"] = rawHex;
+
+  } else {
+    // Generic packet (non-telemetry)
+    doc["type"] = "packet";
+    doc["msg_type"] = header->msg_type;
+    doc["src"] = header->slave_id;
+    doc["ver"] = header->version;
+
+    String rawHex = "";
+    for (int i = 0; i < len; i++) {
+      if (data[i] < 16)
+        rawHex += "0";
+      rawHex += String(data[i], HEX);
+    }
+    doc["raw"] = rawHex;
   }
-  doc["raw"] = rawHex;
 
   serializeJson(doc, Serial);
   Serial.println();
-  // }
 }
 
 // onDataSent callback removed to avoid signature mismatch on newer SDKs
