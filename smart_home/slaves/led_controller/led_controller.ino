@@ -236,16 +236,25 @@ void loop() {
 
       if (!current_state.is_on) {
         sendPowerToStrip(false);
-        delay(300); // CRITICAL: LED controller needs 300ms between commands
       } else {
-        sendPowerToStrip(true);
-        delay(150); // OPTIMIZED: Reduced from 300ms to 150ms for speed
-        if (current_state.mode > 0) {
-          sendModeToStrip(current_state.mode, current_state.speed);
-        } else {
-          sendColorToStrip(current_state.r, current_state.g, current_state.b);
+        // TURBO OPTIMIZATION: Only send power command if state actually changed
+        // This saves 150ms of latency for every color change!
+        static bool last_power_state = false;
+
+        if (current_state.is_on != last_power_state) {
+          sendPowerToStrip(current_state.is_on);
+          last_power_state = current_state.is_on;
+          delay(100); // Wait only if we toggled power
         }
-        delay(50); // OPTIMIZED: Reduced from 200ms to 50ms
+
+        if (current_state.is_on) {
+          if (current_state.mode > 0) {
+            sendModeToStrip(current_state.mode, current_state.speed);
+          } else {
+            sendColorToStrip(current_state.r, current_state.g, current_state.b);
+          }
+          delay(20); // Minimal safety delay
+        }
       }
       Serial.println("✓ BLE Command Sent to Strip");
       Serial.printf("[HEAP] Free heap: %d bytes\n", ESP.getFreeHeap());
