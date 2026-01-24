@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""
+Smart Home Central Server - Mac Test Version
+===============================================
+Simplified version for local Mac testing without Bluetooth presence.
+"""
+
+import serial
+import json
+import time
+import threading
+import glob
+
+# --- Configuration ---
+BAUD_RATE = 115200
+
+# --- Globals ---
+latest_telemetry = {}
+serial_conn = None
+gateway_verified = False
+
+def find_serial_port():
+    """Auto-detect potential ESP32 serial ports on Mac"""
+    patterns = ['/dev/cu.usbserial*', '/dev/cu.SLAB*', '/dev/cu.wchusbserial*', '/dev/tty.usbserial*']
+    ports = []
+    for pattern in patterns:
+        ports.extend(glob.glob(pattern))
+    return ports
+
+# --- Serial Communication ---
+def connect_serial():
+    global serial_conn, gateway_verified
+    
+    while True:
+        if serial_conn and serial_conn.is_open:
+            time.sleep(1)
+            continue
+            
+        ports = find_serial_port()
+        if not ports:
+            print("⏳ Searching for Master Gateway...")
+            time.sleep(2)
+            continue
+            
+        for port in ports:
+            try:
+                print(f"Attempting connection to {port}...")
+                serial_conn = serial.Serial(port, BAUD_RATE, timeout=1)
+                time.sleep(2)  # Allow ESP32 to boot if just connected
+                print(f"✓ Opened {port}. Waiting for Gateway Identity...")
+                gateway_verified = False
+                break
+            except Exception as e:
+                print(f"✗ Failed to open {port}: {e}")
+                continue
+        
+        time.sleep(1)
+
+def send_command(dst, cmd, val=None):
+    global serial_conn, gateway_verified
+    
+    if not gateway_verified:
+        print("⚠ Gateway not verified yet. Command ignored.")
+        return
+        
+    if not serial_conn or not serial_conn.is_open:
+        print("⚠ No serial connection")
+        return
+        
+    command = {"dst": dst, "cmd": cmd}
+    if val is not None:
+        command["val"] = val
+        
+    try:
+        serial_conn.write((json.dumps(command) + '\n').encode())
+        print(f"📤 Sent Command: {command}")
+    except Exception as e:
+        print(f"Serial Write Error: {e}")
+
+def serial_reader():
+    global serial_conn, gateway_verified, latest_telemetry
+    
+    while True:
+        if serial_conn and serial_conn.is_open:
+            try:
+                line = serial_conn.readline().decode('utf-8', errors='ignore').strip()
+                if not line:
+                    continue
+                    
+                # Try parsing as JSON
+                try:
+                    data = json.loads(line)
+                    
+                    # Check for Gateway Identity
+                    if "type" in data and data["type"] == "gateway_id":
+                        if not gateway_verified:
+                            gateway_verified = True
+                            print(f"✅ VERIFIED: Smart Home Master Gateway connected")
+                    
+                    # Handle telemetry
+                    elif "type" in data and data["type"] == "telemetry":
+                        src = data.get("src", "unknown")
+                        telemetry_data = data.get("data", {})
+                        latest_telemetry[src] = telemetry_data
+                        print(f"📊 Telemetry from Slave {src}: {telemetry_data}")
+                    
+                    # Handle events
+                    elif "event" in data:
+                        print(f"📢 Gateway Event: {data}")
+                        
+                except json.JSONDecodeError:
+                    # Not JSON - probably boot messages or debug output
+                    print(f"🔍 Gateway Log: {line}")
+                    pass
+                    
+            except Exception as e:
+                print(f"Serial Read Error: {e}")
+                if serial_conn:
+                    serial_conn.close()
+                gateway_verified = False
+                time.sleep(1)
+                
+        time.sleep(0.01)
+
+# --- Main Logic ---
+def main():
+    
+    print("🏠 Smart Home Server (Mac Test Mode)")
+    print("=" * 60)
+    print("Searching for Master Gateway on USB/Serial...\n")
+    
+    # Start Threads
+    threading.Thread(target=connect_serial, daemon=True).start()
+    threading.Thread(target=serial_reader, daemon=True).start()
+    
+    # Interactive CLI
+    print("\n📚 Commands: help, stats, led <on/off>, ir <code>, tare, quit")
+    print("=" * 60 + "\n")
+    
+    try:
+        while True:
+            cmd_input = input("smart_home> ").strip().lower().split()
+            if not cmd_input: continue
+            
+            cmd = cmd_input[0]
+            
+            if cmd == "quit": break
+            elif cmd == "help":
+                print("\n📚 Smart Home Server - Available Commands:")
+                print("=" * 60)
+                print("\n🏠 SYSTEM:")
+                print("  help          - Show this help menu")
+                print("  stats         - Display telemetry data")
+                print("  quit          - Exit the server")
+                print("\n💧 HYDRATION MONITOR (Slave ID: 1):")
+                print("  tare          - Zero the scale (remove bottle weight)")
+                print("\n💡 LED STRIP (Slave ID: 2):")
+                print("  led on        - Turn LED strip ON")
+                print("  led off       - Turn LED strip OFF")
+                print("\n📡 IR TRANSMITTER (Slave ID: 3):")
+                print("  ir <code>     - Send IR code (hex, e.g., 'ir FF6897')")
+                print("\n" + "=" * 60 + "\n")
+            elif cmd == "stats":
+                print(f"\n📊 Latest Telemetry:")
+                if latest_telemetry:
+                    print(json.dumps(latest_telemetry, indent=2))
+                else:
+                    print("  No data received yet")
+                print()
+            elif cmd == "tare":
+                send_command(1, "tare")
+            elif cmd == "led":
+                if len(cmd_input) < 2:
+                    print("Usage: led <on/off>")
+                    continue
+                state = cmd_input[1] == "on"
+                send_command(2, "set_state", {"on": state})
+            elif cmd == "ir":
+                if len(cmd_input) < 2:
+                    print("Usage: ir <code>  (e.g., ir FF6897)")
+                    continue
+                code = cmd_input[1]
+                send_command(3, "ir_send", code)
+                
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if serial_conn: serial_conn.close()
+        print("\n👋 Shutdown.")
+
+if __name__ == "__main__":
+    main()

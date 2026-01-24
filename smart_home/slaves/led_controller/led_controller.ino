@@ -174,8 +174,8 @@ void sendHeartbeat() {
   header.version = PROTOCOL_VERSION;
 
   // Unicast to Master if known, otherwise Broadcast
-  uint8_t *dest_mac =
-      master_known ? master_mac : (uint8_t *)"\xFF\xFF\xFF\xFF\xFF\xFF";
+  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t *dest_mac = master_known ? master_mac : broadcast_mac;
   esp_now_send(dest_mac, (uint8_t *)&header, sizeof(header));
 }
 
