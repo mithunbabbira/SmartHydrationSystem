@@ -205,6 +205,18 @@ def main():
                 print(f"Latest Data: {json.dumps(latest_telemetry, indent=2)}")
             elif cmd == "tare":
                 send_command(1, "tare")
+            elif cmd == "alert":
+                if len(cmd_input) < 2:
+                    print("Usage: alert <0/1/2> (0=Off, 1=Warning, 2=Critical)")
+                    continue
+                try:
+                    level = int(cmd_input[1])
+                    # Send Command ID 3 (Set Alert) to Slave 1
+                    send_command(1, "alert", {"level": level})
+                    print(f"Triggered Alert Level {level} on Hydration Monitor")
+                except ValueError:
+                    print("Invalid level")
+
             elif cmd == "led":
                 if len(cmd_input) < 2:
                     print("Usage: led <on/off/red/green/blue/fade/flash/rainbow>")

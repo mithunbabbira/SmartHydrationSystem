@@ -84,104 +84,223 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
   } else if (cmd->command_id == 2) { // Snooze
     alert_level = 0;
     Serial.println("✓ Snoozed");
+  } else if (cmd->command_id == 3) { // Set Alert
+    // Val1 = Alert Level (1=Warning, 2=Critical)
+    alert_level = (int)cmd->value1;
+    Serial.printf("! Alert Level Set to: %d\n", alert_level);
+
+    // Immediate feedback
+    digitalWrite(PIN_BUZZER, HIGH);
+    delay(100);
+    digitalWrite(PIN_BUZZER, LOW);
   }
 }
 
-void sendTelemetry() {
-  HydrationTelemetry pkt;
-  pkt.header.slave_id = SLAVE_ID_HYDRATION;
-  pkt.header.msg_type = MSG_TYPE_TELEMETRY;
-  pkt.header.version = PROTOCOL_VERSION;
-
-  pkt.weight = current_weight;
-  pkt.delta = weight_delta;
-  pkt.alert_level = alert_level;
-  pkt.bottle_missing = is_missing;
-
-  // Use broadcast MAC unless master MAC is set (for simplicity in this demo)
-  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  esp_now_send(broadcast_mac, (uint8_t *)&pkt, sizeof(pkt));
-}
-
-void sendHeartbeat() {
-  ESPNowHeader header;
-  header.slave_id = SLAVE_ID_HYDRATION;
-  header.msg_type = MSG_TYPE_TELEMETRY;
-  header.version = PROTOCOL_VERSION;
-
-  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t *dest_mac = master_known ? master_mac : broadcast_mac;
-  esp_now_send(dest_mac, (uint8_t *)&header, sizeof(header));
-}
-
-void setup() {
-  Serial.begin(115200);
-
-  // Hardware setup
-  pinMode(PIN_BUZZER, OUTPUT);
-  pinMode(PIN_RED, OUTPUT);
-  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-  scale.set_scale(420.0); // Calibrated value
-  scale.tare();
-
-  // WiFi & ESP-NOW
-  WiFi.mode(WIFI_STA);
-  esp_wifi_set_promiscuous(true);
-  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
-  esp_wifi_set_promiscuous(false);
-
-  if (esp_now_init() != ESP_OK)
+void handleAlerts() {
+  if (alert_level == 0) {
+    digitalWrite(PIN_RED, LOW);
+    digitalWrite(PIN_GREEN, LOW);
+    digitalWrite(PIN_BLUE, LOW);
+    digitalWrite(PIN_BUZZER, LOW);
     return;
-
-  esp_now_register_recv_cb(onDataRecv);
-
-  // Register Master Peer if hardcoded
-  esp_now_peer_info_t peerInfo = {};
-  if (master_known) {
-    memcpy(peerInfo.peer_addr, master_mac, 6);
-  } else {
-    memset(peerInfo.peer_addr, 0xFF, 6); // Broadcast peer
   }
-  peerInfo.channel = 1;
-  peerInfo.encrypt = false;
-  esp_now_add_peer(&peerInfo);
 
-  Serial.println("Hydration Slave Ready (ESP-NOW)");
-}
-
-void loop() {
+  static unsigned long last_blink = 0;
   unsigned long now = millis();
 
-  // Weight Sensing
-  if (now - last_weight_check > 500) {
-    last_weight_check = now;
-    current_weight = scale.get_units(5);
+  // Blink Interval: 1000ms for Lvl 1, 300ms for Lvl 2
+  int interval = (alert_level == 1) ? 1000 : 300;
 
-    // Simple presence logic
-    if (current_weight < -50) { // Off balance / missing
-      is_missing = true;
+  if (now - last_blink > interval) {
+    last_blink = now;
+    static bool state = false;
+    state = !state;
+
+    // Visual Alert
+    if (alert_level == 1) {
+      // Yellow/Blue blink for Warning
+      digitalWrite(PIN_BLUE, state);
+      digitalWrite(PIN_RED, LOW);
     } else {
-      is_missing = false;
+      // Red fast blink for Critical
+      digitalWrite(PIN_RED, state);
+      digitalWrite(PIN_BLUE, LOW);
     }
 
-    // Detect drinking
-    weight_delta = current_weight - previous_weight;
-    if (weight_delta < -30) {
-      // User drank!
+    // Audio Alert (Only beep on ON cycle)
+    if (state && alert_level >= 2) {
+      digitalWrite(PIN_BUZZER, HIGH);
+      delay(50); // Short beep
+      digitalWrite(PIN_BUZZER, LOW);
     }
-    previous_weight = current_weight;
-  }
-
-  // Telemetry Update
-  if (now - last_send_time > 5000) {
-    last_send_time = now;
-    sendTelemetry();
-  }
-
-  // Heartbeat every 10s (extra safety)
-  static unsigned long last_heartbeat = 0;
-  if (now - last_heartbeat > 10000) {
-    last_heartbeat = now;
-    sendHeartbeat();
   }
 }
+
+// ... sendTelemetry() ...
+
+void setup() {
+  // ... existing setup ...
+  pinMode(PIN_RED, OUTPUT);
+  pinMode(PIN_GREEN, OUTPUT); // Green might be power indicator?
+  pinMode(PIN_BLUE, OUTPUT);
+  // ...
+
+  void sendTelemetry() {
+    HydrationTelemetry pkt;
+    pkt.header.slave_id = SLAVE_ID_HYDRATION;
+    pkt.header.msg_type = MSG_TYPE_TELEMETRY;
+    pkt.header.version = PROTOCOL_VERSION;
+
+    pkt.weight = current_weight;
+    pkt.delta = weight_delta;
+    pkt.alert_level = alert_level;
+    pkt.bottle_missing = is_missing;
+
+    // Use broadcast MAC unless master MAC is set (for simplicity in this demo)
+    uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    esp_now_send(broadcast_mac, (uint8_t *)&pkt, sizeof(pkt));
+  }
+
+  void sendHeartbeat() {
+    ESPNowHeader header;
+    header.slave_id = SLAVE_ID_HYDRATION;
+    header.msg_type = MSG_TYPE_TELEMETRY;
+    header.version = PROTOCOL_VERSION;
+
+    uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    uint8_t *dest_mac = master_known ? master_mac : broadcast_mac;
+    esp_now_send(dest_mac, (uint8_t *)&header, sizeof(header));
+  }
+
+  void setup() {
+    Serial.begin(115200);
+
+    // Hardware setup
+    pinMode(PIN_BUZZER, OUTPUT);
+    pinMode(PIN_RED, OUTPUT);
+    scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+    scale.set_scale(420.0); // Calibrated value
+    scale.tare();
+
+    // WiFi & ESP-NOW
+    WiFi.mode(WIFI_STA);
+    esp_wifi_set_promiscuous(true);
+    esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+    esp_wifi_set_promiscuous(false);
+
+    if (esp_now_init() != ESP_OK)
+      return;
+
+    esp_now_register_recv_cb(onDataRecv);
+
+    // Register Master Peer if hardcoded
+    esp_now_peer_info_t peerInfo = {};
+    if (master_known) {
+      memcpy(peerInfo.peer_addr, master_mac, 6);
+    } else {
+      memset(peerInfo.peer_addr, 0xFF, 6); // Broadcast peer
+    }
+    peerInfo.channel = 1;
+    peerInfo.encrypt = false;
+    esp_now_add_peer(&peerInfo);
+
+    Serial.println("Hydration Slave Ready (ESP-NOW)");
+  }
+
+  void loop() {
+    unsigned long now = millis();
+
+    // Weight Sensing
+    if (now - last_weight_check > 500) {
+      last_weight_check = now;
+      current_weight = scale.get_units(5);
+
+      // Simple presence logic
+      if (current_weight < -50) { // Off balance / missing
+        is_missing = true;
+      } else {
+        is_missing = false;
+      }
+
+      // Detect drinking
+      weight_delta = current_weight - previous_weight;
+      if (weight_delta < -30) {
+        // User drank!
+      }
+      previous_weight = current_weight;
+    }
+
+    // Telemetry Update
+    if (now - last_send_time > 5000) {
+
+      digitalWrite(PIN_BUZZER, LOW); // Ensure off
+
+      scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+      scale.set_scale(420.0); // Calibrated value
+      scale.tare();
+
+      // WiFi & ESP-NOW
+      WiFi.mode(WIFI_STA);
+      esp_wifi_set_promiscuous(true);
+      esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+      esp_wifi_set_promiscuous(false);
+
+      if (esp_now_init() != ESP_OK)
+        return;
+
+      esp_now_register_recv_cb(onDataRecv);
+
+      // Register Master Peer if hardcoded
+      esp_now_peer_info_t peerInfo = {};
+      if (master_known) {
+        memcpy(peerInfo.peer_addr, master_mac, 6);
+      } else {
+        memset(peerInfo.peer_addr, 0xFF, 6); // Broadcast peer
+      }
+      peerInfo.channel = 1;
+      peerInfo.encrypt = false;
+      esp_now_add_peer(&peerInfo);
+
+      Serial.println("Hydration Slave Ready (ESP-NOW)");
+    }
+
+    void loop() {
+      unsigned long now = millis();
+
+      // Weight Sensing
+      if (now - last_weight_check > 500) {
+        last_weight_check = now;
+        current_weight = scale.get_units(5);
+
+        // Simple presence logic
+        if (current_weight < -50) { // Off balance / missing
+          is_missing = true;
+        } else {
+          is_missing = false;
+        }
+
+        // Detect drinking
+        weight_delta = current_weight - previous_weight;
+        if (weight_delta < -30) {
+          // User drank!
+        }
+        previous_weight = current_weight;
+      }
+
+      // Telemetry Update
+      if (now - last_send_time > 5000) {
+        last_send_time = now;
+        sendTelemetry();
+      }
+
+      // Heartbeat every 10s (extra safety)
+      static unsigned long last_heartbeat = 0;
+      if (now - last_heartbeat > 10000) {
+        last_heartbeat = now;
+        sendHeartbeat();
+      }
+
+      // Handle Alerts (Blink/Beep)
+      handleAlerts();
+    }
+    ```
