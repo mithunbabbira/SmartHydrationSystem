@@ -166,9 +166,18 @@ void setup() {
   pinMode(PIN_BLUE, OUTPUT);
   digitalWrite(PIN_BUZZER, LOW);
 
+  Serial.println("Initializing Scale...");
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   scale.set_scale(CALIBRATION_FACTOR);
-  scale.tare(); // Assume empty/zero on boot
+
+  // Non-blocking wait (2 seconds max)
+  if (scale.wait_ready_timeout(2000)) {
+    scale.tare();
+    Serial.println("✓ Scale calibrated.");
+  } else {
+    Serial.println(
+        "⚠ Scale NOT ready! Check wiring. Continuing without calibration...");
+  }
 
   // Network Setup
   WiFi.mode(WIFI_STA);
