@@ -74,6 +74,12 @@ void sendModeToStrip(uint8_t mode, uint8_t speed) {
   pRemoteCharacteristic->writeValue(packet, sizeof(packet));
 }
 
+// --- Security ---
+// REPLACE THIS WITH YOUR MASTER GATEWAY MAC ADDRESS
+// Find it in the serial monitor log of the Master Gateway
+uint8_t master_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+bool master_known = false; // Set to true if you hardcode the MAC above
+
 // --- ESP-NOW Callbacks ---
 
 void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
@@ -82,9 +88,34 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     return;
   ESPNowHeader *header = (ESPNowHeader *)data;
 
+  // Security Check: Only accept commands from known Master
+  if (master_known) {
+    if (memcmp(recv_info->src_addr, master_mac, 6) != 0) {
+      // Ignored command from unknown device
+      return;
+    }
+  } else {
+    // Auto-Learn Master on first command (Dev Mode)
+    // For Production: Hardcode master_mac and set master_known = true
+    if (header->slave_id == 0) {
+      memcpy(master_mac, recv_info->src_addr, 6);
+      master_known = true;
+
+      // Add Master as Peer for Unicast
+      if (!esp_now_is_peer_exist(master_mac)) {
+        esp_now_peer_info_t peerInfo = {};
+        memcpy(peerInfo.peer_addr, master_mac, 6);
+        peerInfo.channel = 1;
+        peerInfo.encrypt = false;
+        esp_now_add_peer(&peerInfo);
+      }
+    }
+  }
+
   if (header->slave_id == 0 && header->msg_type == MSG_TYPE_COMMAND) {
     LEDData *ld = (LEDData *)data;
     current_state = *ld;
+    // ... (rest of function)
 
     if (connected) {
       if (!ld->is_on) {
@@ -108,8 +139,10 @@ void sendHeartbeat() {
   header.msg_type = MSG_TYPE_TELEMETRY;
   header.version = PROTOCOL_VERSION;
 
-  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  esp_now_send(broadcast_mac, (uint8_t *)&header, sizeof(header));
+  // Unicast to Master if known, otherwise Broadcast
+  uint8_t *dest_mac =
+      master_known ? master_mac : (uint8_t *)"\xFF\xFF\xFF\xFF\xFF\xFF";
+  esp_now_send(dest_mac, (uint8_t *)&header, sizeof(header));
 }
 
 void setup() {
@@ -130,10 +163,14 @@ void setup() {
 
   esp_now_register_recv_cb(onDataRecv);
 
-  // Add broadcast peer (Master)
+  // Register Master Peer if hardcoded
   esp_now_peer_info_t peerInfo = {};
-  memset(peerInfo.peer_addr, 0xFF, 6);
-  peerInfo.channel = 0;
+  if (master_known) {
+    memcpy(peerInfo.peer_addr, master_mac, 6);
+  } else {
+    memset(peerInfo.peer_addr, 0xFF, 6); // Broadcast peer
+  }
+  peerInfo.channel = 1;
   peerInfo.encrypt = false;
   esp_now_add_peer(&peerInfo);
 

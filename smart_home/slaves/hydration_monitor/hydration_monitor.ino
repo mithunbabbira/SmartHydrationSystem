@@ -37,6 +37,11 @@ bool is_missing = false;
 unsigned long last_send_time = 0;
 unsigned long last_weight_check = 0;
 
+// --- Security ---
+// REPLACE THIS WITH YOUR MASTER GATEWAY MAC ADDRESS
+uint8_t master_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+bool master_known = false;
+
 // --- ESP-NOW Callbacks ---
 
 void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
@@ -45,8 +50,31 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     return;
 
   ESPNowHeader *header = (ESPNowHeader *)data;
+
+  // Security Check
+  if (master_known) {
+    if (memcmp(recv_info->src_addr, master_mac, 6) != 0)
+      return;
+  } else {
+    // Auto-Learn Master on first command
+    if (header->slave_id == 0) {
+      memcpy(master_mac, recv_info->src_addr, 6);
+      master_known = true;
+
+      // Add Master as Peer for Unicast
+      if (!esp_now_is_peer_exist(master_mac)) {
+        esp_now_peer_info_t peerInfo = {};
+        memcpy(peerInfo.peer_addr, master_mac, 6);
+        peerInfo.channel = 1;
+        peerInfo.encrypt = false;
+        esp_now_add_peer(&peerInfo);
+      }
+    }
+  }
+
   if (header->msg_type != MSG_TYPE_COMMAND)
     return;
+  // ...
 
   GenericCommand *cmd = (GenericCommand *)data;
 
@@ -78,12 +106,12 @@ void sendTelemetry() {
 void sendHeartbeat() {
   ESPNowHeader header;
   header.slave_id = SLAVE_ID_HYDRATION;
-  header.msg_type =
-      MSG_TYPE_TELEMETRY; // Master treats any telemetry as discovery
+  header.msg_type = MSG_TYPE_TELEMETRY;
   header.version = PROTOCOL_VERSION;
 
-  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  esp_now_send(broadcast_mac, (uint8_t *)&header, sizeof(header));
+  uint8_t *dest_mac =
+      master_known ? master_mac : (uint8_t *)"\xFF\xFF\xFF\xFF\xFF\xFF";
+  esp_now_send(dest_mac, (uint8_t *)&header, sizeof(header));
 }
 
 void setup() {
@@ -107,10 +135,14 @@ void setup() {
 
   esp_now_register_recv_cb(onDataRecv);
 
-  // Add broadcast peer
+  // Register Master Peer if hardcoded
   esp_now_peer_info_t peerInfo = {};
-  memset(peerInfo.peer_addr, 0xFF, 6);
-  peerInfo.channel = 0;
+  if (master_known) {
+    memcpy(peerInfo.peer_addr, master_mac, 6);
+  } else {
+    memset(peerInfo.peer_addr, 0xFF, 6); // Broadcast peer
+  }
+  peerInfo.channel = 1;
   peerInfo.encrypt = false;
   esp_now_add_peer(&peerInfo);
 
