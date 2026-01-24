@@ -21,7 +21,7 @@
 #define CALIBRATION_FACTOR 350.3
 
 // ==================== System Thresholds ====================
-#define WEIGHT_MISSING_THRESHOLD -50.0 // Below this, bottle is removed
+#define WEIGHT_MISSING_THRESHOLD 50.0 // Below this, bottle is removed
 
 // ==================== Logic Parameters (Moved from Server)
 // ====================
@@ -33,7 +33,7 @@
 #define WEIGHT_SAMPLE_INTERVAL 500       // 0.5s check
 #define TELEMETRY_INTERVAL 5000          // 5s report
 #define CHECK_INTERVAL_MS 1800000        // 30 mins hydration check
-#define BOTTLE_MISSING_TIMEOUT_MS 180000 // 3 mins
+#define BOTTLE_MISSING_TIMEOUT_MS 100000 // 3 mins
 
 // Alert Patterns
 #define ALERT_BLINK_WARNING_MS 1000

@@ -91,6 +91,8 @@ void loop() {
     } else if (!currently_missing && is_missing) {
       Serial.println("✓ Bottle Replaced: Immediate Silence");
       alertMgr.setLevel(0);
+      // Force Telemetry to notify Pi immediately
+      netMgr.sendTelemetry(current_weight, weight_delta, 0, false);
     }
     is_missing = currently_missing;
     weight_delta = current_weight - previous_weight;

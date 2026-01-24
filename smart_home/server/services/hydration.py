@@ -16,11 +16,19 @@ class HydrationService:
         self.snooze_until = 0
         self.daily_reset_day = datetime.now().day
         self.send_command = send_command_callback # Callback to Gateway.send_command
+        self.was_missing = False
 
     def process_weight(self, current_weight, is_home, is_missing=False):
         now = time.time()
         
         # 0. Bottle Missing Logic (Immediate Priority)
+        if self.was_missing and not is_missing:
+            print("✓ Bottle Replaced.")
+            self.alert_level = 0
+            self.trigger_alert(0)
+        
+        self.was_missing = is_missing
+
         if is_missing:
             # If newly missing, start tracking? Or just alert?
             # Legacy: "3 rapid beeps every 5 seconds"
