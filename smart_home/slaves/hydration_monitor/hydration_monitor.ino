@@ -25,6 +25,7 @@ float current_weight = 0;
 float previous_weight = 0;
 float weight_delta = 0;
 bool is_missing = false;
+unsigned long missing_start_time = 0;
 
 // --- Timing ---
 unsigned long last_send_time = 0;
@@ -84,21 +85,33 @@ void loop() {
     current_weight = scaleMgr.readWeight();
     bool currently_missing = (current_weight < WEIGHT_MISSING_THRESHOLD);
 
-    // 1a. Immediate Local Feedback (Hybrid Logic)
-    if (currently_missing && !is_missing) {
-      Serial.println("⚠ Bottle Removed: Immediate Alert");
-      alertMgr.setLevel(2);
-    } else if (!currently_missing && is_missing) {
-      Serial.println("✓ Bottle Replaced: Immediate Silence");
+    // 1a. Bottle Missing Logic (Hybrid with Timeout)
+    if (currently_missing) {
+      if (!is_missing) {
+        // Just lifted. Start Timer.
+        missing_start_time = now;
+        Serial.println("ℹ Bottle Lifted (Timer Started)");
+      }
+      // Only Alert if Timeout Exceeded
+      else if (now - missing_start_time > BOTTLE_MISSING_TIMEOUT_MS) {
+        if (alertMgr.currentLevel != 2) {
+          Serial.println("⚠ Bottle Missing Timeout: Alert!");
+          alertMgr.setLevel(2);
+        }
+      }
+    } else if (is_missing) { // currently_missing is False
+      // Replaced. Silence and Reset.
+      Serial.println("✓ Bottle Replaced: Silence");
       alertMgr.setLevel(0);
-      // Force Telemetry to notify Pi immediately
+      // Force Telemetry
       netMgr.sendTelemetry(current_weight, weight_delta, 0, false);
     }
+
     is_missing = currently_missing;
     weight_delta = current_weight - previous_weight;
     previous_weight = current_weight;
 
-    // 1b. Smart Logic Update
+    // 1b. Smart Logic Update (Consumption etc)
     logicMgr.update(current_weight, is_missing);
   }
 
