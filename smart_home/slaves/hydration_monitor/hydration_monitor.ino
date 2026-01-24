@@ -74,6 +74,17 @@ void sendTelemetry() {
   esp_now_send(broadcast_mac, (uint8_t *)&pkt, sizeof(pkt));
 }
 
+void sendHeartbeat() {
+  ESPNowHeader header;
+  header.slave_id = SLAVE_ID_HYDRATION;
+  header.msg_type =
+      MSG_TYPE_TELEMETRY; // Master treats any telemetry as discovery
+  header.version = PROTOCOL_VERSION;
+
+  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  esp_now_send(broadcast_mac, (uint8_t *)&header, sizeof(header));
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -128,5 +139,12 @@ void loop() {
   if (now - last_send_time > 5000) {
     last_send_time = now;
     sendTelemetry();
+  }
+
+  // Heartbeat every 10s (extra safety)
+  static unsigned long last_heartbeat = 0;
+  if (now - last_heartbeat > 10000) {
+    last_heartbeat = now;
+    sendHeartbeat();
   }
 }

@@ -65,6 +65,16 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
   }
 }
 
+void sendHeartbeat() {
+  ESPNowHeader header;
+  header.slave_id = SLAVE_ID_LED;
+  header.msg_type = MSG_TYPE_TELEMETRY;
+  header.version = PROTOCOL_VERSION;
+
+  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  esp_now_send(broadcast_mac, (uint8_t *)&header, sizeof(header));
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -88,9 +98,15 @@ void setup() {
   Serial.println("LED Slave Ready");
 }
 
-void loop() {
-  if (!connected) {
-    connectToBLE();
-  }
-  delay(1000);
+if (!connected) {
+  connectToBLE();
+}
+
+// Heartbeat every 5s for discovery
+static unsigned long last_heartbeat = 0;
+if (millis() - last_heartbeat > 5000) {
+  last_heartbeat = millis();
+  sendHeartbeat();
+}
+delay(100);
 }

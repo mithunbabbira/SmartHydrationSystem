@@ -28,6 +28,16 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
   }
 }
 
+void sendHeartbeat() {
+  ESPNowHeader header;
+  header.slave_id = SLAVE_ID_IR;
+  header.msg_type = MSG_TYPE_TELEMETRY;
+  header.version = PROTOCOL_VERSION;
+
+  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  esp_now_send(broadcast_mac, (uint8_t *)&header, sizeof(header));
+}
+
 void setup() {
   Serial.begin(115200);
   irSender.begin();
@@ -48,4 +58,12 @@ void setup() {
   Serial.println("IR Slave Ready (ESP32-CAM)");
 }
 
-void loop() { delay(1000); }
+void loop() {
+  // Heartbeat every 5s for discovery
+  static unsigned long last_heartbeat = 0;
+  if (millis() - last_heartbeat > 5000) {
+    last_heartbeat = millis();
+    sendHeartbeat();
+  }
+  delay(100);
+}

@@ -82,16 +82,40 @@ def serial_reader():
     while True:
         if serial_conn and serial_conn.is_open:
             try:
-                line = serial_conn.readline().decode().strip()
-                if line:
+                line_bytes = serial_conn.readline()
+                if not line_bytes:
+                    continue
+                
+                try:
+                    line = line_bytes.decode('utf-8', errors='ignore').strip()
+                except Exception as e:
+                    # Decoding completely failed, skip this line
+                    continue
+
+                if not line:
+                    continue
+                
+                # Check if it looks like JSON
+                if not (line.startswith('{') and line.endswith('}')):
+                    # Likely a boot message or serial noise
+                    if "Ready" in line or "gateway" in line:
+                         print(f"Gateway Msg: {line}")
+                    continue
+
+                try:
                     data = json.loads(line)
                     if "type" in data and data["type"] == "telemetry":
                         src = data["src"]
                         latest_telemetry[src] = data["data"]
                         log_event(src, "telemetry", data["data"])
-                        # print(f"Update [{src}]: {data['data']}")
+                    elif "event" in data:
+                        print(f"Gateway Event: {data['event']}")
+                except json.JSONDecodeError:
+                    # Not valid JSON, ignore
+                    pass
+                    
             except Exception as e:
-                print(f"Serial Read Error: {e}")
+                print(f"Serial Error: {e}")
         time.sleep(0.01)
 
 # --- Main Logic ---
