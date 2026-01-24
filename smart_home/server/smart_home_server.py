@@ -95,9 +95,23 @@ def main():
                 log(f"Device MAC: {config.PHONE_MAC}")
 
             elif cmd == "stats":
+                log("=== System Status ===")
+                log(f"Gateway: {'Connected' if gateway.serial_conn and gateway.serial_conn.is_open else 'Disconnected'}")
                 log(f"Presence: {'HOME' if presence.is_home else 'AWAY'}")
-                log(f"Hydration: Today={hydration.today_consumption}ml Alert={hydration.alert_level}")
-                log(f"Latest Telemetry: {json.dumps(latest_telemetry, indent=2)}")
+                log("")
+                log("Connected Slaves:")
+                if latest_telemetry:
+                    for slave_id, data in latest_telemetry.items():
+                        slave_name = {1: "Hydration Monitor", 2: "LED Controller", 3: "IR Transmitter"}.get(slave_id, f"Unknown ({slave_id})")
+                        log(f"  • Slave {slave_id} ({slave_name}): Active")
+                        if data:
+                            log(f"    Data: {json.dumps(data)}")
+                else:
+                    log("  No slaves detected")
+                log("")
+                log(f"Hydration Status:")
+                log(f"  Today Consumption: {hydration.today_consumption}ml")
+                log(f"  Alert Level: {hydration.alert_level}")
             
             elif cmd == "tare":
                 log("Sending TARE command to Hydration Monitor...")
