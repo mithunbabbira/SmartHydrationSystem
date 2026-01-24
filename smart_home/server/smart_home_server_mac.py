@@ -179,17 +179,33 @@ def main():
             elif cmd == "led":
                 if len(cmd_input) < 2:
                     print("Usage: led <on/off/red/green/blue/fade/flash/rainbow>")
+                    print("       led mode <id> [speed]  (e.g., led mode 37 50)")
                     continue
                     
                 action = cmd_input[1]
                 
+                # Raw Mode Command
+                if action == "mode":
+                    if len(cmd_input) < 3:
+                        print("Usage: led mode <id> [speed]")
+                        continue
+                    try:
+                        mode_id = int(cmd_input[2])
+                        speed = int(cmd_input[3]) if len(cmd_input) > 3 else 50
+                        send_command(2, "set_state", {"on": True, "mode": mode_id, "speed": speed})
+                        print(f"Sending Mode {mode_id} (Speed {speed})")
+                    except ValueError:
+                        print("Invalid number format")
+                    continue
+                
                 # LED mode mappings (common Triones modes)
                 modes = {
-                    "fade": 37,      # Smooth color fade
-                    "flash": 38,     # Flash/strobe 
-                    "strobe": 39,    # Fast strobe
-                    "smooth": 40,    # Smooth transitions
-                    "rainbow": 45,   # Rainbow cycle
+                    "fade": 37,      # Seven color cross fade
+                    "flash": 38,     # Red gradual change
+                    "strobe": 48,    # Strobe
+                    "smooth": 40,    # Cyan gradual change
+                    "rainbow": 37,   # Seven color cross fade (alt)
+                    "jump": 56,      # Seven color jump
                 }
                 
                 # Color mappings
