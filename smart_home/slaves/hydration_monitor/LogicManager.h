@@ -30,22 +30,22 @@ public:
 
     // 2. Sleep Check
     if (isSleeping()) {
-      _alerts->setLevel(0);
+      if (_alerts->currentLevel != 0)
+        _alerts->setLevel(0);
       return;
     }
 
     // 3. Presence Check
     if (!_isHome) {
-      _alerts->setLevel(0);
+      if (_alerts->currentLevel != 0)
+        _alerts->setLevel(0);
       return;
     }
 
-    // 4. Missing Check (Already handled by Immediate Logic in Loop, but we
-    // track timeouts here)
+    // 4. Missing Check (Handled by Immediate Logic in Loop)
     if (isMissing) {
       if (now - _missingStart > BOTTLE_MISSING_TIMEOUT_MS) {
-        // Escalated Alert? But immediate logic uses Level 2 already.
-        // Maybe redundant.
+        // Escalated Alert?
       } else {
         _missingStart = now;
       }
@@ -64,16 +64,13 @@ public:
     if (delta <= -DRINK_THRESHOLD_MIN) {
       float amount = abs(delta);
       _todayConsumption += amount;
-      Serial.printf("Drink: %.1fml (Total: %.1fml)\n", amount,
-                    _todayConsumption);
+      // Serial.printf("Drink: %.1fml (Total: %.1fml)\n", amount,
+      // _todayConsumption); // Safe in Loop
+      Serial.print("Drink Detected: ");
+      Serial.println(amount);
       _lastWeight = currentWeight;
       _alerts->setLevel(0);
       _lastDrinkTime = now;
-
-      // Send updated consumption to server?
-      // Currently server calculates it too.
-      // If we move logic here, we should send "Drink Event" packet?
-      // Existing telemetry sends Weight. Server can still log it.
     }
     // Refill
     else if (delta >= REFILL_THRESHOLD) {
@@ -94,12 +91,12 @@ public:
   void handleTimeResponse(uint32_t epoch) {
     _serverEpoch = epoch;
     _lastEpochSync = millis();
-    Serial.printf("Time Synced: %u\n", epoch);
+    // Serial.printf("Time Synced: %u\n", epoch);
   }
 
   void handlePresenceResponse(bool isHome) {
     _isHome = isHome;
-    Serial.printf("Presence Synced: %s\n", isHome ? "HOME" : "AWAY");
+    // Serial.printf("Presence Synced: %s\n", isHome ? "HOME" : "AWAY");
   }
 
 private:
@@ -123,13 +120,6 @@ private:
   bool isSleeping() {
     if (_serverEpoch == 0)
       return false; // No time yet
-
-    // Simple hour calculation (GMT+0 assumed for simplicity unless we add
-    // offset) Epoch is UTC. Legacy Config had GMT_OFFSET_SEC. Needs proper
-    // timezone? Or Server sends Local Hour? Let's assume Server sends Epoch. We
-    // need offset. Or simpler: Server sends "IsSleepTime"? User asked: "esp32
-    // request the time from the pi". I'll calculate hour: (Epoch + 19800) %
-    // 86400 / 3600.
 
     uint32_t local =
         _serverEpoch + ((millis() - _lastEpochSync) / 1000) + 19800; // IST

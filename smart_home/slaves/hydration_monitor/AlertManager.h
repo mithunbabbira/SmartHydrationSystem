@@ -13,20 +13,18 @@ public:
     pinMode(PIN_GREEN, OUTPUT);
     pinMode(PIN_BLUE, OUTPUT);
     pinMode(PIN_BUZZER, OUTPUT);
-
-// Legacy Support
 #ifdef PIN_ALERT_LED
     pinMode(PIN_ALERT_LED, OUTPUT);
 #endif
-
     reset();
   }
 
   void setLevel(uint8_t level) {
     if (currentLevel != level) {
       currentLevel = level;
-      Serial.printf("! Alert Level Set to: %d\n", currentLevel);
-      reset(); // Clear state when level changes
+      // Serial.printf("! Alert Level Set to: %d\n", currentLevel); // Unsafe in
+      // ISR
+      reset();
     }
   }
 
@@ -84,7 +82,7 @@ private:
     // 3. Buzzer (Level 2 Only, Beep on Active Phase)
     if (state && currentLevel >= 2) {
       digitalWrite(PIN_BUZZER, HIGH);
-      delay(ALERT_BEEP_DURATION_MS); // Simple blocking beep (50ms) is okay
+      delay(ALERT_BEEP_DURATION_MS);
       digitalWrite(PIN_BUZZER, LOW);
     }
   }
