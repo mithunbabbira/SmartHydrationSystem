@@ -83,7 +83,7 @@ int presenceFailCount = 0;
 int consecutiveSnoozeCount = 0;
 
 // Bluetooth Classic presence detection
-esp_bd_addr_t phone_bt_addr = {0x48, 0xEF, 0x1C, 0x49, 0x6A, 0xE7};
+esp_bd_addr_t = {0x48, 0xEF, 0x1C, 0x49, 0x6A, 0xE7};
 volatile bool bt_scan_finished = false;
 volatile bool bt_device_found = false;
 
