@@ -146,7 +146,7 @@ public:
         if (consumption >= DRINK_THRESHOLD_MIN) {
           Serial.print(getFormattedTime());
           Serial.printf(" ✓ Goal Met (Consumed %.1fg)\n", consumption);
-          _alerts->setLevel(0);
+          _alerts->setLevel(3); // Green Success
         } else {
           Serial.print(getFormattedTime());
           Serial.printf(" ❌ Goal Not Met (Only %.1fg)\n", consumption);

@@ -31,6 +31,8 @@ unsigned long missing_start_time = 0;
 unsigned long last_send_time = 0;
 unsigned long last_weight_check = 0;
 
+bool remote_alert_pending = false;
+
 // --- ESP-NOW Callback ---
 void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
                 int len) {
@@ -52,6 +54,7 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
         alertMgr.setLevel(0);
       } else if (g->command_id == 3) { // ALERT (Force)
         alertMgr.setLevel(g->val);
+        remote_alert_pending = true;
       } else if (g->command_id == 6) { // SET_TIME (Response)
         logicMgr.handleTimeResponse(g->val);
       } else if (g->command_id == 7) { // SET_PRESENCE (Response)
@@ -126,5 +129,11 @@ void loop() {
   }
 
   // 3. Update Alerts
+  if (remote_alert_pending) {
+    Serial.print(logicMgr.getFormattedTime());
+    Serial.println(" ⚠ Received Remote Alert (Debugging Source)");
+    remote_alert_pending = false;
+  }
+
   alertMgr.update();
 }

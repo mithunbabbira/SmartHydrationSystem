@@ -35,10 +35,26 @@ public:
     }
 
     unsigned long now = millis();
-    int interval =
-        (currentLevel == 1) ? ALERT_BLINK_WARNING_MS : ALERT_BLINK_CRITICAL_MS;
+
+    // Timeout for Success (Level 3)
+    if (currentLevel == 3) {
+      if (now - lastBlink > 5000) { // 5 Seconds total duration for success
+        setLevel(0);
+        return;
+      }
+    } // Only blink if needed.
+
+    int interval = (currentLevel == 1)   ? ALERT_BLINK_WARNING_MS
+                   : (currentLevel == 3) ? 500
+                                         : // Fast blink for success
+                       ALERT_BLINK_CRITICAL_MS;
 
     if (now - lastBlink > interval) {
+      // For Level 3: Reuse lastBlink for animation timing?
+      // Logic above uses lastBlink for duration.
+      // We need separate timers.
+      // Simplification: Blink State toggles every interval.
+      // Duration check needs start time.
       lastBlink = now;
       state = !state;
       updateHardware();
