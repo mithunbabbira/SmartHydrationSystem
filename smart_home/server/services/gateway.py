@@ -142,20 +142,17 @@ class GatewayService:
             payload = {"dst": dst}
             raw_hex = ""
             
-            # Header: [ver][type][src][dst][cmd]
-            # Ver=1, Type=2(CMD), Src=0(Master), Dst=?, Cmd=?
-            header_fmt = "<BBBBB"
-            cmd_id = 0
+            # Header: [slave_id(0)][msg_type][version(1)]
+            # Matches protocol.h: typedef struct { uint8_t slave_id; uint8_t msg_type; uint8_t version; }
+            header_fmt = "<BBB"
+            header_vals = (0, 2, 1) # Src=0(Master), Type=2(CMD), Ver=1
             
-            # Pack payload based on command type (Hydration, Leo, IR)
-            # ... (Simplified generic packing logic from main script) ...
-            # Reuse logic:
+            # Pack payload based on command type (Hydration, Led, IR)
             packet_bytes = b''
             
             if cmd == "led":
-                # LED Logic
+                # LEDCommand: Header(3) + bool + 5 bytes = 9 bytes
                 details = val if isinstance(val, dict) else {}
-                header_vals = (1, 2, 0, dst, 1) # Cmd ID 1 = LED
                 fmt = header_fmt + "?BBBBB"
                 vals = header_vals + (
                     details.get("on", False),
@@ -165,7 +162,7 @@ class GatewayService:
                 packet_bytes = struct.pack(fmt, *vals)
             
             elif cmd in ["tare", "snooze", "reset", "alert"]:
-                header_vals = (1, 2, 0, dst, 2) # Cmd ID 2 = Generic
+                # GenericCommand: Header(3) + cmd_id(1) + val(4) = 8 bytes
                 fmt = header_fmt + "BI"
                 
                 c_id = 0
@@ -179,6 +176,14 @@ class GatewayService:
 
                 vals = header_vals + (c_id, v_int)
                 packet_bytes = struct.pack(fmt, *vals)
+            
+            elif cmd == "ir":
+                 # IRData: Header(3) + code(4) + bits(1) = 8 bytes
+                 fmt = header_fmt + "IB"
+                 code = int(val.get("code", "0"), 16) if isinstance(val, dict) else 0
+                 bits = 32
+                 vals = header_vals + (code, bits)
+                 packet_bytes = struct.pack(fmt, *vals)
 
             if packet_bytes:
                 raw_hex = packet_bytes.hex()
