@@ -210,6 +210,9 @@ void setup() {
   esp_now_add_peer(&peerInfo);
 
   Serial.println("LED Slave Ready");
+
+  // Announce presence immediately
+  sendHeartbeat();
 }
 
 void loop() {
