@@ -35,10 +35,10 @@ def on_telemetry(src, data):
     
     # Forward to Hydration Service
     if src == 1:  # Hydration Monitor
-        hydration.process_update(
-            weight=data.get("weight", 0),
-            is_missing=data.get("is_missing", False),
-            alert_level=data.get("alert_level", 0)
+        hydration.process_weight(
+            current_weight=data.get("weight", 0),
+            is_home=presence.is_home(),
+            is_missing=data.get("is_missing", False)
         )
 
 def on_presence_change(is_home):
