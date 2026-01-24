@@ -84,7 +84,7 @@ def main():
                 
             elif cmd == "presence":
                 print(f"Presence State: {'Home' if presence.is_home else 'Away'}")
-                print(f"Device MAC: {config.PHONE_BT_MAC}")
+                print(f"Device MAC: {config.PHONE_MAC}")
 
             elif cmd == "stats":
                 print(f"Presence: {'HOME' if presence.is_home else 'AWAY'}")
