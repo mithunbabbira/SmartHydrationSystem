@@ -7,26 +7,16 @@
  */
 
 #include "../../master_gateway/protocol.h"
+#include "config.h"
 #include <HX711.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
 
-// --- Pin Definitions ---
-const int LOADCELL_DOUT_PIN = 23;
-const int LOADCELL_SCK_PIN = 22;
-const int PIN_BUZZER = 18;
-const int PIN_BTN = 19;
-const int PIN_RED = 5;
-const int PIN_GREEN = 4;
-const int PIN_BLUE = 2;
-
 // --- Global Objects ---
 HX711 scale;
 Preferences prefs;
-uint8_t master_mac[] = {0xFF, 0xFF, 0xFF,
-                        0xFF, 0xFF, 0xFF}; // Will be broadcast or learned
 
 // --- State ---
 float current_weight = 0;
@@ -38,9 +28,8 @@ unsigned long last_send_time = 0;
 unsigned long last_weight_check = 0;
 
 // --- Security ---
-// REPLACE THIS WITH YOUR MASTER GATEWAY MAC ADDRESS
-uint8_t master_mac[6] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4}; // Gateway MAC
-bool master_known = true; // Production mode enabled
+uint8_t master_mac[6];
+bool master_known = false;
 
 // --- ESP-NOW Callbacks ---
 
@@ -51,49 +40,52 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
 
   ESPNowHeader *header = (ESPNowHeader *)data;
 
-  // Security Check
+  // Security Check: Verify Sender
   if (master_known) {
     if (memcmp(recv_info->src_addr, master_mac, 6) != 0)
-      return;
+      return; // Ignore packets from unknown sources
   } else {
     // Auto-Learn Master on first command
-    if (header->slave_id == 0) {
+    if (header->slave_id == 0) { // 0 is Master
       memcpy(master_mac, recv_info->src_addr, 6);
       master_known = true;
-
-      // Add Master as Peer for Unicast
-      if (!esp_now_is_peer_exist(master_mac)) {
-        esp_now_peer_info_t peerInfo = {};
-        memcpy(peerInfo.peer_addr, master_mac, 6);
-        peerInfo.channel = 1;
-        peerInfo.encrypt = false;
-        esp_now_add_peer(&peerInfo);
-      }
+      // Persist learned Master MAC logic could be added here
     }
   }
 
-  if (header->msg_type != MSG_TYPE_COMMAND)
-    return;
-  // ...
-
-  GenericCommand *cmd = (GenericCommand *)data;
-
-  if (cmd->command_id == 1) { // Tare
-    scale.tare();
-    Serial.println("✓ Tared Scale");
-  } else if (cmd->command_id == 2) { // Snooze
-    alert_level = 0;
-    Serial.println("✓ Snoozed");
-  } else if (cmd->command_id == 3) { // Set Alert
-    // Val1 = Alert Level (1=Warning, 2=Critical)
-    alert_level = (int)cmd->value1;
-    Serial.printf("! Alert Level Set to: %d\n", alert_level);
-
-    // Immediate feedback
-    digitalWrite(PIN_BUZZER, HIGH);
-    delay(100);
-    digitalWrite(PIN_BUZZER, LOW);
+  // Add Master as Peer for Unicast
+  if (!esp_now_is_peer_exist(master_mac)) {
+    esp_now_peer_info_t peerInfo = {};
+    memcpy(peerInfo.peer_addr, master_mac, 6);
+    peerInfo.channel = 1;
+    peerInfo.encrypt = false;
+    esp_now_add_peer(&peerInfo);
   }
+}
+}
+
+if (header->msg_type != MSG_TYPE_COMMAND)
+  return;
+// ...
+
+GenericCommand *cmd = (GenericCommand *)data;
+
+if (cmd->command_id == 1) { // Tare
+  scale.tare();
+  Serial.println("✓ Tared Scale");
+} else if (cmd->command_id == 2) { // Snooze
+  alert_level = 0;
+  Serial.println("✓ Snoozed");
+} else if (cmd->command_id == 3) { // Set Alert
+  // Val1 = Alert Level (1=Warning, 2=Critical)
+  alert_level = (int)cmd->value1;
+  Serial.printf("! Alert Level Set to: %d\n", alert_level);
+
+  // Immediate feedback
+  digitalWrite(PIN_BUZZER, HIGH);
+  delay(100);
+  digitalWrite(PIN_BUZZER, LOW);
+}
 }
 
 void handleAlerts() {
@@ -187,30 +179,6 @@ void setup() {
     esp_wifi_set_promiscuous(true);
     esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
     esp_wifi_set_promiscuous(false);
-
-    if (esp_now_init() != ESP_OK)
-      return;
-
-    esp_now_register_recv_cb(onDataRecv);
-
-    // Register Master Peer if hardcoded
-    esp_now_peer_info_t peerInfo = {};
-    if (master_known) {
-      memcpy(peerInfo.peer_addr, master_mac, 6);
-    } else {
-      memset(peerInfo.peer_addr, 0xFF, 6); // Broadcast peer
-    }
-    peerInfo.channel = 1;
-    peerInfo.encrypt = false;
-    esp_now_add_peer(&peerInfo);
-
-    Serial.println("Hydration Slave Ready (ESP-NOW)");
-  }
-
-  void loop() {
-    unsigned long now = millis();
-
-    // Weight Sensing
     if (now - last_weight_check > 500) {
       last_weight_check = now;
       current_weight = scale.get_units(5);
