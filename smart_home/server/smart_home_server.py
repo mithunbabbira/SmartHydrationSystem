@@ -31,7 +31,8 @@ def on_telemetry(src, data):
     if src == 1 and "weight" in data:
         # Check current presence state
         is_home = presence.is_home if presence else False
-        hydration.process_weight(data["weight"], is_home)
+        is_missing = data.get("missing", False)
+        hydration.process_weight(data["weight"], is_home, is_missing)
 
 def on_presence_change(is_home):
     """Callback when User Presence changes"""

@@ -17,9 +17,21 @@ class HydrationService:
         self.daily_reset_day = datetime.now().day
         self.send_command = send_command_callback # Callback to Gateway.send_command
 
-    def process_weight(self, current_weight, is_home):
+    def process_weight(self, current_weight, is_home, is_missing=False):
         now = time.time()
         
+        # 0. Bottle Missing Logic (Immediate Priority)
+        if is_missing:
+            # If newly missing, start tracking? Or just alert?
+            # Legacy: "3 rapid beeps every 5 seconds"
+            # We'll treat it as Critical Alert immediately if it persists?
+            # Let's simple: If missing, Escalated Alert 2 immediately.
+            if self.alert_level != 2:
+                print("⚠ Bottle Missing! Triggering Alarm.")
+                self.alert_level = 2
+                self.trigger_alert(2)
+            return
+
         # 1. Midnight Reset
         if datetime.now().day != self.daily_reset_day:
             self.today_consumption = 0
@@ -40,15 +52,24 @@ class HydrationService:
         current_hour = datetime.now().hour
         if current_hour >= config.HYDRATION_SLEEP_START or current_hour < config.HYDRATION_SLEEP_END:
             print("😴 Sleep Time. Skipping check.")
+            # Ensure silent if sleeping (unless we want to enforce drinking?)
+            if self.alert_level > 0:
+                self.alert_level = 0
+                self.trigger_alert(0)
             return
 
         if not is_home:
             print("🚶 User Away. Skipping check.")
+            if self.alert_level > 0:
+                self.alert_level = 0
+                self.trigger_alert(0)
             return
 
         # 4. Weight Analysis
         if self.last_weight == 0:
             self.last_weight = current_weight # Initialize
+            self.alert_level = 0 # Reset alerts on first valid weight
+            self.trigger_alert(0)
             return
 
         delta = current_weight - self.last_weight
