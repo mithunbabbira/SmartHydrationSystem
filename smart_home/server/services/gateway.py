@@ -183,7 +183,7 @@ class GatewayService:
             if packet_bytes:
                 raw_hex = packet_bytes.hex()
                 payload["raw"] = raw_hex
-                # print(f"Sent Hex: {raw_hex}")
+                print(f"Sent Hex: {raw_hex}") # Debug enabled
                 self.serial_conn.write((json.dumps(payload) + "\n").encode())
 
         except Exception as e:
