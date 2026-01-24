@@ -19,25 +19,50 @@ class PresenceService:
 
     def _check_loop(self):
         while self.running:
+            new_state = False
             try:
-                # Use hcitool to check RSSI (fast check)
-                cmd = ["hcitool", "rssi", config.PHONE_MAC]
-                result = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode()
-                new_state = bool(result.strip())
+                # Method 1: PyBluez (Name Lookup)
+                # Requires 'pybluez' installed. Works if device is discoverable.
+                try:
+                    import bluetooth
+                    name = bluetooth.lookup_name(config.PHONE_MAC, timeout=5)
+                    if name:
+                        new_state = True
+                except ImportError:
+                    pass
+                except Exception as e:
+                    # print(f"PyBluez Error: {e}") 
+                    pass
                 
+                # Method 2: l2ping (System Command)
+                # Works on some hidden devices. Requires sudo often.
+                if not new_state:
+                    try:
+                        cmd = ["l2ping", "-c", "1", "-t", "2", config.PHONE_MAC]
+                        # suppress output
+                        subprocess.check_output(cmd, stderr=subprocess.DEVNULL)
+                        new_state = True
+                    except Exception:
+                        pass
+                
+                # Method 3: Legacy hcitool rssi (Only if connected)
+                if not new_state:
+                     try:
+                        cmd = ["hcitool", "rssi", config.PHONE_MAC]
+                        result = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode()
+                        if result and "RSSI" in result:
+                             new_state = True
+                     except:
+                        pass
+
                 if new_state != self.is_home:
                     self.is_home = new_state
                     print(f"Presence Change: {'HOME' if self.is_home else 'AWAY'}")
                     if self.on_change_callback:
                         self.on_change_callback(self.is_home)
-                    
+
             except Exception as e:
-                # hcitool might return error if device not found
-                if self.is_home:
-                    self.is_home = False
-                    print("Presence Change: AWAY (Detection Error/Timeout)")
-                    if self.on_change_callback:
-                        self.on_change_callback(False)
+                print(f"Presence Logic Error: {e}")
             
             time.sleep(10)
 
