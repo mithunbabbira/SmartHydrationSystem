@@ -11,6 +11,7 @@
 #include <IRsend.h>
 #include <WiFi.h>
 #include <esp_now.h>
+#include <esp_wifi.h>
 
 const uint16_t IR_SEND_PIN = 4; // Check your ESP32-CAM mapping
 IRsend irSender(IR_SEND_PIN);
@@ -43,6 +44,10 @@ void setup() {
   irSender.begin();
 
   WiFi.mode(WIFI_STA);
+  esp_wifi_set_promiscuous(true);
+  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+  esp_wifi_set_promiscuous(false);
+
   if (esp_now_init() != ESP_OK)
     return;
 

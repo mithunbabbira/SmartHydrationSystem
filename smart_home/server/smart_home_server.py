@@ -184,6 +184,9 @@ def main():
             elif cmd == "tare":
                 send_command(1, "tare")
             elif cmd == "led":
+                if len(cmd_input) < 2:
+                    print("Usage: led <on/off>")
+                    continue
                 state = cmd_input[1] == "on"
                 send_command(2, "set_state", {"on": state})
             elif cmd == "ir":

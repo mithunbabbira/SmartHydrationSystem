@@ -121,6 +121,10 @@ void setup() {
 
   // WiFi & ESP-NOW
   WiFi.mode(WIFI_STA);
+  esp_wifi_set_promiscuous(true);
+  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+  esp_wifi_set_promiscuous(false);
+
   if (esp_now_init() != ESP_OK)
     return;
 

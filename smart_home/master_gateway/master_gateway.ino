@@ -12,6 +12,7 @@
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <esp_now.h>
+#include <esp_wifi.h>
 
 // Configuration
 #define BAUD_RATE 115200
@@ -123,8 +124,11 @@ void handlePiCommand(String input) {
     }
   }
 
-  if (!target_mac)
+  if (!target_mac) {
+    Serial.println(
+        "{\"error\":\"Slave not found in peer list. Wait for heartbeat.\"}");
     return;
+  }
 
   // Construct binary packet based on command
   if (dst == SLAVE_ID_HYDRATION) {
@@ -168,8 +172,11 @@ void handlePiCommand(String input) {
 void setup() {
   Serial.begin(BAUD_RATE);
 
-  // Initialize WiFi in STA Mode for ESP-NOW
+  // Initialize WiFi in STA Mode for ESP-NOW and force Channel 1
   WiFi.mode(WIFI_STA);
+  esp_wifi_set_promiscuous(true);
+  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+  esp_wifi_set_promiscuous(false);
   WiFi.disconnect();
 
   if (esp_now_init() != ESP_OK) {
