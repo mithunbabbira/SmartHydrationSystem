@@ -1,7 +1,8 @@
 /*
- * Smart Home Slave ID 1: Hydration Monitor (Refactored)
+ * Smart Home Slave ID 1: Hydration Monitor (Refactored Smart Slave)
  * -----------------------------------------------------
  * Modular Architecture using Managers.
+ * Logic is mostly on device, requesting Time/Presence from Pi.
  */
 
 #include "../../master_gateway/protocol.h"
@@ -10,12 +11,14 @@
 // Modules
 #include "AlertManager.h"
 #include "CommsManager.h"
+#include "LogicManager.h"
 #include "ScaleManager.h"
 
 // --- Globals ---
 AlertManager alertMgr;
 ScaleManager scaleMgr;
 CommsManager netMgr;
+LogicManager logicMgr;
 
 // --- State ---
 float current_weight = 0;
@@ -46,8 +49,12 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
         scaleMgr.tare();
       } else if (g->command_id == 2) { // SNOOZE
         alertMgr.setLevel(0);
-      } else if (g->command_id == 3) { // ALERT
+      } else if (g->command_id == 3) { // ALERT (Force)
         alertMgr.setLevel(g->val);
+      } else if (g->command_id == 6) { // SET_TIME (Response)
+        logicMgr.handleTimeResponse(g->val);
+      } else if (g->command_id == 7) { // SET_PRESENCE (Response)
+        logicMgr.handlePresenceResponse(g->val > 0);
       }
     }
   }
@@ -60,11 +67,12 @@ void setup() {
   alertMgr.begin();
   netMgr.begin();
   scaleMgr.begin();
+  logicMgr.begin(&netMgr, &alertMgr);
 
   // Register Callback
   esp_now_register_recv_cb(onDataRecv);
 
-  Serial.println("Hydration Monitor (Refactored) Ready.");
+  Serial.println("Hydration Monitor (Smart Slave) Ready.");
 }
 
 void loop() {
@@ -74,24 +82,25 @@ void loop() {
   if (now - last_weight_check > WEIGHT_SAMPLE_INTERVAL) {
     last_weight_check = now;
     current_weight = scaleMgr.readWeight();
-
     bool currently_missing = (current_weight < WEIGHT_MISSING_THRESHOLD);
 
     // 1a. Immediate Local Feedback (Hybrid Logic)
     if (currently_missing && !is_missing) {
-      Serial.println("⚠ Bottle Removed: Local Alert 2");
+      Serial.println("⚠ Bottle Removed: Immediate Alert");
       alertMgr.setLevel(2);
     } else if (!currently_missing && is_missing) {
-      Serial.println("✓ Bottle Replaced: Local Silence");
+      Serial.println("✓ Bottle Replaced: Immediate Silence");
       alertMgr.setLevel(0);
     }
-
     is_missing = currently_missing;
     weight_delta = current_weight - previous_weight;
     previous_weight = current_weight;
+
+    // 1b. Smart Logic Update
+    logicMgr.update(current_weight, is_missing);
   }
 
-  // 2. Report Telemetry (Slower 5s loop)
+  // 2. Report Telemetry (Keep alive server logs)
   if (now - last_send_time > TELEMETRY_INTERVAL) {
     last_send_time = now;
     netMgr.sendTelemetry(current_weight, weight_delta, alertMgr.currentLevel,

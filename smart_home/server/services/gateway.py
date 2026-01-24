@@ -72,26 +72,40 @@ class GatewayService:
                     if any(x in line for x in ["Ready", "gateway", "boot", "rst:"]):
                         print(f"Gateway Log: {line}")
                     continue
-
+                
                 try:
                     data = json.loads(line)
-                    if "type" in data:
-                        m_type = data["type"]
-                        if m_type == "telemetry":
-                            src = data["src"]
-                            
-                            # Parse Raw
-                            telemetry = self.parse_generic_telemetry(data)
-                            if telemetry and self.on_telemetry_callback:
-                                self.on_telemetry_callback(src, telemetry)
+                    m_type = data.get("type")
+                    
+                    if m_type == "telemetry":
+                         # Old style
+                         src = data["src"]
+                         telemetry = self.parse_generic_telemetry(data)
+                         if telemetry and self.on_telemetry_callback:
+                             self.on_telemetry_callback(src, telemetry)
 
-                        elif m_type == "gateway_id":
-                            if not self.gateway_verified:
-                                print(f"✓ VERIFIED: Gateway connected on {self.serial_conn.port}")
-                                self.gateway_verified = True
-                                
+                    elif m_type == "packet":
+                         # New Generic Forwarding
+                         src = data.get("src")
+                         msg_type = data.get("msg_type")
+                         
+                         if msg_type == 1: # Telemetry
+                             telemetry = self.parse_generic_telemetry(data)
+                             if telemetry and self.on_telemetry_callback:
+                                 self.on_telemetry_callback(src, telemetry)
+                         elif msg_type == 2: # Command / Query
+                             # Pass raw packet to callback
+                             if self.on_telemetry_callback:
+                                 self.on_telemetry_callback(src, data)
+
+                    elif m_type == "gateway_id":
+                         if not self.gateway_verified:
+                             print(f"✓ VERIFIED: Gateway connected on {self.serial_conn.port}")
+                             self.gateway_verified = True
+                             
                     elif "event" in data:
                         print(f"Gateway Event: {data['event']}")
+                        
                 except json.JSONDecodeError:
                     pass
                     
@@ -143,15 +157,12 @@ class GatewayService:
             raw_hex = ""
             
             # Header: [slave_id(0)][msg_type][version(1)]
-            # Matches protocol.h: typedef struct { uint8_t slave_id; uint8_t msg_type; uint8_t version; }
             header_fmt = "<BBB"
             header_vals = (0, 2, 1) # Src=0(Master), Type=2(CMD), Ver=1
             
-            # Pack payload based on command type (Hydration, Led, IR)
             packet_bytes = b''
             
             if cmd == "led":
-                # LEDCommand: Header(3) + bool + 5 bytes = 9 bytes
                 details = val if isinstance(val, dict) else {}
                 fmt = header_fmt + "?BBBBB"
                 vals = header_vals + (
@@ -161,7 +172,7 @@ class GatewayService:
                 )
                 packet_bytes = struct.pack(fmt, *vals)
             
-            elif cmd in ["tare", "snooze", "reset", "alert"]:
+            elif cmd in ["tare", "snooze", "reset", "alert", "set_time", "set_presence"]:
                 # GenericCommand: Header(3) + cmd_id(1) + val(4) = 8 bytes
                 fmt = header_fmt + "BI"
                 
@@ -173,12 +184,17 @@ class GatewayService:
                 elif cmd == "alert": 
                     c_id = 3
                     v_int = val.get("level", 0) if isinstance(val, dict) else 0
+                elif cmd == "set_time":
+                    c_id = 6
+                    v_int = int(val)
+                elif cmd == "set_presence":
+                    c_id = 7
+                    v_int = 1 if val else 0
 
                 vals = header_vals + (c_id, v_int)
                 packet_bytes = struct.pack(fmt, *vals)
             
             elif cmd == "ir":
-                 # IRData: Header(3) + code(4) + bits(1) = 8 bytes
                  fmt = header_fmt + "IB"
                  code = int(val.get("code", "0"), 16) if isinstance(val, dict) else 0
                  bits = 32

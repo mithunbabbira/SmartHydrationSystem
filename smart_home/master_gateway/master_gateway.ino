@@ -72,24 +72,26 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     known_slaves[idx].last_seen = millis();
   }
 
-  // Forward Telemetry to Pi as JSON
-  if (header->msg_type == MSG_TYPE_TELEMETRY) {
-    StaticJsonDocument<1024> doc; // Increased for Hex
-    doc["type"] = "telemetry";
-    doc["src"] = header->slave_id;
+  // Forward ALL packets to Pi as JSON (Transparent Bridge)
+  // if (header->msg_type == MSG_TYPE_TELEMETRY) { // Removed filter
+  StaticJsonDocument<1024> doc;
+  doc["type"] = "packet";             // Generic type
+  doc["msg_type"] = header->msg_type; // Include actual type
+  doc["src"] = header->slave_id;
+  doc["ver"] = header->version;
 
-    // Generic Raw Forwarding
-    String rawHex = "";
-    for (int i = 0; i < len; i++) {
-      if (data[i] < 16)
-        rawHex += "0"; // Pad single digit
-      rawHex += String(data[i], HEX);
-    }
-    doc["raw"] = rawHex;
-
-    serializeJson(doc, Serial);
-    Serial.println();
+  // Generic Raw Forwarding
+  String rawHex = "";
+  for (int i = 0; i < len; i++) {
+    if (data[i] < 16)
+      rawHex += "0";
+    rawHex += String(data[i], HEX);
   }
+  doc["raw"] = rawHex;
+
+  serializeJson(doc, Serial);
+  Serial.println();
+  // }
 }
 
 // onDataSent callback removed to avoid signature mismatch on newer SDKs

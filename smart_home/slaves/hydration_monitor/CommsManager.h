@@ -59,6 +59,21 @@ public:
     esp_now_send(dest, (uint8_t *)&header, sizeof(header));
   }
 
+  void sendQuery(uint8_t queryType) {
+    if (!master_known)
+      return;
+
+    // Structure: Header(3) + CmdID(1) + Val(4)
+    GenericCommand pkt;
+    pkt.header.slave_id = SLAVE_ID_HYDRATION;
+    pkt.header.msg_type = MSG_TYPE_COMMAND;
+    pkt.header.version = PROTOCOL_VERSION;
+    pkt.command_id = 10; // QUERY
+    pkt.val = queryType; // 1=Time, 2=Presence
+
+    esp_now_send(master_mac, (uint8_t *)&pkt, sizeof(pkt));
+  }
+
 private:
   void addPeer(const uint8_t *mac) {
     if (!esp_now_is_peer_exist(mac)) {
