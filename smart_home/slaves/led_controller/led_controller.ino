@@ -9,6 +9,7 @@
 #include "../../master_gateway/protocol.h"
 #include "soc/rtc_cntl_reg.h"
 #include "soc/soc.h"
+#include <ArduinoJson.h>
 #include <BLEDevice.h>
 #include <BLEScan.h>
 #include <BLEUtils.h>
@@ -157,13 +158,58 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     }
   }
 
-  if (header->slave_id == 0 && header->msg_type == MSG_TYPE_COMMAND) {
-    LEDData *ld = (LEDData *)data;
-    // Store command for processing in loop() - CRITICAL: Don't do BLE in
-    // callback!
-    pending_state = *ld;
-    pending_command = true;
-    Serial.println("✓ ESP-NOW Command Received from Master");
+  // Parse LED Commands (JSON format from server via master)
+  if (header->msg_type == MSG_TYPE_COMMAND && len > sizeof(GenericCommand)) {
+    GenericCommand *cmd = (GenericCommand *)data;
+
+    if (cmd->command_id == 4) { // LED command (JSON payload)
+      // Extract JSON payload after the GenericCommand header
+      int json_start = sizeof(GenericCommand);
+      int json_len = len - json_start;
+
+      if (json_len > 0) {
+        // Parse JSON
+        StaticJsonDocument<256> doc;
+        DeserializationError error =
+            deserializeJson(doc, (const char *)(data + json_start), json_len);
+
+        if (!error) {
+          Serial.println("✓ ESP-NOW JSON Command Received from Master");
+
+          // Parse command type
+          const char *cmd_str = doc["cmd"] | "unknown";
+
+          if (strcmp(cmd_str, "color") == 0) {
+            pending_state.is_on = true;
+            pending_state.mode = 0; // Color mode
+            pending_state.r = doc["r"] | 0;
+            pending_state.g = doc["g"] | 0;
+            pending_state.b = doc["b"] | 0;
+            pending_command = true;
+            Serial.printf("→ Color command: R%d G%d B%d\n", pending_state.r,
+                          pending_state.g, pending_state.b);
+          } else if (strcmp(cmd_str, "on") == 0) {
+            pending_state.is_on = true;
+            pending_command = true;
+            Serial.println("→ ON command");
+          } else if (strcmp(cmd_str, "off") == 0) {
+            pending_state.is_on = false;
+            pending_command = true;
+            Serial.println("→ OFF command");
+          } else if (strcmp(cmd_str, "mode") == 0) {
+            pending_state.is_on = true;
+            pending_state.mode = doc["mode"] | 1;
+            pending_state.speed = doc["speed"] | 50;
+            pending_command = true;
+            Serial.printf("→ Mode command: M%d S%d\n", pending_state.mode,
+                          pending_state.speed);
+          }
+        } else {
+          Serial.print("JSON parse error: ");
+          Serial.println(error.c_str());
+        }
+      }
+    }
   }
 }
 
