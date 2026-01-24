@@ -82,6 +82,10 @@ def main():
                 print("  led <cmd>     - Control LED Strip (on/off/red/blue...)")
                 print("  ir <code>     - Send IR Code")
                 
+            elif cmd == "presence":
+                print(f"Presence State: {'Home' if presence.is_home else 'Away'}")
+                print(f"Device MAC: {config.PHONE_BT_MAC}")
+
             elif cmd == "stats":
                 print(f"Presence: {'HOME' if presence.is_home else 'AWAY'}")
                 print(f"Hydration: Today={hydration.today_consumption}ml Alert={hydration.alert_level}")

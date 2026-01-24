@@ -32,7 +32,8 @@
 // Timing
 #define WEIGHT_SAMPLE_INTERVAL 500       // 0.5s check
 #define TELEMETRY_INTERVAL 5000          // 5s report
-#define CHECK_INTERVAL_MS 1800000        // 30 mins hydration check
+//#define CHECK_INTERVAL_MS 1800000    
+#define CHECK_INTERVAL_MS 200000         // 30 mins hydration check
 #define BOTTLE_MISSING_TIMEOUT_MS 100000 // 3 mins
 
 // Alert Patterns
