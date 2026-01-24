@@ -249,7 +249,17 @@ void loop() {
           delay(150); // Delay only when powering ON
         }
 
-        if (current_state.mode > 0) {
+        if (current_state.mode == 255) {
+          // RAW MODE (for debugging protocol)
+          // Map: speed=byte0, r=byte1, g=byte2, b=byte3
+          uint8_t raw[] = {current_state.speed, current_state.r,
+                           current_state.g, current_state.b};
+          if (pRemoteCharacteristic != nullptr) {
+            pRemoteCharacteristic->writeValue(raw, sizeof(raw));
+            Serial.printf("[BLE] Sent RAW: %02X %02X %02X %02X\n", raw[0],
+                          raw[1], raw[2], raw[3]);
+          }
+        } else if (current_state.mode > 0) {
           sendModeToStrip(current_state.mode, current_state.speed);
         } else {
           sendColorToStrip(current_state.r, current_state.g, current_state.b);

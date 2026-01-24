@@ -184,6 +184,26 @@ def main():
                     
                 action = cmd_input[1]
                 
+                # Raw Hex Command (e.g. led raw BB 25 32 44)
+                if action == "raw":
+                    if len(cmd_input) < 6:
+                        print("Usage: led raw <b1> <b2> <b3> <b4> (Hex)")
+                        continue
+                    try:
+                        b1 = int(cmd_input[2], 16)
+                        b2 = int(cmd_input[3], 16)
+                        b3 = int(cmd_input[4], 16)
+                        b4 = int(cmd_input[5], 16)
+                        # Pack into struct: mode=255, speed=b1, r=b2, g=b3, b=b4
+                        send_command(2, "set_state", {
+                            "on": True, "mode": 255, 
+                            "speed": b1, "r": b2, "g": b3, "b": b4
+                        })
+                        print(f"Sending Bytes: {hex(b1)} {hex(b2)} {hex(b3)} {hex(b4)}")
+                    except ValueError:
+                        print("Invalid hex format")
+                    continue
+
                 # Raw Mode Command
                 if action == "mode":
                     if len(cmd_input) < 3:
