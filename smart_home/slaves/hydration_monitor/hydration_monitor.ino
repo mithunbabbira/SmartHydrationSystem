@@ -1,0 +1,132 @@
+/*
+ * Smart Home Slave ID 1: Hydration Monitor
+ * -----------------------------------------
+ * Features: Weight tracking, Alert escalation, ESP-NOW telemetry.
+ *
+ * Hardware: ESP32 + HX711 + Buzzer + RGB LED + Button
+ */
+
+#include "../../master_gateway/protocol.h"
+#include <HX711.h>
+#include <Preferences.h>
+#include <WiFi.h>
+#include <esp_now.h>
+
+// --- Pin Definitions ---
+const int LOADCELL_DOUT_PIN = 23;
+const int LOADCELL_SCK_PIN = 22;
+const int PIN_BUZZER = 18;
+const int PIN_BTN = 19;
+const int PIN_RED = 5;
+const int PIN_GREEN = 4;
+const int PIN_BLUE = 2;
+
+// --- Global Objects ---
+HX711 scale;
+Preferences prefs;
+uint8_t master_mac[] = {0xFF, 0xFF, 0xFF,
+                        0xFF, 0xFF, 0xFF}; // Will be broadcast or learned
+
+// --- State ---
+float current_weight = 0;
+float previous_weight = 0;
+float weight_delta = 0;
+uint8_t alert_level = 0;
+bool is_missing = false;
+unsigned long last_send_time = 0;
+unsigned long last_weight_check = 0;
+
+// --- ESP-NOW Callbacks ---
+
+void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
+                int len) {
+  if (len < sizeof(ESPNowHeader))
+    return;
+
+  ESPNowHeader *header = (ESPNowHeader *)data;
+  if (header->msg_type != MSG_TYPE_COMMAND)
+    return;
+
+  GenericCommand *cmd = (GenericCommand *)data;
+
+  if (cmd->command_id == 1) { // Tare
+    scale.tare();
+    Serial.println("✓ Tared Scale");
+  } else if (cmd->command_id == 2) { // Snooze
+    alert_level = 0;
+    Serial.println("✓ Snoozed");
+  }
+}
+
+void sendTelemetry() {
+  HydrationTelemetry pkt;
+  pkt.header.slave_id = SLAVE_ID_HYDRATION;
+  pkt.header.msg_type = MSG_TYPE_TELEMETRY;
+  pkt.header.version = PROTOCOL_VERSION;
+
+  pkt.weight = current_weight;
+  pkt.delta = weight_delta;
+  pkt.alert_level = alert_level;
+  pkt.bottle_missing = is_missing;
+
+  // Use broadcast MAC unless master MAC is set (for simplicity in this demo)
+  uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  esp_now_send(broadcast_mac, (uint8_t *)&pkt, sizeof(pkt));
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Hardware setup
+  pinMode(PIN_BUZZER, OUTPUT);
+  pinMode(PIN_RED, OUTPUT);
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.set_scale(420.0); // Calibrated value
+  scale.tare();
+
+  // WiFi & ESP-NOW
+  WiFi.mode(WIFI_STA);
+  if (esp_now_init() != ESP_OK)
+    return;
+
+  esp_now_register_recv_cb(onDataRecv);
+
+  // Add broadcast peer
+  esp_now_peer_info_t peerInfo = {};
+  memset(peerInfo.peer_addr, 0xFF, 6);
+  peerInfo.channel = 0;
+  peerInfo.encrypt = false;
+  esp_now_add_peer(&peerInfo);
+
+  Serial.println("Hydration Slave Ready (ESP-NOW)");
+}
+
+void loop() {
+  unsigned long now = millis();
+
+  // Weight Sensing
+  if (now - last_weight_check > 500) {
+    last_weight_check = now;
+    current_weight = scale.get_units(5);
+
+    // Simple presence logic
+    if (current_weight < -50) { // Off balance / missing
+      is_missing = true;
+    } else {
+      is_missing = false;
+    }
+
+    // Detect drinking
+    weight_delta = current_weight - previous_weight;
+    if (weight_delta < -30) {
+      // User drank!
+    }
+    previous_weight = current_weight;
+  }
+
+  // Telemetry Update
+  if (now - last_send_time > 5000) {
+    last_send_time = now;
+    sendTelemetry();
+  }
+}
