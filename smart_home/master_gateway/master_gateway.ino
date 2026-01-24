@@ -109,54 +109,6 @@ void handlePiCommand(String input) {
   }
 
   if (!target_mac) {
-    Serial.println(
-        "{\"error\":\"Slave not found in peer list. Wait for heartbeat.\"}");
-    return;
-  }
-
-  // Construct binary packet based on command
-  if (dst == SLAVE_ID_HYDRATION) {
-    GenericCommand packet;
-    packet.header.slave_id = 0; // Master
-    packet.header.msg_type = MSG_TYPE_COMMAND;
-    packet.header.version = PROTOCOL_VERSION;
-
-    if (cmd == "tare")
-      packet.command_id = 1;
-    else if (cmd == "snooze") {
-      packet.command_id = 2;
-      packet.val = doc["val"] | 15;
-    } else if (cmd == "reset") {
-      packet.command_id = 3;
-    } else if (cmd == "alert") {
-      packet.command_id = 3;
-      packet.val = doc["val"] | 0;
-    }
-
-    esp_now_send(target_mac, (uint8_t *)&packet, sizeof(packet));
-  } else if (dst == SLAVE_ID_LED) {
-    LEDData packet;
-    packet.header.slave_id = 0;
-    packet.header.msg_type = MSG_TYPE_COMMAND;
-    packet.header.version = PROTOCOL_VERSION;
-
-    if (cmd == "set_state") {
-      JsonObject val = doc["val"];
-      packet.is_on = val["on"] | true;
-      packet.mode = val["mode"] | 0;
-      packet.speed = val["speed"] | 50;
-      packet.r = val["r"] | 255;
-      packet.g = val["g"] | 0;
-      packet.b = val["b"] | 0;
-      esp_now_send(target_mac, (uint8_t *)&packet, sizeof(packet));
-    }
-  } else if (dst == SLAVE_ID_IR) {
-    IRData packet;
-    packet.header.slave_id = 0;
-    packet.header.msg_type = MSG_TYPE_COMMAND;
-    packet.header.version = PROTOCOL_VERSION;
-    packet.ir_code = strtoul(doc["val"], NULL, 16);
-    packet.bits = 32;
     esp_now_send(target_mac, (uint8_t *)&packet, sizeof(packet));
   }
 }

@@ -9,6 +9,8 @@ import serial
 import json
 import time
 import threading
+import serial.tools.list_ports
+import struct
 import glob
 
 # --- Configuration ---
@@ -66,16 +68,64 @@ def send_command(dst, cmd, val=None):
     if not serial_conn or not serial_conn.is_open:
         print("⚠ No serial connection")
         return
-        
-    command = {"dst": dst, "cmd": cmd}
-    if val is not None:
-        command["val"] = val
-        
     try:
-        serial_conn.write((json.dumps(command) + '\n').encode())
-        print(f"📤 Sent Command: {command}")
+        payload = {"dst": dst}
+        
+        # Construct Binary Packet (Header + Payload)
+        # Header: [SlaveID=0 (Master)][MsgType=2 (Command)][Version=1]
+        # Struct format: <BBB (Little Endian)
+        header_fmt = "<BBB" 
+        header_vals = (0, 2, 1) # Source=0, Type=Command, Ver=1
+        
+        packet_bytes = bytearray()
+        
+        if cmd == "set_state":
+            # LEDData Struct: Header + bool, r, g, b, mode, speed
+            # Packed: <BBB ? BBB B B (Total 9 bytes)
+            # details: {'on': True, 'mode': 0, 'speed': 50, 'r': 255...}
+            fmt = header_fmt + "?BBBBB"
+            vals = header_vals + (
+                details.get("on", False),
+                details.get("r", 0),
+                details.get("g", 0),
+                details.get("b", 0),
+                details.get("mode", 0),
+                details.get("speed", 0)
+            )
+            packet_bytes = struct.pack(fmt, *vals)
+
+        elif cmd in ["tare", "snooze", "reset", "alert"]:
+            # GenericCommand Struct: Header + cmd_id(B) + val(I - 4 bytes)
+            # Packed: <BBB B I (Total 8 bytes)
+            fmt = header_fmt + "BI"
+            
+            cmd_id = 0
+            val = 0
+            
+            if cmd == "tare": cmd_id = 1
+            elif cmd == "snooze": cmd_id = 2
+            elif cmd == "reset": cmd_id = 3
+            elif cmd == "alert": 
+                cmd_id = 3
+                val = details.get("level", 0)
+            
+            vals = header_vals + (cmd_id, val)
+            packet_bytes = struct.pack(fmt, *vals)
+            
+        else:
+            print(f"Unknown command type for struct packing: {cmd}")
+            return
+
+        # Send as Hex String
+        # Master will decode this and forward blindly
+        payload["raw"] = packet_bytes.hex()
+        
+        if serial_conn and serial_conn.is_open:
+            serial_conn.write((json.dumps(payload) + "\n").encode())
+            print(f"Sent Hex: {payload['raw']}")
+            
     except Exception as e:
-        print(f"Serial Write Error: {e}")
+        print(f"Send failed: {e}")
 
 def serial_reader():
     global serial_conn, gateway_verified, latest_telemetry
