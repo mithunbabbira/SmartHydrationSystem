@@ -172,12 +172,13 @@ void handlePiCommand(String input) {
 void setup() {
   Serial.begin(BAUD_RATE);
 
+  // Initialize WiFi in STA Mode for ESP-NOW and force Channel 1
+  WiFi.mode(WIFI_STA);
+
   // Print MAC Address for User Configuration
   Serial.print("Gateway MAC: ");
   Serial.println(WiFi.macAddress());
 
-  // Initialize WiFi in STA Mode for ESP-NOW and force Channel 1
-  WiFi.mode(WIFI_STA);
   esp_wifi_set_promiscuous(true);
   esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
   esp_wifi_set_promiscuous(false);
