@@ -9,13 +9,13 @@
 
 // Modules
 #include "AlertManager.h"
-#include "NetworkManager.h"
+#include "CommsManager.h"
 #include "ScaleManager.h"
 
 // --- Globals ---
 AlertManager alertMgr;
 ScaleManager scaleMgr;
-NetworkManager netMgr;
+CommsManager netMgr;
 
 // --- State ---
 float current_weight = 0;
@@ -34,8 +34,7 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     return;
   ESPNowHeader *header = (ESPNowHeader *)data;
 
-  // Security: Check master? - NetworkManager handles key, but here we trust
-  // recv if registered? Ideally verify src against netMgr.master_mac via memcmp
+  // Security: Check master?
   if (netMgr.master_known &&
       memcmp(recv_info->src_addr, netMgr.master_mac, 6) != 0)
     return;
@@ -94,8 +93,4 @@ void loop() {
 
   // 3. Update Alerts
   alertMgr.update();
-
-  // 4. Heartbeat (Optional, netMgr could handle automatically, or just
-  // piggyback on Telemetry) For safety, let's just use Telemetry as Heartbeat
-  // since interval is 5s.
 }

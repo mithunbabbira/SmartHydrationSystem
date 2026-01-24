@@ -1,5 +1,5 @@
-#ifndef NETWORK_MANAGER_H
-#define NETWORK_MANAGER_H
+#ifndef COMMS_MANAGER_H
+#define COMMS_MANAGER_H
 
 #include "../../master_gateway/protocol.h"
 #include "config.h"
@@ -7,7 +7,7 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 
-class NetworkManager {
+class CommsManager {
 public:
   uint8_t master_mac[6];
   bool master_known = false;
@@ -27,7 +27,7 @@ public:
     memcpy(master_mac, PRODUCTION_MASTER_MAC, 6);
     master_known = true;
     addPeer(master_mac);
-    Serial.println("NetworkManager: Master Configured.");
+    Serial.println("CommsManager: Master Configured.");
   }
 
   void sendTelemetry(float weight, float delta, uint8_t alert_level,
