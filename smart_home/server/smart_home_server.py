@@ -37,7 +37,7 @@ def on_telemetry(src, data):
     if src == 1:  # Hydration Monitor
         hydration.process_weight(
             current_weight=data.get("weight", 0),
-            is_home=presence.is_home(),
+            is_home=presence.is_home,
             is_missing=data.get("is_missing", False)
         )
 
