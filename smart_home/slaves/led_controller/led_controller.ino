@@ -236,13 +236,14 @@ void loop() {
 
       if (!current_state.is_on) {
         sendPowerToStrip(false);
-        delay(100); // Give controller time to process
+        delay(300); // CRITICAL: LED controller needs 300ms between commands
       } else {
         sendPowerToStrip(true);
-        delay(100);
-        if (current_state.mode > 0) {
+        delay(300) // First send power with proper delay
+            if (current_state.mode > 0) {
           sendModeToStrip(current_state.mode, current_state.speed);
-        } else {
+        }
+        else {
           sendColorToStrip(current_state.r, current_state.g, current_state.b);
         }
       }
