@@ -90,6 +90,7 @@ def connect_serial():
         time.sleep(2)
 
 def send_command(dst, cmd, val=None):
+    global gateway_verified
     if not gateway_verified:
         # print("✗ Command ignored: Gateway not verified yet.")
         return

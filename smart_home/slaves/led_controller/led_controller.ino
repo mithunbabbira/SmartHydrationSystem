@@ -57,6 +57,21 @@ void sendColorToStrip(uint8_t r, uint8_t g, uint8_t b) {
   pRemoteCharacteristic->writeValue(packet, sizeof(packet));
 }
 
+void sendPowerToStrip(bool on) {
+  if (!connected)
+    return;
+  uint8_t state = on ? 0x23 : 0x24;
+  uint8_t packet[] = {0xCC, state, 0x33};
+  pRemoteCharacteristic->writeValue(packet, sizeof(packet));
+}
+
+void sendModeToStrip(uint8_t mode, uint8_t speed) {
+  if (!connected)
+    return;
+  uint8_t packet[] = {0xBB, mode, speed, 0x44};
+  pRemoteCharacteristic->writeValue(packet, sizeof(packet));
+}
+
 // --- ESP-NOW Callbacks ---
 
 void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
@@ -70,7 +85,17 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     current_state = *ld;
 
     if (connected) {
-      sendColorToStrip(ld->r, ld->g, ld->b);
+      if (!ld->is_on) {
+        sendPowerToStrip(false);
+      } else {
+        sendPowerToStrip(true);
+        delay(10);
+        if (ld->mode > 0) {
+          sendModeToStrip(ld->mode, ld->speed);
+        } else {
+          sendColorToStrip(ld->r, ld->g, ld->b);
+        }
+      }
     }
   }
 }
