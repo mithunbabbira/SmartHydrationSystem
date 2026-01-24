@@ -16,17 +16,18 @@ from datetime import datetime
 from datetime import datetime
 
 import glob
+import logging
+import server_config as config
 
 # --- Configuration ---
-BAUD_RATE = 115200
-PHONE_MAC = "48:EF:1C:49:6A:E7" # User's device
-PHONE_MAC = "48:EF:1C:49:6A:E7" # User's device
+# These constants are now loaded from server_config.py
 
 # --- Globals ---
-is_user_home = False
-latest_telemetry = {}
 serial_conn = None
 gateway_verified = False
+latest_telemetry = {} # {slave_id: data}
+is_user_home = False
+last_presence_update = 0
 
 def find_serial_port():
     """Auto-detect potential ESP32 serial ports"""
@@ -221,6 +222,10 @@ def serial_reader():
                                         }
                                         latest_telemetry[src] = telemetry_data
                                         
+                                        # HYDRATION LOGIC HOOK
+                                        if src == 1:
+                                             hydration_mgr.process(telemetry_data["weight"], is_user_home)
+
                                 elif src == 2: # LED
                                     # LEDData: Header(3) + bool(?), u8, u8, u8, u8, u8
                                     # Format: <BBB ? BBB B B
@@ -257,6 +262,107 @@ def serial_reader():
             time.sleep(1)
             
         time.sleep(0.01)
+# --- Hydration Logic ---
+class HydrationManager:
+    def __init__(self):
+        self.last_check_time = time.time()
+        self.last_weight = 0
+        self.today_consumption = 0
+        self.alert_level = 0
+        self.snooze_until = 0
+        self.daily_reset_day = datetime.now().day
+
+    def process(self, current_weight, is_home):
+        now = time.time()
+        
+        # 1. Midnight Reset
+        if datetime.now().day != self.daily_reset_day:
+            self.today_consumption = 0
+            self.daily_reset_day = datetime.now().day
+            print("🌅 New Day! Consumption Reset.")
+
+        # 2. Check Interval
+        if now - self.last_check_time < config.HYDRATION_CHECK_INTERVAL:
+            # We still want to detect instant drinking, preventing "wait 30 mins to see I drank"
+            # But the requirement was "check every 30 mins".
+            # SmartHydrationSystem.ino legacy: "Main weight check ... if (millis - lastCheck >= 30min)"
+            # So yes, it only updates state every 30 mins?
+            # actually, drinking detection should be instant?
+            # "Check for drinking... else ... no significant change - trigger alert"
+            # The legacy code ran the check ONLY every 30 mins. It detected drinking only then.
+            return
+
+        self.last_check_time = now
+
+        # 3. Validation Checks (Sleep, presence, snooze)
+        if now < self.snooze_until:
+             print("⏸ Snoozed. Skipping check.")
+             return
+        
+        current_hour = datetime.now().hour
+        if current_hour >= config.HYDRATION_SLEEP_START or current_hour < config.HYDRATION_SLEEP_END:
+            print("😴 Sleep Time. Skipping check.")
+            return
+
+        if not is_home:
+            print("🚶 User Away. Skipping check.")
+            return
+
+        # 4. Weight Analysis
+        if self.last_weight == 0:
+            self.last_weight = current_weight # Initialize
+            return
+
+        delta = current_weight - self.last_weight
+        print(f"⚖️ Hydration Check: Cur={current_weight}g Prev={self.last_weight}g Delta={delta}g")
+
+        if delta <= -config.HYDRATION_DRINK_THRESHOLD:
+            amount = abs(delta)
+            self.today_consumption += amount
+            self.alert_level = 0
+            self.trigger_alert(0) # Clear Alerts
+            print(f"💧 Drink Detected! +{amount}ml (Total: {self.today_consumption}ml)")
+            self.last_weight = current_weight
+        
+        elif delta >= config.HYDRATION_REFILL_THRESHOLD:
+            print("🔄 Refill Detected.")
+            self.last_weight = current_weight
+            self.alert_level = 0
+            self.trigger_alert(0)
+
+        else:
+            # No drink detected! Alert!
+            if self.today_consumption < config.HYDRATION_GOAL:
+                self.escalate_alert()
+
+    def escalate_alert(self):
+        if self.alert_level == 0:
+            self.alert_level = 1
+            print("🔔 Alert Level 1: Warning")
+            self.trigger_alert(1)
+        elif self.alert_level == 1:
+            self.alert_level = 2
+            print("🔔🔔 Alert Level 2: Critical")
+            self.trigger_alert(2)
+
+    def trigger_alert(self, level):
+        try:
+            # Slave 1 = Hydration Monitor
+            # details needs to be dict for struct packer we wrote earlier?
+            # send_command(1, "alert", {"level": level})
+            # BUT wait, send_command signature is (dst, cmd, val=None)
+            # and inside it uses val details.
+            send_command(1, "alert", {"level": level}) 
+        except Exception as e:
+            print(f"Alert Trigger Failed: {e}")
+
+    def snooze(self, minutes):
+        self.snooze_until = time.time() + (minutes * 60)
+        print(f"💤 Snoozed for {minutes} min")
+        self.alert_level = 0
+        self.trigger_alert(0)
+
+hydration_mgr = HydrationManager()
 
 # --- Main Logic ---
 def main():
@@ -300,6 +406,10 @@ def main():
                 print("\n📡 IR TRANSMITTER (Slave ID: 3):")
                 print("  ir <code>     - Send IR code (hex, e.g., 'ir FF6897')")
                 print("\n" + "=" * 60 + "\n")
+            elif cmd == "snooze":
+                # Handle local snooze logic + remote
+                hydration_mgr.snooze(30) # Default 30 min
+                send_command(1, "snooze") # Also tell slave to snooze (for local buzzers)
             elif cmd == "stats":
                 print(f"Presence: {'HOME' if is_user_home else 'AWAY'}")
                 print(f"Latest Data: {json.dumps(latest_telemetry, indent=2)}")
