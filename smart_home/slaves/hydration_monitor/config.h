@@ -16,16 +16,16 @@
 #define LOADCELL_DOUT_PIN 32
 #define LOADCELL_SCK_PIN 33
 
-// RGB LED (Common Cathode/Anode)
-#define PIN_RED 5
-#define PIN_GREEN 4
-#define PIN_BLUE 2
+// RGB LED (Common Cathode/Anode) - Legacy Pins
+#define PIN_RED 27
+#define PIN_GREEN 14
+#define PIN_BLUE 12
 
-// Buzzer (Active/Passive)
-#define PIN_BUZZER 18
+// Buzzer (Active/Passive) - Legacy Pin
+#define PIN_BUZZER 26
 
-// Button (Snooze/Reset) - Currently used for Tare/Snooze command
-#define PIN_BTN 19
+// Button (Snooze/Reset) - Legacy Pin
+#define PIN_BTN 13
 
 // ==================== Sensor Calibration ====================
 // Calibration factor: Adjust this using a known weight (e.g. 100g object)
