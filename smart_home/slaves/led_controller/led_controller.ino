@@ -234,27 +234,27 @@ void loop() {
     if (connected && pClient != nullptr && pClient->isConnected()) {
       Serial.println("[PROCESS] BLE connected, sending commands...");
 
+      // TURBO MODE: Smart State Tracking
+      static bool last_known_power = false; // Track locally
+
       if (!current_state.is_on) {
         sendPowerToStrip(false);
+        last_known_power = false; // Reset state when turning OFF
+        delay(100);
       } else {
-        // TURBO OPTIMIZATION: Only send power command if state actually changed
-        // This saves 150ms of latency for every color change!
-        static bool last_power_state = false;
-
-        if (current_state.is_on != last_power_state) {
-          sendPowerToStrip(current_state.is_on);
-          last_power_state = current_state.is_on;
-          delay(100); // Wait only if we toggled power
+        // Only send power ON if we were previously OFF
+        if (!last_known_power) {
+          sendPowerToStrip(true);
+          last_known_power = true;
+          delay(150); // Delay only when powering ON
         }
 
-        if (current_state.is_on) {
-          if (current_state.mode > 0) {
-            sendModeToStrip(current_state.mode, current_state.speed);
-          } else {
-            sendColorToStrip(current_state.r, current_state.g, current_state.b);
-          }
-          delay(20); // Minimal safety delay
+        if (current_state.mode > 0) {
+          sendModeToStrip(current_state.mode, current_state.speed);
+        } else {
+          sendColorToStrip(current_state.r, current_state.g, current_state.b);
         }
+        delay(20); // Minimal safety delay
       }
       Serial.println("✓ BLE Command Sent to Strip");
       Serial.printf("[HEAP] Free heap: %d bytes\n", ESP.getFreeHeap());
