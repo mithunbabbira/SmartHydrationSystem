@@ -20,6 +20,7 @@
 #define PIN_RED 27
 #define PIN_GREEN 14
 #define PIN_BLUE 12
+#define PIN_ALERT_LED 25 // White Notification LED
 
 // Buzzer (Active/Passive) - Legacy Pin
 #define PIN_BUZZER 26

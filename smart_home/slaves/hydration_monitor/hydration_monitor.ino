@@ -136,13 +136,21 @@ void handleAlerts() {
     static bool state = false;
     state = !state;
 
-    // Visual Alert
-    if (alert_level == 1) {
-      digitalWrite(PIN_BLUE, state); // Warning
-      digitalWrite(PIN_RED, LOW);
+    // Visual Alert (Blink White LED)
+    if (state) {
+      digitalWrite(PIN_ALERT_LED, HIGH);
     } else {
-      digitalWrite(PIN_RED, state); // Critical
-      digitalWrite(PIN_BLUE, LOW);
+      digitalWrite(PIN_ALERT_LED, LOW);
+    }
+
+    // Optional: Also blink RGB Blue for Level 1, Red for Level 2?
+    // Legacy only used PIN_ALERT_LED (25) for Notification.
+    // Let's stick to legacy behavior mostly, but maybe keep RGB off to avoid
+    // confusion? User complaint was "led stopped working".
+    if (alert_level == 1) {
+      // digitalWrite(PIN_BLUE, state);
+    } else {
+      // digitalWrite(PIN_RED, state);
     }
 
     // Audio Alert (Only beep on ON cycle for Critical)
@@ -164,7 +172,9 @@ void setup() {
   pinMode(PIN_RED, OUTPUT);
   pinMode(PIN_GREEN, OUTPUT);
   pinMode(PIN_BLUE, OUTPUT);
+  pinMode(PIN_ALERT_LED, OUTPUT); // New Alert LED
   digitalWrite(PIN_BUZZER, LOW);
+  digitalWrite(PIN_ALERT_LED, LOW);
 
   Serial.println("Initializing Scale...");
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
