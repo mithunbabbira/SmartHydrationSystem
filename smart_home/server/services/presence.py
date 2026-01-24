@@ -45,7 +45,17 @@ class PresenceService:
                     except Exception:
                         pass
                 
-                # Method 3: Legacy hcitool rssi (Only if connected)
+                # Method 3: User's Proven Method (hcitool name)
+                if not new_state:
+                     try:
+                        cmd = ["hcitool", "name", config.PHONE_MAC]
+                        result = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode()
+                        if result.strip():
+                             new_state = True
+                     except:
+                        pass
+
+                # Method 4: Legacy hcitool rssi (Only if connected)
                 if not new_state:
                      try:
                         cmd = ["hcitool", "rssi", config.PHONE_MAC]
