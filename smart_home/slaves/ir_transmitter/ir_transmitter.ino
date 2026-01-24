@@ -17,9 +17,8 @@ const uint16_t IR_SEND_PIN = 4; // Check your ESP32-CAM mapping
 IRsend irSender(IR_SEND_PIN);
 
 // --- Security ---
-uint8_t master_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-bool master_known = false;
-
+uint8_t master_mac[6] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4}; // Gateway MAC
+bool master_known = true; // Production mode enabled
 void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
                 int len) {
   if (len < sizeof(ESPNowHeader))

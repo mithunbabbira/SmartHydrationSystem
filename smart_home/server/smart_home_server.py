@@ -169,7 +169,7 @@ def main():
     threading.Thread(target=serial_reader, daemon=True).start()
     
     # Interactive CLI
-    print("\nCommands: stats, tare, led <on/off>, ir <code>, quit")
+    print("\nCommands: help, stats, tare, led <on/off>, ir <code>, quit")
     try:
         while True:
             cmd_input = input("smart_home> ").strip().lower().split()
@@ -178,6 +178,21 @@ def main():
             cmd = cmd_input[0]
             
             if cmd == "quit": break
+            elif cmd == "help":
+                print("\n📚 Smart Home Server - Available Commands:")
+                print("=" * 60)
+                print("\n🏠 SYSTEM:")
+                print("  help          - Show this help menu")
+                print("  stats         - Display presence and telemetry data")
+                print("  quit          - Exit the server")
+                print("\n💧 HYDRATION MONITOR (Slave ID: 1):")
+                print("  tare          - Zero the scale (remove bottle weight)")
+                print("\n💡 LED STRIP (Slave ID: 2):")
+                print("  led on        - Turn LED strip ON")
+                print("  led off       - Turn LED strip OFF")
+                print("\n📡 IR TRANSMITTER (Slave ID: 3):")
+                print("  ir <code>     - Send IR code (hex, e.g., 'ir FF6897')")
+                print("\n" + "=" * 60 + "\n")
             elif cmd == "stats":
                 print(f"Presence: {'HOME' if is_user_home else 'AWAY'}")
                 print(f"Latest Data: {json.dumps(latest_telemetry, indent=2)}")
@@ -190,6 +205,9 @@ def main():
                 state = cmd_input[1] == "on"
                 send_command(2, "set_state", {"on": state})
             elif cmd == "ir":
+                if len(cmd_input) < 2:
+                    print("Usage: ir <code>  (e.g., ir FF6897)")
+                    continue
                 code = cmd_input[1]
                 send_command(3, "ir_send", code)
                 

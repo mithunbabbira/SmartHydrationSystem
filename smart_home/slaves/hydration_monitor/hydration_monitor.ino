@@ -39,8 +39,8 @@ unsigned long last_weight_check = 0;
 
 // --- Security ---
 // REPLACE THIS WITH YOUR MASTER GATEWAY MAC ADDRESS
-uint8_t master_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-bool master_known = false;
+uint8_t master_mac[6] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4}; // Gateway MAC
+bool master_known = true; // Production mode enabled
 
 // --- ESP-NOW Callbacks ---
 

@@ -69,31 +69,15 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
   ESPNowHeader *header = (ESPNowHeader *)data;
   registerPeer(recv_info->src_addr, header->slave_id);
 
-  // Forward to Pi as JSON
-  StaticJsonDocument<256> doc;
-  doc["src"] = header->slave_id;
-
+  // Forward telemetry to Pi
   if (header->msg_type == MSG_TYPE_TELEMETRY) {
+    StaticJsonDocument<256> doc;
     doc["type"] = "telemetry";
-    JsonObject payload = doc.createNestedObject("data");
-
-    if (header->slave_id == SLAVE_ID_HYDRATION &&
-        len >= sizeof(HydrationTelemetry)) {
-      HydrationTelemetry *ht = (HydrationTelemetry *)data;
-      payload["weight"] = ht->weight;
-      payload["delta"] = ht->delta;
-      payload["alert"] = ht->alert_level;
-      payload["missing"] = ht->bottle_missing;
-    } else if (header->slave_id == SLAVE_ID_LED && len >= sizeof(LEDData)) {
-      LEDData *ld = (LEDData *)data;
-      payload["on"] = ld->is_on;
-      payload["mode"] = ld->mode;
-      payload["speed"] = ld->speed;
-    }
+    doc["src"] = header->slave_id;
+    doc["data"]["connected"] = true;
+    serializeJson(doc, Serial);
+    Serial.println();
   }
-
-  serializeJson(doc, Serial);
-  Serial.println();
 }
 
 void onDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
@@ -153,9 +137,13 @@ void handlePiCommand(String input) {
     packet.header.version = PROTOCOL_VERSION;
 
     if (cmd == "set_state") {
-      packet.is_on = doc["on"] | true;
-      packet.mode = doc["mode"] | 0;
-      packet.speed = doc["speed"] | 50;
+      JsonObject val = doc["val"];
+      packet.is_on = val["on"] | true;
+      packet.mode = val["mode"] | 0;
+      packet.speed = val["speed"] | 50;
+      packet.r = val["r"] | 255;
+      packet.g = val["g"] | 0;
+      packet.b = val["b"] | 0;
       esp_now_send(target_mac, (uint8_t *)&packet, sizeof(packet));
     }
   } else if (dst == SLAVE_ID_IR) {
@@ -174,12 +162,11 @@ void setup() {
 
   // Initialize WiFi in STA Mode for ESP-NOW and force Channel 1
   WiFi.mode(WIFI_STA);
+  delay(500); // Allow WiFi hardware to initialize
 
-  // Print MAC Address for User Configuration (Read from eFuse)
-  uint8_t mac[6];
-  esp_efuse_mac_get_default(mac);
-  Serial.printf("Gateway MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", mac[0], mac[1],
-                mac[2], mac[3], mac[4], mac[5]);
+  // Print MAC Address for User Configuration
+  Serial.print("Gateway MAC: ");
+  Serial.println(WiFi.macAddress());
 
   esp_wifi_set_promiscuous(true);
   esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
