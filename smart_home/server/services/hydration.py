@@ -30,14 +30,11 @@ class HydrationService:
         self.was_missing = is_missing
 
         if is_missing:
-            # If newly missing, start tracking? Or just alert?
-            # Legacy: "3 rapid beeps every 5 seconds"
-            # We'll treat it as Critical Alert immediately if it persists?
-            # Let's simple: If missing, Escalated Alert 2 immediately.
+            # Firmware handles Missing Logic (Timeouts).
+            # Server just logs state.
             if self.alert_level != 2:
-                print("⚠ Bottle Missing! Triggering Alarm.")
-                self.alert_level = 2
-                self.trigger_alert(2)
+                 print("⚠ Bottle Missing! (Timer running on Device)")
+                 # self.alert_level = 2 # Do not override firmware logic
             return
 
         # 1. Midnight Reset
