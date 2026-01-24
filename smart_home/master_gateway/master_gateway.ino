@@ -126,8 +126,12 @@ void handlePiCommand(String input) {
     else if (cmd == "snooze") {
       packet.command_id = 2;
       packet.val = doc["val"] | 15;
-    } else if (cmd == "reset")
+    } else if (cmd == "reset") {
       packet.command_id = 3;
+    } else if (cmd == "alert") {
+      packet.command_id = 3;
+      packet.val = doc["val"] | 0;
+    }
 
     esp_now_send(target_mac, (uint8_t *)&packet, sizeof(packet));
   } else if (dst == SLAVE_ID_LED) {

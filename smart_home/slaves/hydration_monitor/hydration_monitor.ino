@@ -75,7 +75,7 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
     alert_level = 0;
     Serial.println("✓ Snoozed");
   } else if (cmd->command_id == 3) { // Set Alert
-    alert_level = (int)cmd->value1;
+    alert_level = (int)cmd->val;
     Serial.printf("! Alert Level Set to: %d\n", alert_level);
     // Immediate feedback
     digitalWrite(PIN_BUZZER, HIGH);
