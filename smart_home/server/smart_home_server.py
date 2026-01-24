@@ -15,7 +15,7 @@ import os
 from datetime import datetime
 
 # --- Configuration ---
-SERIAL_PORT = "/dev/ttyS0" # Change to /dev/ttyUSB0 if using USB-Serial
+SERIAL_PORT = "/dev/ttyUSB0" # Updated based on user finding
 BAUD_RATE = 115200
 PHONE_MAC = "48:EF:1C:49:6A:E7" # User's device
 DATABASE_FILE = "smart_home.db"
@@ -24,6 +24,7 @@ DATABASE_FILE = "smart_home.db"
 is_user_home = False
 latest_telemetry = {}
 serial_conn = None
+gateway_verified = False
 
 # --- Database ---
 def init_db():
@@ -104,10 +105,17 @@ def serial_reader():
 
                 try:
                     data = json.loads(line)
-                    if "type" in data and data["type"] == "telemetry":
-                        src = data["src"]
-                        latest_telemetry[src] = data["data"]
-                        log_event(src, "telemetry", data["data"])
+                    if "type" in data:
+                        m_type = data["type"]
+                        if m_type == "telemetry":
+                            src = data["src"]
+                            latest_telemetry[src] = data["data"]
+                            log_event(src, "telemetry", data["data"])
+                        elif m_type == "gateway_id":
+                            if not gateway_verified:
+                                print("✓ VERIFIED: Connected to Smart Home Master Gateway")
+                                gateway_verified = True
+                        
                     elif "event" in data:
                         print(f"Gateway Event: {data['event']}")
                 except json.JSONDecodeError:

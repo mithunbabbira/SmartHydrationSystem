@@ -182,12 +182,19 @@ void setup() {
 
   memset(known_slaves, 0, sizeof(known_slaves));
 
-  Serial.println("{\"event\":\"system_ready\",\"msg\":\"gateway_active\"}");
+  Serial.println("{\"type\":\"gateway_id\",\"msg\":\"gateway_active\"}");
 }
 
 void loop() {
   if (Serial.available()) {
     String line = Serial.readStringUntil('\n');
     handlePiCommand(line);
+  }
+
+  // Periodic identity ping every 5 seconds
+  static unsigned long last_id_ping = 0;
+  if (millis() - last_id_ping > 5000) {
+    last_id_ping = millis();
+    Serial.println("{\"type\":\"gateway_id\",\"msg\":\"gateway_active\"}");
   }
 }
