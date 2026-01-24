@@ -74,25 +74,18 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
 
   // Forward Telemetry to Pi as JSON
   if (header->msg_type == MSG_TYPE_TELEMETRY) {
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<1024> doc; // Increased for Hex
     doc["type"] = "telemetry";
     doc["src"] = header->slave_id;
 
-    // We forward the RAW hex data of the packet for the Pi to decode?
-    // Or we decode known types?
-    // For now, let's keep partial decoding for known types to NOT BREAK
-    // existing dashboards. Ideally, Pi should also accept raw hex telemetry.
-    // But refactoring Pi decoding is out of scope for this task (User asked for
-    // Master to be dumb for SENDING).
-
-    // ... Existing decoding logic for Hydration ...
-    if (header->slave_id == SLAVE_ID_HYDRATION) {
-      HydrationTelemetry *pkt = (HydrationTelemetry *)data;
-      doc["weight"] = pkt->weight;
-      doc["delta"] = pkt->delta;
-      doc["alert"] = pkt->alert_level;
-      doc["missing"] = pkt->bottle_missing;
+    // Generic Raw Forwarding
+    String rawHex = "";
+    for (int i = 0; i < len; i++) {
+      if (data[i] < 16)
+        rawHex += "0"; // Pad single digit
+      rawHex += String(data[i], HEX);
     }
+    doc["raw"] = rawHex;
 
     serializeJson(doc, Serial);
     Serial.println();

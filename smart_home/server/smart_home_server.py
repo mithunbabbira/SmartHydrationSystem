@@ -197,7 +197,48 @@ def serial_reader():
                     m_type = data["type"]
                     if m_type == "telemetry":
                         src = data["src"]
-                        latest_telemetry[src] = data["data"]
+                        
+                        # Handle Raw Hex Telemetry (Generic Gateway)
+                        if "raw" in data:
+                            raw_hex = data["raw"]
+                            try:
+                                raw_bytes = bytes.fromhex(raw_hex)
+                                # Struct Unpacking based on ID
+                                # Header (3 bytes) is included in raw
+                                if len(raw_bytes) < 3: continue
+                                
+                                if src == 1: # Hydration
+                                    # HydrationTelemetry: Header(3) + float(f), float(f), u8(B), bool(?)
+                                    # Format: <BBB ff B ?
+                                    # Total: 3 + 4 + 4 + 1 + 1 = 13 bytes
+                                    if len(raw_bytes) >= 13:
+                                        unpacked = struct.unpack("<BBBffB?", raw_bytes[:13])
+                                        telemetry_data = {
+                                            "weight": round(unpacked[3], 2),
+                                            "delta": round(unpacked[4], 2),
+                                            "alert": unpacked[5],
+                                            "missing": unpacked[6]
+                                        }
+                                        latest_telemetry[src] = telemetry_data
+                                        
+                                elif src == 2: # LED
+                                    # LEDData: Header(3) + bool(?), u8, u8, u8, u8, u8
+                                    # Format: <BBB ? BBB B B
+                                    # Total: 9 bytes
+                                    if len(raw_bytes) >= 9:
+                                        unpacked = struct.unpack("<BBB?BBBBB", raw_bytes[:9])
+                                        telemetry_data = {
+                                            "is_on": unpacked[3],
+                                            "r": unpacked[4], "g": unpacked[5], "b": unpacked[6],
+                                            "mode": unpacked[7], "speed": unpacked[8]
+                                        }
+                                        latest_telemetry[src] = telemetry_data
+                                        
+                            except Exception as e:
+                                print(f"Hex Decode Error: {e}")
+                                
+                        elif "weight" in data: # Legacy Fallback
+                             latest_telemetry[src] = data
                     elif m_type == "gateway_id":
                         if not gateway_verified:
                             print(f"✓ VERIFIED: Smart Home Master Gateway connected on {serial_conn.port}")
