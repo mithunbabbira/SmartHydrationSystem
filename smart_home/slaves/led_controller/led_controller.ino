@@ -7,6 +7,8 @@
  */
 
 #include "../../master_gateway/protocol.h"
+#include "soc/rtc_cntl_reg.h"
+#include "soc/soc.h"
 #include <BLEDevice.h>
 #include <BLEScan.h>
 #include <BLEUtils.h>
@@ -111,6 +113,7 @@ void sendHeartbeat() {
 }
 
 void setup() {
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable brownout detector
   Serial.begin(115200);
 
   // BLE Init
@@ -144,7 +147,7 @@ void loop() {
 
   if (!connected) {
     static unsigned long last_connect_attempt = 0;
-    if (millis() - last_connect_attempt > 10000) { // Retry every 10s
+    if (millis() - last_connect_attempt > 30000) { // Retry every 30s
       last_connect_attempt = millis();
       connectToBLE();
     }
