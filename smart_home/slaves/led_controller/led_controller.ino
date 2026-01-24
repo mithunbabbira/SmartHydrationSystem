@@ -98,15 +98,16 @@ void setup() {
   Serial.println("LED Slave Ready");
 }
 
-if (!connected) {
-  connectToBLE();
-}
+void loop() {
+  if (!connected) {
+    connectToBLE();
+  }
 
-// Heartbeat every 5s for discovery
-static unsigned long last_heartbeat = 0;
-if (millis() - last_heartbeat > 5000) {
-  last_heartbeat = millis();
-  sendHeartbeat();
-}
-delay(100);
+  // Heartbeat every 5s for discovery
+  static unsigned long last_heartbeat = 0;
+  if (millis() - last_heartbeat > 5000) {
+    last_heartbeat = millis();
+    sendHeartbeat();
+  }
+  delay(100);
 }
