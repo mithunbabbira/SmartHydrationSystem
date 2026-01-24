@@ -134,7 +134,7 @@ def main():
     threading.Thread(target=serial_reader, daemon=True).start()
     
     # Interactive CLI
-    print("\n📚 Commands: help, stats, led <on/off>, ir <code>, tare, quit")
+    print("\n📚 Commands: help, stats, led <on/off/mode>, ir <code>, tare, quit")
     print("=" * 60 + "\n")
     
     try:
@@ -157,6 +157,13 @@ def main():
                 print("\n💡 LED STRIP (Slave ID: 2):")
                 print("  led on        - Turn LED strip ON")
                 print("  led off       - Turn LED strip OFF")
+                print("  led red|green|blue|white|purple|yellow|cyan")
+                print("                - Set static color")
+                print("  led fade      - Smooth color fade effect")
+                print("  led flash     - Fast flash effect")
+                print("  led strobe    - Strobe effect")
+                print("  led smooth    - Smooth transitions")
+                print("  led rainbow   - Rainbow cycle effect")
                 print("\n📡 IR TRANSMITTER (Slave ID: 3):")
                 print("  ir <code>     - Send IR code (hex, e.g., 'ir FF6897')")
                 print("\n" + "=" * 60 + "\n")
@@ -171,10 +178,43 @@ def main():
                 send_command(1, "tare")
             elif cmd == "led":
                 if len(cmd_input) < 2:
-                    print("Usage: led <on/off>")
+                    print("Usage: led <on/off/red/green/blue/fade/flash/rainbow>")
                     continue
-                state = cmd_input[1] == "on"
-                send_command(2, "set_state", {"on": state})
+                    
+                action = cmd_input[1]
+                
+                # LED mode mappings (common Triones modes)
+                modes = {
+                    "fade": 37,      # Smooth color fade
+                    "flash": 38,     # Flash/strobe 
+                    "strobe": 39,    # Fast strobe
+                    "smooth": 40,    # Smooth transitions
+                    "rainbow": 45,   # Rainbow cycle
+                }
+                
+                # Color mappings
+                colors = {
+                    "red": (255, 0, 0),
+                    "green": (0, 255, 0),
+                    "blue": (0, 0, 255),
+                    "white": (255, 255, 255),
+                    "purple": (128, 0, 128),
+                    "yellow": (255, 255, 0),
+                    "cyan": (0, 255, 255),
+                }
+                
+                if action == "on":
+                    send_command(2, "set_state", {"on": True})
+                elif action == "off":
+                    send_command(2, "set_state", {"on": False})
+                elif action in modes:
+                    send_command(2, "set_state", {"on": True, "mode": modes[action], "speed": 50})
+                elif action in colors:
+                    r, g, b = colors[action]
+                    send_command(2, "set_state", {"on": True, "mode": 0, "r": r, "g": g, "b": b})
+                else:
+                    print(f"Unknown LED action: {action}")
+                    
             elif cmd == "ir":
                 if len(cmd_input) < 2:
                     print("Usage: ir <code>  (e.g., ir FF6897)")
