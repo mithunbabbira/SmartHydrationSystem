@@ -181,7 +181,9 @@ class GatewayService:
             log(f"→ TX [Slave {slave_id}] {cmd_name}({val}) => Hex: {hex_str}")
             
             try:
-                self.serial_conn.write((hex_str + '\n').encode())
+                # Master expects JSON: {"dst": X, "raw": "hex"}
+                command_json = json.dumps({"dst": slave_id, "raw": hex_str})
+                self.serial_conn.write((command_json + '\n').encode())
                 return True
             except Exception as e:
                 log(f"⚠ Send error: {e}")
@@ -204,7 +206,9 @@ class GatewayService:
                 
                 log(f"→ TX [Slave {slave_id}] {cmd_name}({json_str}) => Hex: {hex_str}")
                 
-                self.serial_conn.write((hex_str + '\n').encode())
+                # Master expects JSON: {"dst": X, "raw": "hex"}
+                command_json = json.dumps({"dst": slave_id, "raw": hex_str})
+                self.serial_conn.write((command_json + '\n').encode())
                 return True
             except Exception as e:
                 log(f"⚠ Send error: {e}")
