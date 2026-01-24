@@ -3,10 +3,15 @@ import time
 import threading
 import sys
 import os
+from datetime import datetime
 
 # Add parent directory to path to find server_config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import server_config as config
+
+def log(msg):
+    timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    print(f"[{timestamp}] PRESENCE: {msg}")
 
 class PresenceService:
     def __init__(self, on_change_callback):
