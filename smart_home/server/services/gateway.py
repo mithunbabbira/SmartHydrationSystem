@@ -199,9 +199,10 @@ class GatewayService:
                 json_str = json.dumps(val) if isinstance(val, dict) else '{"cmd":"on"}'
                 json_bytes = json_str.encode('utf-8')
                 
-                # For simplicity, pack as: header + cmd_id + json_bytes
-                # Gateway will parse this specially
-                packet = header_bytes + cmd_byte + json_bytes
+                # For simplicity, pack as: header + cmd_id + val(4 bytes) + json_bytes
+                # GenericCommand expects val field even if unused
+                val_bytes = struct.pack('<I', 0)  # 4-byte padding for val field
+                packet = header_bytes + cmd_byte + val_bytes + json_bytes
                 hex_str = packet.hex()
                 
                 log(f"→ TX [Slave {slave_id}] {cmd_name}({json_str}) => Hex: {hex_str}")
