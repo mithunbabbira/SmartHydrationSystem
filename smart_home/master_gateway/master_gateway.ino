@@ -99,9 +99,8 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data,
   }
 }
 
-void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  // Optional: Ack back to Pi?
-}
+// onDataSent callback removed to avoid signature mismatch on newer SDKs
+// (We weren't using it anyway)
 
 // --- Serial Processing ---
 
@@ -190,7 +189,7 @@ void setup() {
     return;
   }
 
-  esp_now_register_send_cb(onDataSent);
+  // esp_now_register_send_cb(onDataSent); // Unused
   esp_now_register_recv_cb(onDataRecv);
 
   memset(known_slaves, 0, sizeof(known_slaves));
