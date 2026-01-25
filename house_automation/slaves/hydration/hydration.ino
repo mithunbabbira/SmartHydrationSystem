@@ -7,8 +7,12 @@ HydrationHW hw;
 void setup() {
   Serial.begin(115200);
 
-  hw.begin();
+  // Init WiFi/EspNow FIRST to avoid pin conflicts
   comms.begin();
+  delay(100);
+
+  // THEN init Hardware (Pins) to ensure they stay set
+  hw.begin();
 
   Serial.println("Hydration Slave Ready (Modular Framework)");
 }
