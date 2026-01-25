@@ -6,9 +6,10 @@ import logging
 import sys
 import re
 import struct
+import config
 
 # --- Configuration ---
-SERIAL_PORT = '/dev/ttyUSB0' # DEFAULT - Change if needed
+SERIAL_PORT = config.SERIAL_PORT
 BAUD_RATE = 115200
 
 # --- Logging Setup ---
