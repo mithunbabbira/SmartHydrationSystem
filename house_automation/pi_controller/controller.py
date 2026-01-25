@@ -71,7 +71,11 @@ class SerialController:
                 # Packed size: 1 + 1 + 4 = 6 bytes
                 if len(data_bytes) == 6:
                     ctype, cmd, val = struct.unpack('<BBf', data_bytes)
-                    logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:{cmd} Val:{val:.2f}")
+                    
+                    if ctype == 1 and cmd == 0x21:
+                        logger.info(f"HYDRATION WEIGHT: {val:.2f} g")
+                    else:
+                        logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Val:{val:.2f}")
                 else:
                     # For unknown/other device types, just log the raw hex
                     logger.info(f"DATA [{mac}] -> RAW HEX: {hex_data}")
@@ -127,8 +131,53 @@ class SerialController:
                     self.watchdog.stop()
                     break
                 
-                parts = user_input.split(' ', 1)
-                if len(parts) == 2:
+                parts = user_input.split(' ')
+                cmd = parts[0].lower()
+                
+                # --- Hydration Shortcuts ---
+                if cmd == 'hydration':
+                    try:
+                        mac = config.SLAVE_MACS['hydration']
+                        subcmd = parts[1].lower() if len(parts) > 1 else ''
+                        
+                        if subcmd == 'led':
+                            val = 1 if (len(parts)>2 and parts[2]=='on') else 0
+                            # 0x10 = SET_LED. Payload: Type(1) Cmd(0x10) Val(float)
+                            # Hex: 01 10 0000803F (1.0) or 00000000
+                            hex_payload = "0110" + ("0000803F" if val else "00000000")
+                            self.send_command(mac, hex_payload)
+
+                        elif subcmd == 'buzzer':
+                            val = 1 if (len(parts)>2 and parts[2]=='on') else 0
+                            # 0x11 = SET_BUZZER
+                            hex_payload = "0111" + ("0000803F" if val else "00000000")
+                            self.send_command(mac, hex_payload)
+
+                        elif subcmd == 'rgb':
+                            # Valid codes: 0-4
+                            if len(parts) > 2:
+                                code = int(parts[2])
+                                # 0x12 = SET_RGB. Float representation of int code.
+                                float_hex = struct.pack('<f', code).hex()
+                                hex_payload = "0112" + float_hex
+                                self.send_command(mac, hex_payload)
+                            else:
+                                logger.warning("Usage: hydration rgb <0-4>")
+
+                        elif subcmd == 'weight':
+                            # 0x20 = GET_WEIGHT. 
+                            self.send_command(mac, "012000000000")
+
+                        else:
+                            logger.warning("Unknown hydration command.")
+
+                    except KeyError:
+                         logger.error("Hydration MAC not found in config.SLAVE_MACS")
+                    except Exception as e:
+                         logger.error(f"Command Error: {e}")
+
+                # --- Raw Hex Fallback ---
+                elif len(parts) == 2:
                     mac = parts[0]
                     hex_val = parts[1].strip().replace('0x', '')
                     # Basic validation
@@ -141,7 +190,7 @@ class SerialController:
                     else:
                         logger.warning("Invalid MAC format. Use XX:XX:XX:XX:XX:XX")
                 else:
-                    logger.warning("Invalid Input. Format: <MAC> <HEX_MSG>")
+                    logger.warning("Invalid Input. Format: <MAC> <HEX_MSG> or hydration cmd")
             except KeyboardInterrupt:
                 self.running = False
                 self.watchdog.stop()
