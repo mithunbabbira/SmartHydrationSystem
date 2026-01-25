@@ -90,6 +90,11 @@ public:
       g = 0;
       b = 0;
       break; // White
+    case 5:
+      r = 0;
+      g = 165;
+      b = 255;
+      break; // Orange (approx for common anode)
     default:
       break; // Off
     }
@@ -100,12 +105,14 @@ public:
   }
 
   float getWeight() {
+    // Non-blocking update policy
     if (scale.is_ready()) {
-      // Return average of 3 readings for stability
-      // Note: Returns UNITS (grams) due to set_scale
-      return (float)scale.get_units(3);
+      // Read 1 sample for speed (100ms internal conversion delay usually)
+      // You could average here if needed, but get_units(1) is standard for
+      // loops
+      lastWeight = scale.get_units(1);
     }
-    return -1.0;
+    return lastWeight;
   }
 };
 
