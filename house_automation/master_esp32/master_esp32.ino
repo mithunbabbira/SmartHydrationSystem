@@ -1,14 +1,6 @@
 #include <WiFi.h>
 #include <esp_now.h>
 
-// Data Structure (Must match Slave)
-typedef struct {
-  uint8_t type;
-  uint8_t command;
-  float value;
-  uint32_t battery;
-} ControlPacket;
-
 // Global buffer for serial input
 String inputBuffer = "";
 
@@ -31,6 +23,24 @@ void stringToMac(String macStr, uint8_t *macAddr) {
   }
 }
 
+// Helper to convert hex char to byte
+uint8_t hexCharToByte(char c) {
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  return 0;
+}
+
+// Helper to convert hex string to byte array
+void hexToBytes(String hex, uint8_t *bytes, int maxLen) {
+  for (int i = 0; i < hex.length() && (i / 2) < maxLen; i += 2) {
+    bytes[i / 2] = (hexCharToByte(hex[i]) << 4) | hexCharToByte(hex[i + 1]);
+  }
+}
+
 // Callback when data is received via ESP-NOW (ESP32 Core v3.0 compatible)
 void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
                 int len) {
@@ -41,13 +51,13 @@ void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
   Serial.print(macStr);
   Serial.print(":");
 
-  // Convert payload to Hex String
+  // Convert ANY incoming payload to Hex (Transparent)
   for (int i = 0; i < len; i++) {
     if (incomingData[i] < 16)
       Serial.print("0");
     Serial.print(incomingData[i], HEX);
   }
-  Serial.println(); // End of message
+  Serial.println();
 }
 
 // Callback when data is sent
@@ -60,26 +70,21 @@ void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
 }
 
 void setup() {
-  // Init Serial
   Serial.begin(115200);
-  while (!Serial) {
+  while (!Serial)
     delay(10);
-  }
 
-  // Init WiFi
   WiFi.mode(WIFI_STA);
 
-  // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
 
-  // Register callbacks
   esp_now_register_recv_cb(OnDataRecv);
   esp_now_register_send_cb(OnDataSent);
 
-  Serial.println("Master Gateway Started");
+  Serial.println("Master Gateway Started (Transparent Mode)");
 }
 
 void loop() {
@@ -95,8 +100,6 @@ void loop() {
   while (Serial.available()) {
     char c = Serial.read();
     if (c == '\n') {
-      Serial.print("DEBUG: Processing: ");
-      Serial.println(inputBuffer);
       processSerialCommand(inputBuffer);
       inputBuffer = "";
     } else if (c != '\r') {
@@ -107,44 +110,41 @@ void loop() {
 
 void processSerialCommand(String cmd) {
   cmd.trim();
-  if (!cmd.startsWith("TX:")) {
-    // Only handle TX commands
+  if (!cmd.startsWith("TX:"))
     return;
-  }
 
-  // Parse TX:<MAC>:<DATA>
-  // Find first colon after TX
-  int firstColon = cmd.indexOf(':'); // Index 2
+  // Format: TX:<MAC>:<HEX_DATA>
+  int firstColon = cmd.indexOf(':');
   int secondColon = cmd.indexOf(':', firstColon + 1);
 
   if (secondColon == -1) {
-    Serial.println("ERR:Invalid Format");
+    Serial.println("ERR:Format");
     return;
   }
 
   String macStr = cmd.substring(firstColon + 1, secondColon);
-  String payload = cmd.substring(secondColon + 1);
+  String hexPayload = cmd.substring(secondColon + 1);
 
-  // Prepare Target Peer
   uint8_t peerAddr[6];
   stringToMac(macStr, peerAddr);
 
-  // Check if peer exists, if not add it
   if (!esp_now_is_peer_exist(peerAddr)) {
-    esp_now_peer_info_t peerInfo;
+    esp_now_peer_info_t peerInfo = {};
     memcpy(peerInfo.peer_addr, peerAddr, 6);
     peerInfo.channel = 0;
     peerInfo.encrypt = false;
-
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-      Serial.println("ERR:Add Peer Failed");
+      Serial.println("ERR:PeerAdd");
       return;
     }
   }
 
-  // Send Data
-  esp_err_t result =
-      esp_now_send(peerAddr, (uint8_t *)payload.c_str(), payload.length());
+  // Convert Hex string back to bytes
+  int payloadLen = hexPayload.length() / 2;
+  uint8_t buffer[payloadLen];
+  hexToBytes(hexPayload, buffer, payloadLen);
+
+  esp_err_t result = esp_now_send(peerAddr, buffer, payloadLen);
 
   if (result == ESP_OK) {
     Serial.println("OK:Sent");

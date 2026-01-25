@@ -5,11 +5,10 @@
 uint8_t masterMAC[] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4};
 
 // Data Structure
-typedef struct {
-  uint8_t type;     // 1=Temp, 2=Switch, 3=Motion
-  uint8_t command;  // 0=OFF, 1=ON, 2=DATA
-  float value;      // e.g. 25.4
-  uint32_t battery; // mV
+typedef struct __attribute__((packed)) {
+  uint8_t type;    // 1=Temp, 2=Switch, 3=Motion
+  uint8_t command; // 0=OFF, 1=ON, 2=DATA
+  float value;     // e.g. 25.4
 } ControlPacket;
 
 // Global buffer for serial input
@@ -90,16 +89,13 @@ void sendPacket() {
   packet.type = 1;                           // Temp
   packet.command = 2;                        // Data
   packet.value = random(2000, 3000) / 100.0; // 20.00 - 30.00
-  packet.battery = random(3300, 4200);       // 3.3V - 4.2V
 
   esp_err_t result =
       esp_now_send(masterMAC, (uint8_t *)&packet, sizeof(packet));
 
   if (result == ESP_OK) {
     Serial.print("Sent Packet: Temp=");
-    Serial.print(packet.value);
-    Serial.print(" Bat=");
-    Serial.println(packet.battery);
+    Serial.println(packet.value);
   } else {
     Serial.println("Error sending packet");
   }

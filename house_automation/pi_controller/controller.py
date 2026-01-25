@@ -55,7 +55,6 @@ class SerialController:
     def process_incoming_data(self, line):
         # 1. Heartbeat
         if line == "HEARTBEAT":
-            # logger.debug("Heartbeat received.")
             return
 
         # 2. Sensor Data: RX:<MAC>:<HEX_DATA>
@@ -67,27 +66,29 @@ class SerialController:
                 # Decode Hex to Bytes
                 data_bytes = bytes.fromhex(hex_data)
                 
-                # Unpack Struct: <BBfI (Type, Command, Value, Battery)
-                if len(data_bytes) == 10:
-                    ctype, cmd, val, bat = struct.unpack('<BBfI', data_bytes)
-                    logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:{cmd} Val:{val:.2f} Bat:{bat}mV")
+                # Unpack Struct: <BBf (Type, Command, Value)
+                # Packed size: 1 + 1 + 4 = 6 bytes
+                if len(data_bytes) == 6:
+                    ctype, cmd, val = struct.unpack('<BBf', data_bytes)
+                    logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:{cmd} Val:{val:.2f}")
                 else:
-                    logger.warning(f"Invalid Data Length from {mac}: {len(data_bytes)} bytes")
+                    # For unknown/other device types, just log the raw hex
+                    logger.info(f"DATA [{mac}] -> RAW HEX: {hex_data}")
             except Exception as e:
                 logger.error(f"Failed to decode data from {mac}: {e}")
             
         elif line.startswith("RX:"):
              logger.warning(f"Malformed RX line: {line}")
-        elif line.startswith("DEBUG:") or line.startswith("OK:"):
+        elif line.startswith("DEBUG:") or line.startswith("OK:") or line.startswith("ERR:"):
             logger.debug(f"Master: {line}")
 
-    def send_command(self, mac_address, data):
-        # Format: TX:<MAC>:<Data>
-        command = f"TX:{mac_address}:{data}\n"
+    def send_command(self, mac_address, hex_data):
+        # Format: TX:<MAC>:<HEX_DATA>
+        command = f"TX:{mac_address}:{hex_data}\n"
         try:
             if self.serial_conn and self.serial_conn.is_open:
                 self.serial_conn.write(command.encode('utf-8'))
-                logger.info(f"SENT to {mac_address}: {data}")
+                logger.info(f"SENT to {mac_address}: {hex_data}")
             else:
                 logger.error("Serial connection lost. Cannot send.")
         except Exception as e:
@@ -111,9 +112,9 @@ class SerialController:
         self.ui_loop()
 
     def ui_loop(self):
-        print("\n--- House Automation Controller ---")
-        print("Format: <MAC_ADDRESS> <MESSAGE>")
-        print("Example: 24:6F:28:A1:B2:C3 TurnOnLight")
+        print("\n--- House Automation Controller (Transparent Mode) ---")
+        print("Format: <MAC_ADDRESS> <HEX_MESSAGE>")
+        print("Example: 24:6F:28:A1:B2:C3 0102aabbcc")
         print("Type 'exit' to quit.\n")
         
         while self.running:
@@ -128,13 +129,20 @@ class SerialController:
                 parts = user_input.split(' ', 1)
                 if len(parts) == 2:
                     mac = parts[0]
-                    msg = parts[1]
+                    hex_val = parts[1]
+                    # Basic validation
                     if len(mac) == 17 and mac.count(':') == 5:
-                        self.send_command(mac, msg)
+                        # Ensure hex_val is valid hex
+                        if all(c in '0123456789ABCDEFabcdef' for c in hex_val):
+                             self.send_command(mac, hex_val)
+                        else:
+                             # If not hex, maybe send it as ascii hex for convenience?
+                             # For now, let's just warn they should use hex for "transparent" mode
+                             logger.warning("Please provide payload in HEX format.")
                     else:
                         logger.warning("Invalid MAC format. Use XX:XX:XX:XX:XX:XX")
                 else:
-                    logger.warning("Invalid Input. Format: <MAC> <MSG>")
+                    logger.warning("Invalid Input. Format: <MAC> <HEX_MSG>")
             except KeyboardInterrupt:
                 self.running = False
                 self.watchdog.stop()
