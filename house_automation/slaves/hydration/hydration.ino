@@ -18,7 +18,7 @@ void setup() {
 
   // Request Time on Boot
   Serial.println("Requesting Time...");
-  comms.send(CMD_GET_TIME, 0);
+  comms.send(CMD_REQUEST_TIME, 0);
 }
 
 void loop() {
