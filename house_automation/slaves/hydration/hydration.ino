@@ -1,6 +1,7 @@
 #include "Hardware.h"
 #include "LogicManager.h" // Includes Hardware and SlaveComms
 #include "SlaveComms.h"
+#include "SlaveConfig.h" // Includes Sleep Config
 
 SlaveComms comms;
 HydrationHW hw;
@@ -10,9 +11,9 @@ LogicManager logic;
 unsigned long rtcOffset = 0;
 bool timeSynced = false;
 
-// Config (Mirrored from Master config.h)
-#define SLEEP_START_HOUR 23
-#define SLEEP_END_HOUR 10
+// Config (Mirrored from Master config.h) - NOW IN SlaveConfig.h
+// #define SLEEP_START_HOUR 23
+// #define SLEEP_END_HOUR 10
 
 int getHour() {
   if (!timeSynced)

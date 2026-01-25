@@ -63,11 +63,7 @@ public:
     setRgb(0); // Off
   }
 
-  void setLed(bool on) {
-    Serial.print("DEBUG: setLed called with ");
-    Serial.println(on ? "HIGH" : "LOW");
-    digitalWrite(PIN_LED_WHITE, on ? HIGH : LOW);
-  }
+  void setLed(bool on) { digitalWrite(PIN_LED_WHITE, on ? HIGH : LOW); }
 
   void setBuzzer(bool on) { digitalWrite(PIN_BUZZER, on ? HIGH : LOW); }
 
@@ -96,6 +92,12 @@ public:
       g = 165;
       b = 255;
       break; // Orange (approx for common anode)
+    case 6:
+      g = 250;
+      break; // Dim Green (Very close to 255 ie OFF)
+    case 7:
+      b = 250;
+      break; // Dim Blue (Very close to 255 ie OFF)
     default:
       break; // Off
     }

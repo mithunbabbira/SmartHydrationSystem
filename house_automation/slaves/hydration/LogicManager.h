@@ -3,24 +3,14 @@
 
 #include "Hardware.h"
 #include "SlaveComms.h"
-
-// --- Configuration ---
-#define MISSING_TIMEOUT_MS 10000     // 10 seconds before alert
-#define BUZZER_START_DELAY_MS 5000   // Wait 5s during alert before buzzing
-#define STABILIZATION_MS 2000        // Wait 2s after bottle replaced
-#define THRESHOLD_WEIGHT 80.0        // Min weight to consider bottle detected
-#define DRINK_MIN_ML 50.0            // Minimum weight drop to count as drink
-#define REFILL_MIN_ML 100.0          // Minimum weight gain to count as refill
-#define CHECK_INTERVAL_MS 1800000    // 30 Minutes
-#define LED_ALERT_DURATION 10000     // 10 Seconds
-#define AWAY_CHECK_INTERVAL_MS 60000 // Check away every 1 min during alert
+#include "SlaveConfig.h"
 
 enum State {
-  STATE_MONITORING,       // Counting down 30min
-  STATE_REMINDER_PRE,     // LED Blink (10s)
+  STATE_MONITORING,       // Counting down interval
+  STATE_REMINDER_PRE,     // LED Blink
   STATE_REMINDER_ACTIVE,  // LED + Buzzer
-  STATE_REMOVED_DRINKING, // Bottle off (Drinking/Refilling)
-  STATE_MISSING_ALERT,    // Bottle off too long (>10s)
+  STATE_REMOVED_DRINKING, // Bottle off
+  STATE_MISSING_ALERT,    // Bottle off too long
   STATE_STABILIZING       // Bottle back, settling
 };
 
@@ -49,6 +39,10 @@ public:
     // Load persisted state
     hw->loadHydrationState(&lastSavedWeight, &dailyTotal, &currentDay);
     lastIntervalReset = millis(); // Start timer
+
+    // Initial Color
+    hw->setRgb(COLOR_IDLE);
+    Serial.println("Logic: Started. State loaded.");
   }
 
   void update() {
@@ -62,14 +56,18 @@ public:
     case STATE_MONITORING:
       // Global Missing Check (Immediate transition)
       if (currentWeight < THRESHOLD_WEIGHT) {
+        Serial.println("Logic: Bottle Lifted (Drinking/Refilling)...");
         enterState(STATE_REMOVED_DRINKING);
         return;
       }
 
-      // Interval Check (30 mins)
+      // Interval Check
       if (now - lastIntervalReset > CHECK_INTERVAL_MS) {
         if (isSleeping) {
-          return; // Do nothing if sleeping
+          // Resetting interval to check later would be better than spamming
+          // this check But 'return' is fine for now, avoiding drift logic
+          // complexity
+          return;
         }
 
         // Compare Weight
@@ -77,28 +75,33 @@ public:
 
         if (delta >= DRINK_MIN_ML) {
           // User drank proactively! Reset timer.
-          Serial.println("Logic: Proactive Drink Detected. Resetting Timer.");
+          Serial.print("Logic: Proactive Drink Detected (");
+          Serial.print(delta);
+          Serial.println("ml). Resetting Timer.");
+
           processDrink(delta);
           lastIntervalReset = now;
         } else {
           // No drink -> Start Reminder
-          Serial.println("Logic: Interval Expired -> Starting Pre-Alert.");
+          Serial.println(
+              "Logic: Interval Expired. Triggering Hydration Reminder!");
           enterState(STATE_REMINDER_PRE);
         }
       }
       break;
 
-    // 2. REMINDER PRE: LED Only (10s)
+    // 2. REMINDER PRE: LED Only
     case STATE_REMINDER_PRE:
       if (currentWeight < THRESHOLD_WEIGHT) {
+        Serial.println("Logic: Bottle Lifted! Reminder Silenced.");
         enterState(STATE_REMOVED_DRINKING);
         return;
       }
 
-      handleBlink(now, 1); // RGB Red/Orange
+      handleBlink(now, COLOR_ALERT);
 
       if (now - stateStartTime > LED_ALERT_DURATION) {
-        Serial.println("Logic: Pre-Alert Done -> Escalating to Buzzer.");
+        Serial.println("Logic: Pre-Alert Timeout -> Escalating to Buzzer.");
         enterState(STATE_REMINDER_ACTIVE);
       }
       break;
@@ -106,11 +109,12 @@ public:
     // 3. REMINDER ACTIVE: LED + Buzzer + Away Check
     case STATE_REMINDER_ACTIVE:
       if (currentWeight < THRESHOLD_WEIGHT) {
+        Serial.println("Logic: Bottle Lifted! Reminder Silenced.");
         enterState(STATE_REMOVED_DRINKING);
         return;
       }
 
-      handleBlink(now, 1);
+      handleBlink(now, COLOR_ALERT);
       // Buzz with blink
       if (now - lastBlinkTime < 250)
         hw->setBuzzer(true);
@@ -120,24 +124,26 @@ public:
       // Away Check (Every 1 min)
       if (now - lastAwayCheck > AWAY_CHECK_INTERVAL_MS) {
         lastAwayCheck = now;
-        Serial.println("Logic: Alert Active - Checking Presence...");
+        Serial.println("Logic: Checking Presence (Smart Silence)...");
         comms->send(CMD_REQUEST_PRESENCE, 0);
-        // Response handled in handlePresence (below)
       }
       break;
 
     // 4. REMOVED: Drinking or Missing?
     case STATE_REMOVED_DRINKING:
-      hw->stopAll(); // Silence alerts immediately
+      hw->stopAll();
 
       // If back -> Stabilize
       if (currentWeight >= THRESHOLD_WEIGHT) {
+        Serial.println("Logic: Bottle Returned. Waiting to Stabilize...");
         enterState(STATE_STABILIZING);
         return;
       }
 
       // If gone too long -> Missing Alert
       if (now - stateStartTime > MISSING_TIMEOUT_MS) {
+        Serial.println("Logic: Bottle Missing for too long (>10s) -> "
+                       "triggering MISSING Alert.");
         enterState(STATE_MISSING_ALERT);
         comms->send(CMD_ALERT_MISSING, 0);
       }
@@ -146,17 +152,18 @@ public:
     // 5. MISSING ALERT: The "No Bottle" Alarm
     case STATE_MISSING_ALERT:
       if (currentWeight >= THRESHOLD_WEIGHT) {
+        Serial.println("Logic: Missing Bottle Found!");
         comms->send(CMD_ALERT_REPLACED, 0);
         enterState(STATE_STABILIZING);
         return;
       }
 
-      // Custom Alert Pattern for Missing
+      // Custom Alert Pattern for Missing (Red Blink)
       if (now - lastBlinkTime > 500) {
         lastBlinkTime = now;
         isBlinkOn = !isBlinkOn;
         hw->setLed(isBlinkOn);
-        hw->setRgb(isBlinkOn ? 1 : 0); // Blink Red
+        hw->setRgb(isBlinkOn ? COLOR_ALERT : 0);
       }
 
       // Buzz after delay
@@ -168,11 +175,16 @@ public:
     // 6. STABILIZING: Weighing
     case STATE_STABILIZING:
       hw->stopAll();
+
       if (now - stateStartTime > STABILIZATION_MS) {
-        Serial.println("Logic: Stabilized.");
-        evaluateWeightChange(currentWeight);
+        float finalWeight = hw->getWeight();
+        Serial.print("Logic: Stabilized at ");
+        Serial.print(finalWeight);
+        Serial.println("g. Evaluating Result...");
+
+        evaluateWeightChange(finalWeight);
         enterState(STATE_MONITORING);
-        lastIntervalReset = now; // Always reset timer after interaction
+        lastIntervalReset = now;
       }
       break;
     }
@@ -183,8 +195,11 @@ public:
     currentState = newState;
     stateStartTime = millis();
     hw->stopAll();
-    Serial.print("Logic: Entered State ");
-    Serial.println(currentState);
+
+    // Set Status Color based on Mode
+    if (currentState == STATE_MONITORING) {
+      hw->setRgb(isSleeping ? COLOR_SLEEP : COLOR_IDLE);
+    }
   }
 
   void handleBlink(unsigned long now, int color) {
@@ -202,26 +217,30 @@ public:
 
     // Drank?
     if (diff >= DRINK_MIN_ML) {
-      Serial.print("Logic: Drink Detected: ");
+      Serial.print("RESULT: User Drank ");
       Serial.print(diff);
-      Serial.println("ml");
+      Serial.println("ml. (Good job!)");
+
       processDrink(diff);
-      hw->setRgb(2); // Green
-      delay(2000);   // Visual Confirmation
+      hw->setRgb(COLOR_OK); // Green confirm
+      delay(2000);
       hw->setRgb(0);
       lastSavedWeight = currentWeight;
     }
     // Refilled?
     else if (diff <= -REFILL_MIN_ML) {
-      Serial.println("Logic: Refill Detected.");
-      hw->setRgb(3); // Blue
+      Serial.print("RESULT: Bottle Refilled (+");
+      Serial.print(-diff);
+      Serial.println("ml).");
+
+      hw->setRgb(COLOR_REFILL); // Blue confirm
       delay(2000);
       hw->setRgb(0);
       lastSavedWeight = currentWeight;
     }
-    // Small change? (Tiny sip or noise) -> Just update baseline
+    // Small change?
     else {
-      Serial.println("Logic: Weight Updated (No significant drink).");
+      Serial.println("RESULT: No significant change (Adjusted Baseline).");
       lastSavedWeight = currentWeight;
     }
 
@@ -239,21 +258,33 @@ public:
   // Called from hydration.ino when presence report arrives
   void handlePresence(bool isHome) {
     if (currentState == STATE_REMINDER_ACTIVE && !isHome) {
-      Serial.println("Logic: User Away -> Silencing Reminder.");
+      Serial.println("Logic: User Away confirmed -> Silencing Reminder.");
       enterState(STATE_MONITORING);
       lastIntervalReset = millis(); // Defer reminder
     }
   }
 
   void setSleep(bool sleeping) {
-    if (sleeping && (currentState == STATE_REMINDER_PRE ||
-                     currentState == STATE_REMINDER_ACTIVE)) {
-      // If alerting and sleep starts -> silence
-      hw->stopAll();
-      enterState(STATE_MONITORING);
-    }
+    bool changed = (isSleeping != sleeping);
     isSleeping = sleeping;
+
+    if (changed) {
+      Serial.print("Logic: Sleep Mode ");
+      Serial.println(isSleeping ? "ACTIVATED (Zzz...)"
+                                : "DEACTIVATED (Good Morning!)");
+
+      // Visual Update if Monitoring
+      if (currentState == STATE_MONITORING) {
+        hw->setRgb(isSleeping ? COLOR_SLEEP : COLOR_IDLE);
+      }
+
+      // Auto-Silence if alerting
+      if (isSleeping && (currentState == STATE_REMINDER_PRE ||
+                         currentState == STATE_REMINDER_ACTIVE)) {
+        Serial.println("Logic: Sleep Logic Silencing Active Alert.");
+        enterState(STATE_MONITORING);
+      }
+    }
   }
 };
-
 #endif
