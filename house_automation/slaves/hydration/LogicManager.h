@@ -6,12 +6,13 @@
 #include "SlaveConfig.h"
 
 enum State {
-  STATE_MONITORING,       // Counting down interval
-  STATE_REMINDER_PRE,     // LED Blink
-  STATE_REMINDER_ACTIVE,  // LED + Buzzer
-  STATE_REMOVED_DRINKING, // Bottle off
-  STATE_MISSING_ALERT,    // Bottle off too long
-  STATE_STABILIZING       // Bottle back, settling
+  STATE_MONITORING,        // Counting down interval
+  STATE_WAIT_FOR_PRESENCE, // Interval done, checking if user is home (New)
+  STATE_REMINDER_PRE,      // LED Blink
+  STATE_REMINDER_ACTIVE,   // LED + Buzzer
+  STATE_REMOVED_DRINKING,  // Bottle off
+  STATE_MISSING_ALERT,     // Bottle off too long
+  STATE_STABILIZING        // Bottle back, settling
 };
 
 class LogicManager {
@@ -64,9 +65,6 @@ public:
       // Interval Check
       if (now - lastIntervalReset > CHECK_INTERVAL_MS) {
         if (isSleeping) {
-          // Resetting interval to check later would be better than spamming
-          // this check But 'return' is fine for now, avoiding drift logic
-          // complexity
           return;
         }
 
@@ -82,15 +80,30 @@ public:
           processDrink(delta);
           lastIntervalReset = now;
         } else {
-          // No drink -> Start Reminder
-          Serial.println(
-              "Logic: Interval Expired. Triggering Hydration Reminder!");
-          enterState(STATE_REMINDER_PRE);
+          // No drink -> Check Presence before Reminding
+          Serial.println("Logic: Interval Expired. Checking Presence...");
+          comms->send(CMD_REQUEST_PRESENCE, 0);
+          enterState(STATE_WAIT_FOR_PRESENCE);
         }
       }
       break;
 
-    // 2. REMINDER PRE: LED Only
+    // 2. WAIT FOR PRESENCE (New State)
+    case STATE_WAIT_FOR_PRESENCE:
+      if (currentWeight < THRESHOLD_WEIGHT) {
+        enterState(STATE_REMOVED_DRINKING);
+        return;
+      }
+
+      // Timeout if Pi doesn't reply (10s) -> Default to Away (Snooze)
+      if (now - stateStartTime > 10000) {
+        Serial.println("Logic: Presence Timeout. Defaulting to AWAY (Snooze).");
+        enterState(STATE_MONITORING);
+        lastIntervalReset = millis(); // Snooze timer
+      }
+      break;
+
+    // 3. REMINDER PRE: LED Only
     case STATE_REMINDER_PRE:
       if (currentWeight < THRESHOLD_WEIGHT) {
         Serial.println("Logic: Bottle Lifted! Reminder Silenced.");
@@ -106,7 +119,7 @@ public:
       }
       break;
 
-    // 3. REMINDER ACTIVE: LED + Buzzer + Away Check
+    // 4. REMINDER ACTIVE: LED + Buzzer + Away Check
     case STATE_REMINDER_ACTIVE:
       if (currentWeight < THRESHOLD_WEIGHT) {
         Serial.println("Logic: Bottle Lifted! Reminder Silenced.");
@@ -129,7 +142,7 @@ public:
       }
       break;
 
-    // 4. REMOVED: Drinking or Missing?
+    // 5. REMOVED: Drinking or Missing?
     case STATE_REMOVED_DRINKING:
       hw->stopAll();
 
@@ -149,7 +162,7 @@ public:
       }
       break;
 
-    // 5. MISSING ALERT: The "No Bottle" Alarm
+    // 6. MISSING ALERT: The "No Bottle" Alarm
     case STATE_MISSING_ALERT:
       if (currentWeight >= THRESHOLD_WEIGHT) {
         Serial.println("Logic: Missing Bottle Found!");
@@ -172,7 +185,7 @@ public:
       }
       break;
 
-    // 6. STABILIZING: Weighing
+    // 7. STABILIZING: Weighing
     case STATE_STABILIZING:
       hw->stopAll();
 
@@ -184,7 +197,8 @@ public:
 
         evaluateWeightChange(finalWeight);
         enterState(STATE_MONITORING);
-        lastIntervalReset = now;
+        // lastIntervalReset updated inside evaluateWeightChange ONLY if
+        // successful drink
       }
       break;
     }
@@ -240,8 +254,10 @@ public:
     }
     // Small change?
     else {
-      Serial.println("RESULT: No significant change (Adjusted Baseline).");
-      lastSavedWeight = currentWeight;
+      Serial.println("RESULT: No significant change (Preserving Baseline).");
+      // CRITICAL FIX: Do NOT update lastSavedWeight here.
+      // This prevents "resetting" the counter on small deviations or quick
+      // replace. Small sips will accumulate until they cross DRINK_MIN_ML.
     }
 
     // Save state
@@ -257,10 +273,27 @@ public:
 
   // Called from hydration.ino when presence report arrives
   void handlePresence(bool isHome) {
-    if (currentState == STATE_REMINDER_ACTIVE && !isHome) {
-      Serial.println("Logic: User Away confirmed -> Silencing Reminder.");
-      enterState(STATE_MONITORING);
-      lastIntervalReset = millis(); // Defer reminder
+    Serial.print("Logic: Presence Update -> ");
+    Serial.println(isHome ? "HOME" : "AWAY");
+
+    // If User is AWAY, silence everything
+    if (!isHome) {
+      if (currentState == STATE_WAIT_FOR_PRESENCE ||
+          currentState == STATE_REMINDER_PRE ||
+          currentState == STATE_REMINDER_ACTIVE) {
+
+        Serial.println("Logic: User Away. Snoozing/Silencing Reminder.");
+        enterState(STATE_MONITORING);
+        lastIntervalReset = millis(); // Reset timer (Snooze)
+      }
+      return;
+    }
+
+    // If User is HOME
+    if (currentState == STATE_WAIT_FOR_PRESENCE) {
+      Serial.println("Logic: User Home. Starting Reminder.");
+      enterState(STATE_REMINDER_PRE);
+      comms->send(CMD_ALERT_REMINDER, 0); // Notify Pi
     }
   }
 

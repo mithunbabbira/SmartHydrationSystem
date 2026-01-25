@@ -5,7 +5,8 @@
 SLAVE_MACS = {
     'hydration': 'F0:24:F9:0C:DE:54',
     'led_ble': '00:00:00:00:00:00', # Updates when ready
-    'ir_remote': '00:00:00:00:00:00'
+    'ir_remote': '00:00:00:00:00:00',
+    'my_phone': '48:EF:1C:49:6A:E7'
 }
 
 # Default Port

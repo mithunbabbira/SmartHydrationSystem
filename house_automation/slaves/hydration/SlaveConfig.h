@@ -5,13 +5,14 @@
 #define MISSING_TIMEOUT_MS 10000   // 10s: Time bottle must be gone before alert
 #define BUZZER_START_DELAY_MS 5000 // 5s:  Delay before buzzer joins LED alert
 #define STABILIZATION_MS 2000      // 2s:  Wait time after bottle replaced
-#define CHECK_INTERVAL_MS 1800000  // 30m: Interval between hydration checks
+//#define CHECK_INTERVAL_MS 1800000  // 30m: Interval between hydration checks
+#define CHECK_INTERVAL_MS 20000 
 #define LED_ALERT_DURATION 10000   // 10s: Duration of Pre-Alert blink
 #define AWAY_CHECK_INTERVAL_MS 60000 // 1m:  Check presence during alert
 
 // --- Sleep Schedule ---
 #define SLEEP_START_HOUR 23 // 11 PM
-#define SLEEP_END_HOUR 10   // 10 AM
+#define SLEEP_END_HOUR 1   // 10 AM
 
 // --- Weight Thresholds ---
 #define THRESHOLD_WEIGHT 80.0 // Min weight to detect bottle presence

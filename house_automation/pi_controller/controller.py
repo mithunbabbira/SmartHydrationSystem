@@ -58,15 +58,33 @@ class SerialController:
                 time.sleep(1) 
 
     def is_phone_home(self):
+        # PHONE_MAC like "F0:24:F9:0D:90:A4"
+        phone_mac = config.SLAVE_MACS.get('my_phone', "00:00:00:00:00:00") 
+        logger.info(f"Checking presence for {phone_mac}...")
+
+        # Method 1: l2ping (Preferred, needs sudo usually)
         try:
-            # Check Bluetooth Presence
-            # Note: Requires hcitool installed (sudo apt-get install bluez)
-            # PHONE_MAC like "F0:24:F9:0D:90:A4"
-            phone_mac = config.SLAVE_MACS.get('my_phone', "F0:24:F9:0D:90:A4") 
+            # -c 1: count 1, -t 2: timeout 2s
+            subprocess.check_output(["sudo", "l2ping", "-c", "1", "-t", "2", phone_mac], stderr=subprocess.STDOUT)
+            logger.info(f"Presence Confirmed via l2ping.")
+            return True
+        except subprocess.CalledProcessError:
+            pass # l2ping failed, try next method
+        except Exception as e:
+             logger.error(f"l2ping error: {e}")
+
+        # Method 2: hcitool name (Fallback)
+        try:
             result = subprocess.check_output(["hcitool", "name", phone_mac], stderr=subprocess.STDOUT)
-            return bool(result.strip())
-        except Exception:
-            return False
+            output = result.strip().decode('utf-8')
+            if output:
+                logger.info(f"Presence Confirmed via hcitool name: '{output}'")
+                return True
+        except Exception as e:
+            logger.error(f"hcitool error: {e}")
+        
+        logger.info("Presence Check Failed (User AWAY)")
+        return False
 
     def process_incoming_data(self, line):
         # ... (Heartbeat check) ...
@@ -90,21 +108,14 @@ class SerialController:
                     elif cmd == 0x30:
                         logger.info(f"[{mac}] Requested Time.")
                         unix_time = int(time.time())
-                        # Pack uint32 as float bytes or just send raw uint32?
-                        # Our struct has 'float val'. 
-                        # We need to pack uint32 into those 4 bytes.
-                        # Python: struct.pack('<I', unix_time).hex()
                         time_hex = struct.pack('<I', unix_time).hex()
-                        # Resp: 01 31 <TIME_HEX>
                         self.send_command(mac, "0131" + time_hex)
 
                     # 0x40: REQUEST_PRESENCE from Slave
                     elif cmd == 0x40:
                         logger.info(f"[{mac}] Requested Presence Check.")
                         is_home = self.is_phone_home()
-                        # Resp: 01 41 <1.0 or 0.0>
-                        # Use float 1.0/0.0 for simplicity with existing float val
-                        payload = "0000803F" if is_home else "00000000" # 1.0 or 0.0 in float hex
+                        payload = "0000803F" if is_home else "00000000" # 1.0 or 0.0
                         self.send_command(mac, "0141" + payload)
 
                     # 0x50: ALERT_MISSING
@@ -114,6 +125,10 @@ class SerialController:
                     # 0x51: ALERT_REPLACED
                     elif cmd == 0x51:
                          logger.info(f"ALERT [{mac}]: Bottle Replaced. Stabilizing...")
+
+                    # 0x52: ALERT_REMINDER (NEW)
+                    elif cmd == 0x52:
+                         logger.warning(f"ALERT [{mac}]: Hydration Reminder! Drink Detected: NO. User is HOME.")
 
                     # 0x60: DRINK_DETECTED
                     elif cmd == 0x60:
