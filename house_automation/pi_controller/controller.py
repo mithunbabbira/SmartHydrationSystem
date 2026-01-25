@@ -44,6 +44,7 @@ class SerialController:
                 if self.serial_conn.in_waiting > 0:
                     line = self.serial_conn.readline().decode('utf-8', errors='ignore').strip()
                     if line:
+                        logger.debug(f"RAW SERIAL: {line}")
                         self.process_incoming_data(line)
             except Exception as e:
                 logger.error(f"Error reading from serial: {e}")

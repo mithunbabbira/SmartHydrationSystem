@@ -41,3 +41,22 @@ To send data to a slave, the Pi sends a line to the Master:
 `TX:<TARGET_MAC_ADDRESS>:<PAYLOAD>`
 
 *Note: MAC Address format is XX:XX:XX:XX:XX:XX (e.g., 24:6F:28:A1:B2:C3)*
+
+## Hardware Connection
+
+### Option 1: USB (Recommended)
+Connect the **Master ESP32** to the **Raspberry Pi** using a high-quality **Micro-USB cable**.
+- **Pros**: Handles both power and data; easiest setup.
+- **Port**: Typically `/dev/ttyUSB0` or `/dev/ttyACM0` on the Pi.
+
+### Option 2: UART (Direct GPIO)
+Connect the UART pins directly. **Common Ground is essential.**
+
+| ESP32 Pin | Raspberry Pi Pin | Function |
+|-----------|------------------|----------|
+| TX (GPIO1)| RX (GPIO15 / Pin 10)| Data from ESP -> Pi |
+| RX (GPIO3)| TX (GPIO14 / Pin 8) | Data from Pi -> ESP |
+| GND       | GND (Pin 6)       | Common Ground |
+
+*Note: The current `master_esp32.ino` uses the standard `Serial` object, which is routed to the USB port and usually GPIO1/3. If using USB, do not connect GPIO1/3 to anything else.*
+

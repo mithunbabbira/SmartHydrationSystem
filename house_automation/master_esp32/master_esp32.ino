@@ -44,9 +44,9 @@ void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
 // Callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   // Optional: Report delivery status to Pi?
-  // Serial.print("STATUS:");
-  // Serial.print(macToString(mac_addr));
-  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? ":SUCCESS" : ":FAIL");
+  Serial.print("STATUS:");
+  Serial.print(macToString(mac_addr));
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? ":SUCCESS" : ":FAIL");
 }
 
 void setup() {
@@ -128,7 +128,7 @@ void processSerialCommand(String cmd) {
       esp_now_send(peerAddr, (uint8_t *)payload.c_str(), payload.length());
 
   if (result == ESP_OK) {
-    // Serial.println("OK:Sent");
+    Serial.println("OK:Sent");
   } else {
     Serial.println("ERR:Send Failed");
   }

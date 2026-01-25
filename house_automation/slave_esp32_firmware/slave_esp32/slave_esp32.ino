@@ -16,7 +16,7 @@ void printMAC(const uint8_t *mac_addr) {
 }
 
 // Callback when data is sent (Core v3 Signature)
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
   Serial.print("Last Packet Send Status: ");
   if (status == ESP_NOW_SEND_SUCCESS) {
     Serial.println("Delivery Success");
@@ -47,6 +47,7 @@ void setup() {
 
   // Init WiFi
   WiFi.mode(WIFI_STA);
+  delay(500); // Wait for WiFi hardware to initialize
   Serial.println("Slave Node Started");
   Serial.print("My MAC: ");
   Serial.println(WiFi.macAddress());
