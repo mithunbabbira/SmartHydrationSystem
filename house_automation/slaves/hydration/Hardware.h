@@ -3,6 +3,7 @@
 
 #include "HX711.h"
 #include <Arduino.h>
+#include <Preferences.h>
 
 // --- Pin Definitions ---
 #define PIN_LED_WHITE 25
@@ -13,9 +14,12 @@
 #define PIN_SCALE_DT 32
 #define PIN_SCALE_SCK 33
 
+#define CALIBRATION_FACTOR 350.3
+
 class HydrationHW {
 private:
   HX711 scale;
+  Preferences prefs;
 
 public:
   void begin() {
@@ -27,10 +31,29 @@ public:
     pinMode(PIN_RGB_G, OUTPUT);
     pinMode(PIN_RGB_B, OUTPUT);
 
-    // Init Scale
+    // Init Scale & NVM
     scale.begin(PIN_SCALE_DT, PIN_SCALE_SCK);
+    scale.set_scale(CALIBRATION_FACTOR);
+
+    prefs.begin("hydration", false); // Namespace "hydration", RW
+    float savedOffset = prefs.getFloat("offset", 0.0);
+
+    if (savedOffset != 0.0) {
+      scale.set_offset(savedOffset);
+      // Serial.println("Loaded Tare Offset from NVM");
+    } else {
+      scale.tare(); // InitialTare if no saved value
+      // Serial.println("No saved Tare - Zeroing now");
+    }
 
     stopAll();
+  }
+
+  void tare() {
+    scale.tare();
+    float newOffset = scale.get_offset();
+    prefs.putFloat("offset", newOffset);
+    // Serial.println("Tare Saved to NVM");
   }
 
   void stopAll() {
@@ -79,8 +102,8 @@ public:
   float getWeight() {
     if (scale.is_ready()) {
       // Return average of 3 readings for stability
-      // Note: Returns raw value for now unless calibrated
-      return (float)scale.read_average(3);
+      // Note: Returns UNITS (grams) due to set_scale
+      return (float)scale.get_units(3);
     }
     return -1.0;
   }

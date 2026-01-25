@@ -195,6 +195,11 @@ class SerialController:
                             # 0x20 = GET_WEIGHT. 
                             self.send_command(mac, "012000000000")
 
+                        elif subcmd == 'tare':
+                            # 0x22 = CMD_TARE
+                            self.send_command(mac, "012200000000")
+                            logger.info("Sent TARE command.")
+
                         else:
                             logger.warning("Unknown hydration command.")
 

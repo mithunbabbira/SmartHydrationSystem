@@ -61,6 +61,14 @@ void loop() {
       break;
     }
 
+    case CMD_TARE: {
+      Serial.println("TARE REQUEST RECEIVED");
+      hw.tare(); // Zero and save to NVM
+      // Send fresh zero weight immediately
+      comms.sendFloat(CMD_REPORT_WEIGHT, 0.0);
+      break;
+    }
+
     case CMD_GET_WEIGHT: {
       float weight = hw.getWeight();
       // Send raw bits of float
@@ -74,6 +82,15 @@ void loop() {
       Serial.println("Unknown Command");
       break;
     }
+  }
+
+  // Periodic Reporting (Every 5 Seconds)
+  static unsigned long lastReportTime = 0;
+  if (millis() - lastReportTime >= 5000) {
+    lastReportTime = millis();
+    float weight = hw.getWeight();
+    comms.sendFloat(CMD_REPORT_WEIGHT, weight);
+    // Serial.print("Auto-Report Weight: "); Serial.println(weight);
   }
 }
 
