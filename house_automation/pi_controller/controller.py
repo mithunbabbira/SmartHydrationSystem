@@ -129,16 +129,14 @@ class SerialController:
                 parts = user_input.split(' ', 1)
                 if len(parts) == 2:
                     mac = parts[0]
-                    hex_val = parts[1]
+                    hex_val = parts[1].strip().replace('0x', '')
                     # Basic validation
                     if len(mac) == 17 and mac.count(':') == 5:
                         # Ensure hex_val is valid hex
-                        if all(c in '0123456789ABCDEFabcdef' for c in hex_val):
+                        if all(c in '0123456789ABCDEFabcdef' for c in hex_val) and len(hex_val) % 2 == 0:
                              self.send_command(mac, hex_val)
                         else:
-                             # If not hex, maybe send it as ascii hex for convenience?
-                             # For now, let's just warn they should use hex for "transparent" mode
-                             logger.warning("Please provide payload in HEX format.")
+                             logger.warning("Please provide a valid even-length HEX payload (e.g. 0102AABBCC)")
                     else:
                         logger.warning("Invalid MAC format. Use XX:XX:XX:XX:XX:XX")
                 else:
