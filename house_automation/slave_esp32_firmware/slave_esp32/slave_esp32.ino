@@ -4,6 +4,14 @@
 // MASTER MAC ADDRESS (Given by User)
 uint8_t masterMAC[] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4};
 
+// Data Structure
+typedef struct {
+  uint8_t type;     // 1=Temp, 2=Switch, 3=Motion
+  uint8_t command;  // 0=OFF, 1=ON, 2=DATA
+  float value;      // e.g. 25.4
+  uint32_t battery; // mV
+} ControlPacket;
+
 // Global buffer for serial input
 String inputBuffer = "";
 
@@ -17,9 +25,9 @@ void printMAC(const uint8_t *mac_addr) {
 
 // Callback when data is sent (Core v3 Signature)
 void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
-  Serial.print("Last Packet Send Status: ");
+  // Serial.print("Last Packet Send Status: ");
   if (status == ESP_NOW_SEND_SUCCESS) {
-    Serial.println("Delivery Success");
+    // Serial.println("Delivery Success");
   } else {
     Serial.println("Delivery Fail");
   }
@@ -74,35 +82,41 @@ void setup() {
   }
 
   Serial.println("Master Peer Registered.");
-  Serial.println("Type a message and press Enter to send to Pi/Master.");
+  Serial.println("Sending sensor data every 5 seconds...");
 }
 
-void loop() {
-  // Read Serial to send data to Master
-  while (Serial.available()) {
-    char c = Serial.read();
-    if (c == '\n') {
-      sendDataToMaster(inputBuffer);
-      inputBuffer = "";
-    } else {
-      inputBuffer += c;
-    }
+void sendPacket() {
+  ControlPacket packet;
+  packet.type = 1;                           // Temp
+  packet.command = 2;                        // Data
+  packet.value = random(2000, 3000) / 100.0; // 20.00 - 30.00
+  packet.battery = random(3300, 4200);       // 3.3V - 4.2V
+
+  esp_err_t result =
+      esp_now_send(masterMAC, (uint8_t *)&packet, sizeof(packet));
+
+  if (result == ESP_OK) {
+    Serial.print("Sent Packet: Temp=");
+    Serial.print(packet.value);
+    Serial.print(" Bat=");
+    Serial.println(packet.battery);
+  } else {
+    Serial.println("Error sending packet");
   }
 }
 
-void sendDataToMaster(String data) {
-  if (data.length() == 0)
-    return;
+void loop() {
+  static unsigned long lastSend = 0;
+  if (millis() - lastSend > 5000) {
+    lastSend = millis();
+    sendPacket();
+  }
 
-  data.trim(); // Remove whitespace/newlines (user input convenience)
-
-  Serial.print("Sending to Master: ");
-  Serial.println(data);
-
-  esp_err_t result =
-      esp_now_send(masterMAC, (uint8_t *)data.c_str(), data.length());
-
-  if (result != ESP_OK) {
-    Serial.println("Error sending the data");
+  // Keep serial input for manual text commands (optional, mostly for debugging
+  // receive)
+  while (Serial.available()) {
+    char c = Serial.read();
+    // Just echo for now or trigger manual send?
+    // Let's just ignore manual send for now to avoid struct confusion
   }
 }

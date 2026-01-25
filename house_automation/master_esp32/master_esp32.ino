@@ -1,6 +1,14 @@
 #include <WiFi.h>
 #include <esp_now.h>
 
+// Data Structure (Must match Slave)
+typedef struct {
+  uint8_t type;
+  uint8_t command;
+  float value;
+  uint32_t battery;
+} ControlPacket;
+
 // Global buffer for serial input
 String inputBuffer = "";
 
@@ -26,27 +34,29 @@ void stringToMac(String macStr, uint8_t *macAddr) {
 // Callback when data is received via ESP-NOW (ESP32 Core v3.0 compatible)
 void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
                 int len) {
-  // Format: "RX:<MAC>:<RAW_DATA>"
+  // Format: "RX:<MAC>:<HEX_DATA>"
   String macStr = macToString(info->src_addr);
 
   Serial.print("RX:");
   Serial.print(macStr);
   Serial.print(":");
 
-  // Send raw bytes safely if needed, but assuming text/json for now as per
-  // prompt.
+  // Convert payload to Hex String
   for (int i = 0; i < len; i++) {
-    Serial.write(incomingData[i]);
+    if (incomingData[i] < 16)
+      Serial.print("0");
+    Serial.print(incomingData[i], HEX);
   }
   Serial.println(); // End of message
 }
 
 // Callback when data is sent
 void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
-  // Optional: Report delivery status to Pi?
-  // Serial.print("STATUS:");
-  // Serial.print(macToString(info->dest_addr));
-  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? ":SUCCESS" : ":FAIL");
+  if (status == ESP_NOW_SEND_SUCCESS) {
+    Serial.println("OK:Sent");
+  } else {
+    Serial.println("ERR:Send Failed");
+  }
 }
 
 void setup() {
@@ -73,6 +83,13 @@ void setup() {
 }
 
 void loop() {
+  // Heartbeat
+  static unsigned long lastHeartbeat = 0;
+  if (millis() - lastHeartbeat >= 10000) {
+    lastHeartbeat = millis();
+    Serial.println("HEARTBEAT");
+  }
+
   // Listen for data from Pi
   // Format expected: "TX:<TARGET_MAC>:<DATA>\n"
   while (Serial.available()) {
