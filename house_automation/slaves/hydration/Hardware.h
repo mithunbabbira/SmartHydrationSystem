@@ -20,7 +20,9 @@ private:
 public:
   void begin() {
     pinMode(PIN_LED_WHITE, OUTPUT);
+    digitalWrite(PIN_LED_WHITE, LOW); // Force OFF immediately
     pinMode(PIN_BUZZER, OUTPUT);
+    digitalWrite(PIN_BUZZER, LOW);
     pinMode(PIN_RGB_R, OUTPUT); // Common Anode: LOW=ON
     pinMode(PIN_RGB_G, OUTPUT);
     pinMode(PIN_RGB_B, OUTPUT);
