@@ -7,7 +7,7 @@ HydrationHW hw;
 void setup() {
   Serial.begin(115200);
 
-  // Init WiFi/EspNow FIRST to avoid pin conflicts
+  // Init WiFi/EspNow FIRST to avoid pin conflicts (Fixes LED flicker)
   comms.begin();
   delay(100);
 
@@ -15,6 +15,10 @@ void setup() {
   hw.begin();
 
   Serial.println("Hydration Slave Ready (Modular Framework)");
+
+  // Request Time on Boot
+  Serial.println("Requesting Time...");
+  comms.send(CMD_GET_TIME, 0);
 }
 
 void loop() {
@@ -25,26 +29,36 @@ void loop() {
     // Debug Log
     Serial.print("CMD Received: 0x");
     Serial.print(incomingPacket.command, HEX);
-    Serial.print(" Val: ");
-    Serial.println(incomingPacket.value);
+    Serial.print(" Data: ");
+    Serial.println(incomingPacket.data);
 
     // Execute Command
     switch (incomingPacket.command) {
     case CMD_SET_LED:
-      hw.setLed(incomingPacket.value > 0); // 1.0 = ON, 0.0 = OFF
+      hw.setLed(incomingPacket.data > 0);
       break;
 
     case CMD_SET_BUZZER:
-      hw.setBuzzer(incomingPacket.value > 0);
+      hw.setBuzzer(incomingPacket.data > 0);
       break;
 
-    case CMD_SET_RGB:
-      hw.setRgb((int)incomingPacket.value);
+    case CMD_SET_RGB: {
+      hw.setRgb((int)incomingPacket.data);
       break;
+    }
+
+    case CMD_SET_TIME: {
+      uint32_t timestamp = incomingPacket.data;
+      Serial.print("TIME SYNC Received: ");
+      Serial.println(timestamp);
+      // Time usage: timestamp is Unix Epoch seconds
+      break;
+    }
 
     case CMD_GET_WEIGHT: {
       float weight = hw.getWeight();
-      comms.send(CMD_REPORT_WEIGHT, weight);
+      // Send raw bits of float
+      comms.sendFloat(CMD_REPORT_WEIGHT, weight);
       Serial.print("Sent Weight: ");
       Serial.println(weight);
       break;
@@ -55,7 +69,4 @@ void loop() {
       break;
     }
   }
-
-  // No random sending anymore - purely request/response driven for weight.
-  // Or could add periodic reporting if desired.
 }

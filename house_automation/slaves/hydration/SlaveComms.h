@@ -14,14 +14,16 @@ enum CmdType {
   CMD_SET_BUZZER = 0x11,
   CMD_SET_RGB = 0x12,
   CMD_GET_WEIGHT = 0x20,
-  CMD_REPORT_WEIGHT = 0x21
+  CMD_REPORT_WEIGHT = 0x21,
+  CMD_GET_TIME = 0x30,
+  CMD_SET_TIME = 0x31
 };
 
 // Data Packet (6 Bytes)
 typedef struct __attribute__((packed)) {
   uint8_t type; // 1=Hydration
   uint8_t command;
-  float value;
+  uint32_t data; // Supports int or float (via bit casting)
 } ControlPacket;
 
 ControlPacket incomingPacket;
@@ -64,13 +66,19 @@ public:
     }
   }
 
-  void send(uint8_t cmd, float value) {
+  void send(uint8_t cmd, uint32_t data) {
     ControlPacket packet;
     packet.type = 1; // Hydration
     packet.command = cmd;
-    packet.value = value;
+    packet.data = data;
 
     esp_now_send(MASTER_MAC, (uint8_t *)&packet, sizeof(packet));
+  }
+
+  void sendFloat(uint8_t cmd, float val) {
+    uint32_t data;
+    memcpy(&data, &val, sizeof(val));
+    send(cmd, data);
   }
 };
 
