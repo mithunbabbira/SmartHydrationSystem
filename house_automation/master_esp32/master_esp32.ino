@@ -78,9 +78,11 @@ void loop() {
   while (Serial.available()) {
     char c = Serial.read();
     if (c == '\n') {
+      Serial.print("DEBUG: Processing: ");
+      Serial.println(inputBuffer);
       processSerialCommand(inputBuffer);
       inputBuffer = "";
-    } else {
+    } else if (c != '\r') {
       inputBuffer += c;
     }
   }
