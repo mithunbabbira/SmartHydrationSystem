@@ -39,7 +39,11 @@ public:
     setRgb(0); // Off
   }
 
-  void setLed(bool on) { digitalWrite(PIN_LED_WHITE, on ? HIGH : LOW); }
+  void setLed(bool on) {
+    Serial.print("DEBUG: setLed called with ");
+    Serial.println(on ? "HIGH" : "LOW");
+    digitalWrite(PIN_LED_WHITE, on ? HIGH : LOW);
+  }
 
   void setBuzzer(bool on) { digitalWrite(PIN_BUZZER, on ? HIGH : LOW); }
 
