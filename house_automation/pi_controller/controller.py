@@ -1,125 +1,112 @@
-import serial
 import time
-import threading
-import queue
-import logging
-import sys
-import re
-import struct
-import config
+import subprocess
 
-# --- Configuration ---
-SERIAL_PORT = config.SERIAL_PORT
-BAUD_RATE = 115200
+# ... (Previous imports) ...
 
-# --- Logging Setup ---
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger("PiController")
+class HouseController:
+    # ... (Previous methods) ...
 
-class SerialController:
-    def __init__(self, port, baud_rate):
-        self.port = port
-        self.baud_rate = baud_rate
-        self.serial_conn = None
-        self.running = False
-        self.send_queue = queue.Queue()
-
-    def connect(self):
+    def is_phone_home(self):
         try:
-            self.serial_conn = serial.Serial(self.port, self.baud_rate, timeout=1)
-            logger.info(f"Connected to {self.port} at {self.baud_rate} baud.")
-            return True
-        except serial.SerialException as e:
-            logger.error(f"Failed to connect to serial port: {e}")
+            # Check Bluetooth Presence
+            # Note: Requires hcitool installed (sudo apt-get install bluez)
+            # PHONE_MAC like "F0:24:F9:0D:90:A4"
+            phone_mac = config.SLAVE_MACS.get('my_phone', "F0:24:F9:0D:90:A4") 
+            result = subprocess.check_output(["hcitool", "name", phone_mac], stderr=subprocess.STDOUT)
+            return bool(result.strip())
+        except Exception:
             return False
 
-    def reader_thread(self):
-        logger.info("Reader thread started.")
-        while self.running and self.serial_conn and self.serial_conn.is_open:
-            try:
-                if self.serial_conn.in_waiting > 0:
-                    line = self.serial_conn.readline().decode('utf-8', errors='ignore').strip()
-                    if line:
-                        # logger.debug(f"RAW SERIAL: {line}")
-                        self.watchdog.pet() # Reset watchdog on ANY valid serial data
-                        self.process_incoming_data(line)
-            except Exception as e:
-                logger.error(f"Error reading from serial: {e}")
-                time.sleep(1) 
-
     def process_incoming_data(self, line):
-        # 1. Heartbeat
-        if line == "HEARTBEAT":
-            return
+        # ... (Heartbeat check) ...
 
-        # 2. Sensor Data: RX:<MAC>:<HEX_DATA>
         match = re.search(r'RX:([0-9A-Fa-f:]+):([0-9A-Fa-f]+)', line)
         if match:
             mac = match.group(1)
             hex_data = match.group(2)
             try:
-                # Decode Hex to Bytes
                 data_bytes = bytes.fromhex(hex_data)
                 
-                # Unpack Struct: <BBI (Type, Command, Data/Value)
+                # Check for Hydration or Protocol Commands (6 bytes)
                 if len(data_bytes) == 6:
-                    ctype, cmd, val_int = struct.unpack('<BBI', data_bytes)
+                    ctype, cmd, val = struct.unpack('<BBf', data_bytes)
                     
-                    # 0x21: WEIGHT REPORT (val_int is float bits)
-                    if ctype == 1 and cmd == 0x21:
-                        # Re-interpret bits as float
-                        val_float = struct.unpack('<f', struct.pack('<I', val_int))[0]
-                        logger.info(f"HYDRATION WEIGHT: {val_float:.2f} g")
+                    # 0x21: REPORT_WEIGHT
+                    if cmd == 0x21:
+                        logger.info(f"HYDRATION WEIGHT: {val:.2f} g")
                     
-                    # 0x30: GET TIME REQUEST
+                    # 0x30: REQUEST_TIME from Slave
                     elif cmd == 0x30:
-                        logger.info(f"Slave {mac} requested TIME.")
-                        self.send_time_sync(mac)
-                        
+                        logger.info(f"[{mac}] Requested Time.")
+                        unix_time = int(time.time())
+                        # Pack uint32 as float bytes or just send raw uint32?
+                        # Our struct has 'float val'. 
+                        # We need to pack uint32 into those 4 bytes.
+                        # Python: struct.pack('<I', unix_time).hex()
+                        time_hex = struct.pack('<I', unix_time).hex()
+                        # Resp: 01 31 <TIME_HEX>
+                        self.send_command(mac, "0131" + time_hex)
+
+                    # 0x40: REQUEST_PRESENCE from Slave
+                    elif cmd == 0x40:
+                        logger.info(f"[{mac}] Requested Presence Check.")
+                        is_home = self.is_phone_home()
+                        # Resp: 01 41 <1.0 or 0.0>
+                        # Use float 1.0/0.0 for simplicity with existing float val
+                        payload = "0000803F" if is_home else "00000000" # 1.0 or 0.0 in float hex
+                        self.send_command(mac, "0141" + payload)
+
                     else:
-                        logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Data (Int):{val_int}")
+                        logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Val:{val:.2f}")
                 else:
                     logger.info(f"DATA [{mac}] -> RAW HEX: {hex_data}")
             except Exception as e:
                 logger.error(f"Failed to decode data from {mac}: {e}")
-            
-        elif line.startswith("DEBUG:"):
-            logger.debug(f"Master: {line}")
-        elif line.startswith("OK:") or line.startswith("ERR:"):
-            logger.info(f"Master: {line}")
 
-    def send_time_sync(self, mac_address):
-        # Send 0x31 (SET_TIME) with current Unix Timestamp
-        timestamp = int(time.time())
-        # Payload: Type(1) Cmd(0x31) Data(timestamp)
-        # Hex
-        payload = struct.pack('<BBI', 1, 0x31, timestamp).hex()
-        # Wait, Master expects raw hex payload bytes? Yes.
-        # But wait, Master sends it as bytes.
-        # My hex string must represent Type+Cmd+Data.
-        # So "0131" + timestamp_hex.
-        self.send_command(mac_address, payload)
+    def send_command(self, mac_address, hex_data):
+        # Format: TX:<MAC>:<HEX_DATA>
+        command = f"TX:{mac_address}:{hex_data}\n"
+        try:
+            if self.serial_conn and self.serial_conn.is_open:
+                self.serial_conn.write(command.encode('utf-8'))
+                logger.info(f"SENT to {mac_address}: {hex_data}")
+            else:
+                logger.error("Serial connection lost. Cannot send.")
+        except Exception as e:
+            logger.error(f"Error sending data: {e}")
+
+    def start(self):
+        if not self.connect():
+            return
+
+        self.running = True
+        
+        # Start Watchdog
+        self.watchdog = WatchdogThread(self.serial_conn)
+        self.watchdog.start()
+
+        # Start Reader
+        self.read_thread = threading.Thread(target=self.reader_thread)
+        self.read_thread.daemon = True
+        self.read_thread.start()
+        
+        self.ui_loop()
 
     def ui_loop(self):
         print("\n--- House Automation Controller (Transparent Mode) ---")
-        # ... (Help text omitted for brevity) ...
+        print("Format: <MAC_ADDRESS> <HEX_MESSAGE>")
+        print("Example: 24:6F:28:A1:B2:C3 0102aabbcc")
+        print("Type 'exit' to quit.\n")
         
         while self.running:
             try:
                 user_input = input("Enter command: ").strip()
-                # ... (Exit logic) ...
                 if user_input.lower() == 'exit':
                     logger.info("Exiting...")
                     self.running = False
                     self.watchdog.stop()
                     break
-
+                
                 parts = user_input.split(' ')
                 cmd = parts[0].lower()
                 
@@ -131,37 +118,42 @@ class SerialController:
                         
                         if subcmd == 'led':
                             val = 1 if (len(parts)>2 and parts[2]=='on') else 0
-                            # 0x10. Data is INT 0 or 1.
-                            self.send_command(mac, f"0110{val:08X}")
+                            # 0x10 = SET_LED. Payload: Type(1) Cmd(0x10) Val(float)
+                            # Hex: 01 10 0000803F (1.0) or 00000000
+                            hex_payload = "0110" + ("0000803F" if val else "00000000")
+                            self.send_command(mac, hex_payload)
 
                         elif subcmd == 'buzzer':
                             val = 1 if (len(parts)>2 and parts[2]=='on') else 0
-                            self.send_command(mac, f"0111{val:08X}")
+                            # 0x11 = SET_BUZZER
+                            hex_payload = "0111" + ("0000803F" if val else "00000000")
+                            self.send_command(mac, hex_payload)
 
                         elif subcmd == 'rgb':
+                            # Valid codes: 0-4
                             if len(parts) > 2:
                                 code = int(parts[2])
-                                self.send_command(mac, f"0112{code:08X}")
+                                # 0x12 = SET_RGB. Float representation of int code.
+                                float_hex = struct.pack('<f', code).hex()
+                                hex_payload = "0112" + float_hex
+                                self.send_command(mac, hex_payload)
                             else:
                                 logger.warning("Usage: hydration rgb <0-4>")
 
                         elif subcmd == 'weight':
+                            # 0x20 = GET_WEIGHT. 
                             self.send_command(mac, "012000000000")
-                            
-                        elif subcmd == 'time':
-                             self.send_time_sync(mac)
 
                         else:
                             logger.warning("Unknown hydration command.")
 
                     except KeyError:
-                         logger.error("Hydration MAC not found.")
+                         logger.error("Hydration MAC not found in config.SLAVE_MACS")
                     except Exception as e:
                          logger.error(f"Command Error: {e}")
-                
-                 # ... (Raw Hex Fallback) ...
+
+                # --- Raw Hex Fallback ---
                 elif len(parts) == 2:
-# ...
                     mac = parts[0]
                     hex_val = parts[1].strip().replace('0x', '')
                     # Basic validation

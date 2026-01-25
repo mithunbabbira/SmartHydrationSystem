@@ -47,11 +47,17 @@ void loop() {
       break;
     }
 
-    case CMD_SET_TIME: {
+    case CMD_REPORT_TIME: {
       uint32_t timestamp = incomingPacket.data;
       Serial.print("TIME SYNC Received: ");
       Serial.println(timestamp);
       // Time usage: timestamp is Unix Epoch seconds
+      break;
+    }
+
+    case CMD_REPORT_PRESENCE: {
+      Serial.print("PRESENCE UPDATE: ");
+      Serial.println(incomingPacket.data == 1 ? "PHONE HOME" : "PHONE AWAY");
       break;
     }
 
@@ -69,4 +75,10 @@ void loop() {
       break;
     }
   }
+}
+
+// Optional helper to check presence on demand
+void checkPresence() {
+  Serial.println("Requesting Presence Check...");
+  comms.send(CMD_REQUEST_PRESENCE, 0);
 }

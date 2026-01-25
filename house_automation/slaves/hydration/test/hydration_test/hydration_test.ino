@@ -104,9 +104,9 @@ void testWhiteLED() {
   Serial.println("  Blinking White LED (D25)...");
   for (int i = 0; i < 5; i++) {
     digitalWrite(PIN_LED_WHITE, HIGH);
-    delay(100);
+    delay(1000);
     digitalWrite(PIN_LED_WHITE, LOW);
-    delay(100);
+    delay(1000);
   }
 }
 
