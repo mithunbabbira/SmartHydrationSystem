@@ -1,10 +1,61 @@
+import serial
 import time
+import threading
+import queue
+import logging
+import sys
+import re
+import struct
+import config
 import subprocess
 
-# ... (Previous imports) ...
+# --- Configuration ---
+SERIAL_PORT = config.SERIAL_PORT
+BAUD_RATE = 115200
 
-class HouseController:
-    # ... (Previous methods) ...
+# --- Logging Setup ---
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger("PiController")
+
+class SerialController:
+    def __init__(self, port, baud_rate):
+        self.port = port
+        self.baud_rate = baud_rate
+        self.serial_conn = None
+        self.running = False
+        self.send_queue = queue.Queue()
+
+    def connect(self):
+        try:
+            self.serial_conn = serial.Serial(self.port, self.baud_rate, timeout=1)
+            # Reset ESP32 via DTR (Optional, but good for clean start)
+            self.serial_conn.dtr = False 
+            time.sleep(0.1)
+            self.serial_conn.dtr = True
+            logger.info(f"Connected to {self.port} at {self.baud_rate} baud.")
+            return True
+        except serial.SerialException as e:
+            logger.error(f"Failed to connect to serial port: {e}")
+            return False
+
+    def reader_thread(self):
+        logger.info("Reader thread started.")
+        while self.running and self.serial_conn and self.serial_conn.is_open:
+            try:
+                if self.serial_conn.in_waiting > 0:
+                    line = self.serial_conn.readline().decode('utf-8', errors='ignore').strip()
+                    if line:
+                        self.watchdog.pet() # Reset watchdog on ANY valid serial data
+                        self.process_incoming_data(line)
+            except Exception as e:
+                logger.error(f"Error reading from serial: {e}")
+                time.sleep(1) 
 
     def is_phone_home(self):
         try:
