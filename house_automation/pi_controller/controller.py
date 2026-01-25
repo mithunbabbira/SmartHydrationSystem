@@ -7,7 +7,7 @@ import sys
 import re
 
 # --- Configuration ---
-SERIAL_PORT = '/dev/tty.usbserial-0001' # DEFAULT - Change if needed
+SERIAL_PORT = '/dev/ttyUSB0' # DEFAULT - Change if needed
 BAUD_RATE = 115200
 
 # --- Logging Setup ---
