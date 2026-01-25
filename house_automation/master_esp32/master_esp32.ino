@@ -114,16 +114,16 @@ void processSerialCommand(String cmd) {
     return;
 
   // Format: TX:<MAC>:<HEX_DATA>
-  int firstColon = cmd.indexOf(':');
-  int secondColon = cmd.indexOf(':', firstColon + 1);
+  int firstColon = cmd.indexOf(':');    // Should be at index 2
+  int lastColon = cmd.lastIndexOf(':'); // The one before the HEX payload
 
-  if (secondColon == -1) {
+  if (lastColon <= firstColon) {
     Serial.println("ERR:Format");
     return;
   }
 
-  String macStr = cmd.substring(firstColon + 1, secondColon);
-  String hexPayload = cmd.substring(secondColon + 1);
+  String macStr = cmd.substring(firstColon + 1, lastColon);
+  String hexPayload = cmd.substring(lastColon + 1);
 
   uint8_t peerAddr[6];
   stringToMac(macStr, peerAddr);

@@ -77,10 +77,10 @@ class SerialController:
             except Exception as e:
                 logger.error(f"Failed to decode data from {mac}: {e}")
             
-        elif line.startswith("RX:"):
-             logger.warning(f"Malformed RX line: {line}")
-        elif line.startswith("DEBUG:") or line.startswith("OK:") or line.startswith("ERR:"):
+        elif line.startswith("DEBUG:"):
             logger.debug(f"Master: {line}")
+        elif line.startswith("OK:") or line.startswith("ERR:"):
+            logger.info(f"Master: {line}")
 
     def send_command(self, mac_address, hex_data):
         # Format: TX:<MAC>:<HEX_DATA>
