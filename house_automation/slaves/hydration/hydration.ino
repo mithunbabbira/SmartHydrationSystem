@@ -1,8 +1,10 @@
 #include "Hardware.h"
+#include "LogicManager.h" // Includes Hardware and SlaveComms
 #include "SlaveComms.h"
 
 SlaveComms comms;
 HydrationHW hw;
+LogicManager logic;
 
 void setup() {
   Serial.begin(115200);
@@ -14,6 +16,9 @@ void setup() {
   // THEN init Hardware (Pins) to ensure they stay set
   hw.begin();
 
+  // Init Logic State Machine
+  logic.begin(&hw, &comms);
+
   Serial.println("Hydration Slave Ready (Modular Framework)");
 
   // Request Time on Boot
@@ -22,6 +27,9 @@ void setup() {
 }
 
 void loop() {
+  // Update Logic (Bottle Detection, Alerts)
+  logic.update();
+
   // Check for incoming commands
   if (packetReceived) {
     packetReceived = false;

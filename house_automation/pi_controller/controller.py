@@ -107,6 +107,14 @@ class SerialController:
                         payload = "0000803F" if is_home else "00000000" # 1.0 or 0.0 in float hex
                         self.send_command(mac, "0141" + payload)
 
+                    # 0x50: ALERT_MISSING
+                    elif cmd == 0x50:
+                        logger.warning(f"ALERT [{mac}]: Bottle Missing! (Timer Expired)")
+                    
+                    # 0x51: ALERT_REPLACED
+                    elif cmd == 0x51:
+                         logger.info(f"ALERT [{mac}]: Bottle Replaced. Stabilizing...")
+
                     else:
                         logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Val:{val:.2f}")
                 else:
