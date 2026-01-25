@@ -20,6 +20,7 @@ class HydrationHW {
 private:
   HX711 scale;
   Preferences prefs;
+  float lastWeight = 0.0;
 
 public:
   void begin() {
