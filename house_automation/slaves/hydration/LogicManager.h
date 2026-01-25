@@ -81,7 +81,10 @@ public:
           lastIntervalReset = now;
         } else {
           // No drink -> Check Presence before Reminding
-          Serial.println("Logic: Interval Expired. Checking Presence...");
+          Serial.print("Logic: Interval Expired (");
+          Serial.print(now - lastIntervalReset);
+          Serial.println("ms > limit). Checking Presence...");
+
           comms->send(CMD_REQUEST_PRESENCE, 0);
           enterState(STATE_WAIT_FOR_PRESENCE);
         }
@@ -240,6 +243,8 @@ public:
       delay(2000);
       hw->setRgb(0);
       lastSavedWeight = currentWeight;
+
+      lastIntervalReset = millis(); // Reset Timer
     }
     // Refilled?
     else if (diff <= -REFILL_MIN_ML) {
@@ -251,11 +256,14 @@ public:
       delay(2000);
       hw->setRgb(0);
       lastSavedWeight = currentWeight;
+
+      lastIntervalReset = millis(); // Reset Timer
     }
     // Small change?
     else {
       Serial.println("RESULT: No significant change (Preserving Baseline).");
-      // CRITICAL FIX: Do NOT update lastSavedWeight here.
+      // DO NOT UPDATE lastSavedWeight.
+      // DO NOT UPDATE lastIntervalReset.
       // This prevents "resetting" the counter on small deviations or quick
       // replace. Small sips will accumulate until they cross DRINK_MIN_ML.
     }
