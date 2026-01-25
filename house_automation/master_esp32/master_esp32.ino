@@ -42,11 +42,11 @@ void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
 }
 
 // Callback when data is sent
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
   // Optional: Report delivery status to Pi?
-  Serial.print("STATUS:");
-  Serial.print(macToString(mac_addr));
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? ":SUCCESS" : ":FAIL");
+  // Serial.print("STATUS:");
+  // Serial.print(macToString(info->dest_addr));
+  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? ":SUCCESS" : ":FAIL");
 }
 
 void setup() {
