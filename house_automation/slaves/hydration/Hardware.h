@@ -115,6 +115,18 @@ public:
     }
     return lastWeight;
   }
+
+  void saveHydrationState(float weight, float dailyTotal, int day) {
+    prefs.putFloat("last_weight", weight);
+    prefs.putFloat("daily_total", dailyTotal);
+    prefs.putInt("last_day", day);
+  }
+
+  void loadHydrationState(float *weight, float *dailyTotal, int *day) {
+    *weight = prefs.getFloat("last_weight", 0.0);
+    *dailyTotal = prefs.getFloat("daily_total", 0.0);
+    *day = prefs.getInt("last_day", 0);
+  }
 };
 
 #endif

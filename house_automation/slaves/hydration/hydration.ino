@@ -6,6 +6,23 @@ SlaveComms comms;
 HydrationHW hw;
 LogicManager logic;
 
+// Time Tracking
+unsigned long rtcOffset = 0;
+bool timeSynced = false;
+
+// Config (Mirrored from Master config.h)
+#define SLEEP_START_HOUR 23
+#define SLEEP_END_HOUR 10
+
+int getHour() {
+  if (!timeSynced)
+    return 12; // Default to noon if no time
+  unsigned long currentEpoch = rtcOffset + (millis() / 1000);
+  // Manual GMT+5.5 adjustment (19800 seconds)
+  currentEpoch += 19800;
+  return (currentEpoch % 86400L) / 3600;
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -27,6 +44,11 @@ void setup() {
 }
 
 void loop() {
+  // Update Sleep State
+  int hour = getHour();
+  bool isSleeping = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
+  logic.setSleep(isSleeping);
+
   // Update Logic (Bottle Detection, Alerts)
   logic.update();
 
@@ -59,13 +81,20 @@ void loop() {
       uint32_t timestamp = incomingPacket.data;
       Serial.print("TIME SYNC Received: ");
       Serial.println(timestamp);
-      // Time usage: timestamp is Unix Epoch seconds
+
+      // Update internal time tracking
+      rtcOffset = timestamp - (millis() / 1000);
+      timeSynced = true;
       break;
     }
 
     case CMD_REPORT_PRESENCE: {
+      bool isHome = (incomingPacket.data == 1);
       Serial.print("PRESENCE UPDATE: ");
-      Serial.println(incomingPacket.data == 1 ? "PHONE HOME" : "PHONE AWAY");
+      Serial.println(isHome ? "HOME" : "AWAY");
+
+      // Notify Logic Manager
+      logic.handlePresence(isHome);
       break;
     }
 

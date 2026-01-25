@@ -115,6 +115,14 @@ class SerialController:
                     elif cmd == 0x51:
                          logger.info(f"ALERT [{mac}]: Bottle Replaced. Stabilizing...")
 
+                    # 0x60: DRINK_DETECTED
+                    elif cmd == 0x60:
+                        logger.info(f"HYDRATION [{mac}]: Drink Detected: {val:.2f} ml")
+
+                    # 0x61: DAILY_TOTAL
+                    elif cmd == 0x61:
+                        logger.info(f"HYDRATION [{mac}]: Daily Total: {val:.2f} ml")
+                    
                     else:
                         logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Val:{val:.2f}")
                 else:
