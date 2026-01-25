@@ -90,9 +90,13 @@ void loop() {
     }
 
     case CMD_REPORT_PRESENCE: {
-      bool isHome = (incomingPacket.data == 1);
+      // Data might be sent as float (1.0 = 0x3F800000) or int (1)
+      // Any non-zero value is treated as HOME.
+      bool isHome = (incomingPacket.data != 0);
       Serial.print("PRESENCE UPDATE: ");
-      Serial.println(isHome ? "HOME" : "AWAY");
+      Serial.println(isHome ? "HOME"
+                            : "AWAY (Raw Data: " + String(incomingPacket.data) +
+                                  ")");
 
       // Notify Logic Manager
       logic.handlePresence(isHome);
