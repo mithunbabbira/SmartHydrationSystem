@@ -180,6 +180,7 @@ void setup() {
 
   // 1. Init WiFi (STA Mode required for ESP-NOW)
   WiFi.mode(WIFI_STA);
+  delay(500); // Wait for MAC to be available
   Serial.print("MY MAC ADDRESS: ");
   Serial.println(WiFi.macAddress());
 
