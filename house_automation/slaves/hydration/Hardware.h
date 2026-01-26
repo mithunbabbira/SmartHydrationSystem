@@ -37,7 +37,7 @@ public:
     scale.set_scale(CALIBRATION_FACTOR);
 
     prefs.begin("hydration", false); // Namespace "hydration", RW
-    float savedOffset = prefs.getFloat("offset", 0.0);
+    float savedOffset = prefs.getFloat("scale_offset", 0.0);
 
     if (savedOffset != 0.0) {
       scale.set_offset(savedOffset);
@@ -53,7 +53,7 @@ public:
   void tare() {
     scale.tare();
     float newOffset = scale.get_offset();
-    prefs.putFloat("offset", newOffset);
+    prefs.putFloat("scale_offset", newOffset);
     // Serial.println("Tare Saved to NVM");
   }
 
