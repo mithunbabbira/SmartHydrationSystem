@@ -1,118 +1,215 @@
+#include <BLEAdvertisedDevice.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
 #include <WiFi.h>
 #include <esp_now.h>
 
-// MASTER MAC ADDRESS (Given by User)
-uint8_t masterMAC[] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4};
+// ==================== Configuration ====================
+// Target LED Strip MAC Address
+static String targetAddress = "ff:ff:bc:09:a5:b9";
 
-// Data Structure
+// Triones / HappyLighting Service & Char UUIDs
+static BLEUUID serviceUUID("FFD5");
+static BLEUUID charUUID("FFD9");
+
+// Protocol Headers
+const byte HEADER_COLOR = 0x56;
+const byte HEADER_POWER = 0xCC;
+const byte HEADER_MODE = 0xBB;
+
+// ==================== ESP-NOW Protocol ====================
+// Protocol Commands (Matching Hydration System)
+enum CmdType {
+  CMD_SET_LED = 0x10, // Power (Used for On/Off)
+  CMD_SET_RGB = 0x12  // Color ID
+};
+
+// Data Packet (6 Bytes)
 typedef struct __attribute__((packed)) {
-  uint8_t type;    // 1=Temp, 2=Switch, 3=Motion
-  uint8_t command; // 0=OFF, 1=ON, 2=DATA
-  float value;     // e.g. 25.4
+  uint8_t type;
+  uint8_t command;
+  uint32_t data; // Float bits (Standard from Controller)
 } ControlPacket;
 
-// Global buffer for serial input
-String inputBuffer = "";
+ControlPacket incomingPacket;
+volatile bool packetReceived = false;
 
-// Helper to print MAC
-void printMAC(const uint8_t *mac_addr) {
-  char macStr[18];
-  snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X", mac_addr[0],
-           mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.print(macStr);
-}
+// ==================== Globals ====================
+BLEClient *pClient;
+BLERemoteCharacteristic *pRemoteCharacteristic;
+bool connected = false;
 
-// Callback when data is sent (Core v3 Signature)
-void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
-  // Serial.print("Last Packet Send Status: ");
-  if (status == ESP_NOW_SEND_SUCCESS) {
-    // Serial.println("Delivery Success");
-  } else {
-    Serial.println("Delivery Fail");
-  }
-}
-
-// Callback when data is received (Core v3 Signature)
+// ==================== Callbacks ====================
 void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
                 int len) {
-  Serial.print("\n--- Data Received from ");
-  printMAC(info->src_addr);
-  Serial.println(" ---");
-  Serial.print("Content: ");
-  for (int i = 0; i < len; i++) {
-    Serial.print((char)incomingData[i]);
+  if (len == sizeof(ControlPacket)) {
+    memcpy(&incomingPacket, incomingData, sizeof(ControlPacket));
+    packetReceived = true;
   }
-  Serial.println("\n----------------------------\n");
 }
 
-void setup() {
-  // Init Serial
-  Serial.begin(115200);
-  while (!Serial) {
-    delay(10);
-  } // Wait for serial
+// ==================== BLE Functions ====================
+void sendColor(uint8_t r, uint8_t g, uint8_t b) {
+  if (!connected || pRemoteCharacteristic == nullptr)
+    return;
+  uint8_t command[] = {HEADER_COLOR, r, g, b, 0x00, 0xF0, 0xAA};
+  pRemoteCharacteristic->writeValue(command, sizeof(command));
+  Serial.printf("BLE TX: Color R%d G%d B%d\n", r, g, b);
+}
 
-  // Init WiFi
+void sendPower(bool on) {
+  if (!connected || pRemoteCharacteristic == nullptr)
+    return;
+  uint8_t stateByte = on ? 0x23 : 0x24;
+  uint8_t command[] = {HEADER_POWER, stateByte, 0x33};
+  pRemoteCharacteristic->writeValue(command, sizeof(command));
+  Serial.printf("BLE TX: Power %s\n", on ? "ON" : "OFF");
+}
+
+void sendMode(uint8_t mode, uint8_t speed) {
+  if (!connected || pRemoteCharacteristic == nullptr)
+    return;
+  uint8_t command[] = {HEADER_MODE, mode, speed, 0x44};
+  pRemoteCharacteristic->writeValue(command, sizeof(command));
+  Serial.printf("BLE TX: Mode %d Speed %d\n", mode, speed);
+}
+
+// ==================== Connection Logic ====================
+class MyClientCallback : public BLEClientCallbacks {
+  void onConnect(BLEClient *pclient) { Serial.println(">>> BLE Connected!"); }
+  void onDisconnect(BLEClient *pclient) {
+    connected = false;
+    Serial.println(">>> BLE Disconnected!");
+  }
+};
+
+bool connectToDevice() {
+  Serial.print("Connecting to BLE: ");
+  Serial.println(targetAddress);
+  BLEAddress addr(targetAddress.c_str());
+
+  if (!pClient->connect(addr)) {
+    Serial.println("Connect Failed");
+    return false;
+  }
+
+  BLERemoteService *pRemoteService = pClient->getService(serviceUUID);
+  if (pRemoteService == nullptr) {
+    pClient->disconnect();
+    return false;
+  }
+
+  pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+  if (pRemoteCharacteristic == nullptr) {
+    pClient->disconnect();
+    return false;
+  }
+
+  connected = true;
+  Serial.println("BLE Ready.");
+  return true;
+}
+
+// ==================== Logic ====================
+void processIncomingPackets() {
+  if (packetReceived) {
+    packetReceived = false;
+    Serial.printf("RX CMD: 0x%02X Data: 0x%08X\n", incomingPacket.command,
+                  incomingPacket.data);
+
+    // Interpret Data
+    // Controller sends everything as float-packed-in-uint32
+    // But boolean 1 might just be integer 1 depending on sender version
+    // We check both raw and float conversion
+
+    float f;
+    memcpy(&f, &incomingPacket.data, 4);
+    int val = (int)f; // Cast float to int (e.g. 1.0 -> 1)
+
+    // Fallback: if data is small integer (not a float representation), use
+    // directly
+    if (incomingPacket.data < 1000 && incomingPacket.data > 0)
+      val = incomingPacket.data;
+
+    switch (incomingPacket.command) {
+    case CMD_SET_LED:
+      // Set Power
+      sendPower(val > 0 || incomingPacket.data > 0);
+      break;
+
+    case CMD_SET_RGB:
+      // Set Color ID
+      Serial.printf("Set Color ID: %d\n", val);
+      switch (val) {
+      case 0:
+        sendPower(false);
+        break; // OFF
+      case 1:
+        sendColor(255, 0, 0);
+        break; // Red
+      case 2:
+        sendColor(0, 255, 0);
+        break; // Green
+      case 3:
+        sendColor(0, 0, 255);
+        break; // Blue
+      case 4:
+        sendColor(255, 255, 255);
+        break; // White
+      case 6:
+        sendColor(255, 165, 0);
+        break; // Orange
+      case 8:
+        sendColor(200, 0, 255);
+        break; // Purple
+      default:
+        Serial.println("Unknown Color ID");
+        break;
+      }
+      if (val > 0)
+        sendPower(true); // Ensure ON
+      break;
+    }
+  }
+}
+
+// ==================== Main ====================
+void setup() {
+  Serial.begin(115200);
+  Serial.println("\nBooting LED BLE + ESP-NOW Proxy...");
+
+  // 1. Init WiFi (STA Mode required for ESP-NOW)
   WiFi.mode(WIFI_STA);
-  delay(500); // Wait for WiFi hardware to initialize
-  Serial.println("Slave Node Started");
-  Serial.print("My MAC: ");
+  Serial.print("MY MAC ADDRESS: ");
   Serial.println(WiFi.macAddress());
 
-  // Init ESP-NOW
+  // 2. Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
-
-  // Register callbacks
-  esp_now_register_send_cb(OnDataSent);
   esp_now_register_recv_cb(OnDataRecv);
 
-  // Register Peer (Master)
-  esp_now_peer_info_t peerInfo = {};
-  memcpy(peerInfo.peer_addr, masterMAC, 6);
-  peerInfo.channel = 0; // 0 = Use current channel
-  peerInfo.encrypt = false;
+  // 3. Init BLE
+  BLEDevice::init("ESP32_LED_Proxy");
+  pClient = BLEDevice::createClient();
+  pClient->setClientCallbacks(new MyClientCallback());
 
-  if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-    Serial.println("Failed to add peer");
-    return;
-  }
-
-  Serial.println("Master Peer Registered.");
-  Serial.println("Sending sensor data every 5 seconds...");
-}
-
-void sendPacket() {
-  ControlPacket packet;
-  packet.type = 2;                           // LED BLE
-  packet.command = 2;                        // Data
-  packet.value = random(2000, 3000) / 100.0; // 20.00 - 30.00
-
-  esp_err_t result =
-      esp_now_send(masterMAC, (uint8_t *)&packet, sizeof(packet));
-
-  if (result == ESP_OK) {
-    Serial.print("Sent Packet: Temp=");
-    Serial.println(packet.value);
-  } else {
-    Serial.println("Error sending packet");
-  }
+  Serial.println("System Ready. Waiting for Commands or Connection...");
 }
 
 void loop() {
-  static unsigned long lastSend = 0;
-  if (millis() - lastSend > 5000) {
-    lastSend = millis();
-    sendPacket();
+  // Maintain BLE
+  static unsigned long lastBleCheck = 0;
+  if (!connected) {
+    if (millis() - lastBleCheck > 5000) {
+      lastBleCheck = millis();
+      connectToDevice();
+    }
   }
 
-  // Keep serial input for manual text commands (optional, mostly for debugging
-  // receive)
-  while (Serial.available()) {
-    char c = Serial.read();
-    // Just echo for now or trigger manual send?
-    // Let's just ignore manual send for now to avoid struct confusion
-  }
+  // Handle Commands
+  processIncomingPackets();
+
+  delay(10);
 }
