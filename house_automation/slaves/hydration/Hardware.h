@@ -46,7 +46,9 @@ public:
     } else {
       // Only tare if NO saved value exists
       scale.tare();
-      // Serial.println("No saved Tare - Zeroing now");
+      long newOffset = scale.get_offset();
+      prefs.putLong("tare_offset", newOffset);
+      // Serial.println("No saved Tare - Zeroing now & Saved to NVM");
     }
 
     stopAll();
