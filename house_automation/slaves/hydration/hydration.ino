@@ -152,6 +152,12 @@ void loop() {
   bool isSleeping = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
   logic.setSleep(isSleeping);
 
+  // Check for New Day (Daily Reset)
+  if (timeSynced) { // Only if valid time
+    int day = (rtcOffset + (millis() / 1000) + 19800) / 86400;
+    logic.checkDay(day);
+  }
+
   // Update Logic (Bottle Detection, Alerts)
   logic.update();
 

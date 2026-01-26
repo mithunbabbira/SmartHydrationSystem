@@ -305,6 +305,26 @@ public:
     }
   }
 
+  // Called periodically to check for new day
+  void checkDay(int newDay) {
+    if (currentDay != newDay) {
+      Serial.print("Logic: New Day Detected (");
+      Serial.print(currentDay);
+      Serial.print(" -> ");
+      Serial.print(newDay);
+      Serial.println("). Resetting Daily Total.");
+
+      currentDay = newDay;
+      dailyTotal = 0.0;
+
+      // Save Reset State
+      hw->saveHydrationState(lastSavedWeight, dailyTotal, currentDay);
+
+      // Notify Pi of reset
+      comms->sendFloat(CMD_DAILY_TOTAL, dailyTotal);
+    }
+  }
+
   void setSleep(bool sleeping) {
     bool changed = (isSleeping != sleeping);
     isSleeping = sleeping;
