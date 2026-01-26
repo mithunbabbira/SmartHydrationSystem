@@ -98,6 +98,11 @@ public:
     case 7:
       b = 250;
       break; // Dim Blue (Very close to 255 ie OFF)
+    case 8:  // Dim Purple (Red + Blue)
+      r = 220;
+      g = 255;
+      b = 220;
+      break;
     default:
       break; // Off
     }
