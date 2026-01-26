@@ -37,13 +37,15 @@ public:
     scale.set_scale(CALIBRATION_FACTOR);
 
     prefs.begin("hydration", false); // Namespace "hydration", RW
-    float savedOffset = prefs.getFloat("scale_offset", 0.0);
 
-    if (savedOffset != 0.0) {
+    // Legacy compatibility: Check for "tare_offset" (Long)
+    if (prefs.isKey("tare_offset")) {
+      long savedOffset = prefs.getLong("tare_offset", 0);
       scale.set_offset(savedOffset);
-      // Serial.println("Loaded Tare Offset from NVM");
+      // Serial.println("Loaded Legacy Tare Offset from NVM");
     } else {
-      scale.tare(); // InitialTare if no saved value
+      // Only tare if NO saved value exists
+      scale.tare();
       // Serial.println("No saved Tare - Zeroing now");
     }
 
@@ -52,8 +54,8 @@ public:
 
   void tare() {
     scale.tare();
-    float newOffset = scale.get_offset();
-    prefs.putFloat("scale_offset", newOffset);
+    long newOffset = scale.get_offset();
+    prefs.putLong("tare_offset", newOffset);
     // Serial.println("Tare Saved to NVM");
   }
 
