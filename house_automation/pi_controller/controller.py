@@ -9,6 +9,10 @@ import struct
 import config
 import subprocess
 
+# Import Handlers
+from handlers.hydration import HydrationHandler
+from handlers.led import LEDHandler
+
 # --- Configuration ---
 SERIAL_PORT = config.SERIAL_PORT
 BAUD_RATE = 115200
@@ -30,6 +34,12 @@ class SerialController:
         self.serial_conn = None
         self.running = False
         self.send_queue = queue.Queue()
+        
+        # Initialize Handlers
+        self.handlers = {
+            'hydration': HydrationHandler(self),
+            'led': LEDHandler(self)
+        }
 
     def connect(self):
         try:
@@ -100,46 +110,13 @@ class SerialController:
                 if len(data_bytes) == 6:
                     ctype, cmd, val = struct.unpack('<BBf', data_bytes)
                     
-                    # 0x21: REPORT_WEIGHT
-                    if cmd == 0x21:
-                        logger.info(f"HYDRATION WEIGHT: {val:.2f} g")
-                    
-                    # 0x30: REQUEST_TIME from Slave
-                    elif cmd == 0x30:
-                        logger.info(f"[{mac}] Requested Time.")
-                        unix_time = int(time.time())
-                        time_hex = struct.pack('<I', unix_time).hex()
-                        self.send_command(mac, "0131" + time_hex)
-
-                    # 0x40: REQUEST_PRESENCE from Slave
-                    elif cmd == 0x40:
-                        logger.info(f"[{mac}] Requested Presence Check.")
-                        is_home = self.is_phone_home()
-                        payload = "0000803F" if is_home else "00000000" # 1.0 or 0.0
-                        self.send_command(mac, "0141" + payload)
-
-                    # 0x50: ALERT_MISSING
-                    elif cmd == 0x50:
-                        logger.warning(f"ALERT [{mac}]: Bottle Missing! (Timer Expired)")
-                    
-                    # 0x51: ALERT_REPLACED
-                    elif cmd == 0x51:
-                         logger.info(f"ALERT [{mac}]: Bottle Replaced. Stabilizing...")
-
-                    # 0x52: ALERT_REMINDER (NEW)
-                    elif cmd == 0x52:
-                         logger.warning(f"ALERT [{mac}]: Hydration Reminder! Drink Detected: NO. User is HOME.")
-
-                    # 0x60: DRINK_DETECTED
-                    elif cmd == 0x60:
-                        logger.info(f"HYDRATION [{mac}]: Drink Detected: {val:.2f} ml")
-
-                    # 0x61: DAILY_TOTAL
-                    elif cmd == 0x61:
-                        logger.info(f"HYDRATION [{mac}]: Daily Total: {val:.2f} ml")
-                    
+                    # Route by Type
+                    if ctype == 1: # Hydration
+                        self.handlers['hydration'].handle_packet(cmd, val, mac)
+                    elif ctype == 2: # LED (Future)
+                        self.handlers['led'].handle_packet(cmd, val, mac)
                     else:
-                        logger.info(f"SENSOR [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Val:{val:.2f}")
+                        logger.info(f"UNKNOWN TYPE [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Val:{val:.2f}")
                 else:
                     logger.info(f"DATA [{mac}] -> RAW HEX: {hex_data}")
             except Exception as e:
@@ -175,9 +152,8 @@ class SerialController:
         self.ui_loop()
 
     def ui_loop(self):
-        print("\n--- House Automation Controller (Transparent Mode) ---")
-        print("Format: <MAC_ADDRESS> <HEX_MESSAGE>")
-        print("Example: 24:6F:28:A1:B2:C3 0102aabbcc")
+        print("\n--- House Automation Controller (Modular) ---")
+        print("Commands: hydration <cmd>, led <cmd>")
         print("Type 'exit' to quit.\n")
         
         while self.running:
@@ -192,60 +168,16 @@ class SerialController:
                 parts = user_input.split(' ')
                 cmd = parts[0].lower()
                 
-                # --- Hydration Shortcuts ---
-                if cmd == 'hydration':
-                    try:
-                        mac = config.SLAVE_MACS['hydration']
-                        subcmd = parts[1].lower() if len(parts) > 1 else ''
-                        
-                        if subcmd == 'led':
-                            val = 1 if (len(parts)>2 and parts[2]=='on') else 0
-                            # 0x10 = SET_LED. Payload: Type(1) Cmd(0x10) Val(float)
-                            # Hex: 01 10 0000803F (1.0) or 00000000
-                            hex_payload = "0110" + ("0000803F" if val else "00000000")
-                            self.send_command(mac, hex_payload)
-
-                        elif subcmd == 'buzzer':
-                            val = 1 if (len(parts)>2 and parts[2]=='on') else 0
-                            # 0x11 = SET_BUZZER
-                            hex_payload = "0111" + ("0000803F" if val else "00000000")
-                            self.send_command(mac, hex_payload)
-
-                        elif subcmd == 'rgb':
-                            # Valid codes: 0-4
-                            if len(parts) > 2:
-                                code = int(parts[2])
-                                # 0x12 = SET_RGB. Float representation of int code.
-                                float_hex = struct.pack('<f', code).hex()
-                                hex_payload = "0112" + float_hex
-                                self.send_command(mac, hex_payload)
-                            else:
-                                logger.warning("Usage: hydration rgb <0-4>")
-
-                        elif subcmd == 'weight':
-                            # 0x20 = GET_WEIGHT. 
-                            self.send_command(mac, "012000000000")
-
-                        elif subcmd == 'tare':
-                            # 0x22 = CMD_TARE
-                            self.send_command(mac, "012200000000")
-                            logger.info("Sent TARE command.")
-
-                        else:
-                            logger.warning("Unknown hydration command.")
-
-                    except KeyError:
-                         logger.error("Hydration MAC not found in config.SLAVE_MACS")
-                    except Exception as e:
-                         logger.error(f"Command Error: {e}")
-
+                # Route User Input
+                if cmd in self.handlers:
+                    self.handlers[cmd].handle_user_input(parts)
+                
                 # --- Raw Hex Fallback ---
                 elif len(parts) == 2:
                     mac = parts[0]
                     hex_val = parts[1].strip().replace('0x', '')
                     # Basic validation
                     if len(mac) == 17 and mac.count(':') == 5:
-                        # Ensure hex_val is valid hex
                         if all(c in '0123456789ABCDEFabcdef' for c in hex_val) and len(hex_val) % 2 == 0:
                              self.send_command(mac, hex_val)
                         else:
@@ -253,7 +185,7 @@ class SerialController:
                     else:
                         logger.warning("Invalid MAC format. Use XX:XX:XX:XX:XX:XX")
                 else:
-                    logger.warning("Invalid Input. Format: <MAC> <HEX_MSG> or hydration cmd")
+                    logger.warning("Invalid Input. Format: <handler> <cmd> or <MAC> <HEX>")
             except KeyboardInterrupt:
                 self.running = False
                 self.watchdog.stop()
