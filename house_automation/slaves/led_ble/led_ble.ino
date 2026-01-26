@@ -40,11 +40,19 @@ BLERemoteCharacteristic *pRemoteCharacteristic;
 bool connected = false;
 
 // ==================== Callbacks ====================
+volatile int rawBleLen = 0;
+uint8_t rawBleBuffer[20];
+
+// ==================== Callbacks ====================
 void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
                 int len) {
   if (len == sizeof(ControlPacket)) {
     memcpy(&incomingPacket, incomingData, sizeof(ControlPacket));
     packetReceived = true;
+  } else if (len > 0 && len <= 20) {
+    // raw passthrough
+    memcpy(rawBleBuffer, incomingData, len);
+    rawBleLen = len;
   }
 }
 
@@ -224,6 +232,18 @@ void loop() {
 
   // Handle Commands
   processIncomingPackets();
+
+  // Handle Raw Passthrough
+  if (rawBleLen > 0 && connected && pRemoteCharacteristic != nullptr) {
+    pRemoteCharacteristic->writeValue(rawBleBuffer, rawBleLen);
+    Serial.printf("BLE TX (Raw): %d bytes\n", rawBleLen);
+    // Print buffer for debug
+    for (int i = 0; i < rawBleLen; i++)
+      Serial.printf("%02X ", rawBleBuffer[i]);
+    Serial.println();
+
+    rawBleLen = 0; // Reset
+  }
 
   delay(10);
 }
