@@ -55,6 +55,18 @@ class LEDHandler:
                       logger.error("Invalid RGB code. Use integer.")
              else:
                   logger.warning("Usage: led rgb <id>")
+
+        elif subcmd == 'raw':
+             # led raw <HEX_PAYLOAD>
+             if len(parts) > 2:
+                  hex_payload = parts[2]
+                  if all(c in '0123456789ABCDEFabcdef' for c in hex_payload) and len(hex_payload) % 2 == 0:
+                      self.controller.send_command(mac, hex_payload)
+                      logger.info(f"Sent LED RAW: {hex_payload}")
+                  else:
+                      logger.error("Invalid HEX payload.")
+             else:
+                  logger.warning("Usage: led raw <HEX_PAYLOAD>")
         
         else:
-             logger.warning("Unknown LED command. Try: on, off, rgb <id>")
+             logger.warning("Unknown LED command. Try: on, off, rgb <id>, raw <hex>")
