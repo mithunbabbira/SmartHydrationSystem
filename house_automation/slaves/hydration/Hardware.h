@@ -134,6 +134,65 @@ public:
     *dailyTotal = prefs.getFloat("daily_total", 0.0);
     *day = prefs.getInt("last_day", 0);
   }
+  // Direct RGB control for animations
+  void setRawRgb(uint8_t r, uint8_t g, uint8_t b) {
+    analogWrite(PIN_RGB_R, 255 - r); // Common Anode: Invert
+    analogWrite(PIN_RGB_G, 255 - g);
+    analogWrite(PIN_RGB_B, 255 - b);
+  }
+
+  void animateRainbow(unsigned long speedMs) {
+    static unsigned long lastUpdate = 0;
+    static int hue = 0;
+
+    if (millis() - lastUpdate >= speedMs) {
+      lastUpdate = millis();
+      hue = (hue + 1) % 360; // Increment hue
+
+      // Simple Hue to RGB (HSV approx with Sat=100%, Val=100%)
+      float h = hue / 60.0f;
+      int i = (int)h;
+      float f = h - i;
+      int q = 255 * (1 - f);
+      int t = 255 * f;
+
+      uint8_t r = 0, g = 0, b = 0;
+      switch (i) {
+      case 0:
+        r = 255;
+        g = t;
+        b = 0;
+        break;
+      case 1:
+        r = q;
+        g = 255;
+        b = 0;
+        break;
+      case 2:
+        r = 0;
+        g = 255;
+        b = t;
+        break;
+      case 3:
+        r = 0;
+        g = q;
+        b = 255;
+        break;
+      case 4:
+        r = t;
+        g = 0;
+        b = 255;
+        break;
+      case 5:
+        r = 255;
+        g = 0;
+        b = q;
+        break;
+      }
+
+      setRawRgb(r, g, b);
+    }
+  }
 };
 
 #endif

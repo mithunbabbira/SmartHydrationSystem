@@ -24,36 +24,8 @@ int getHour() {
   return (currentEpoch % 86400L) / 3600;
 }
 
-void setup() {
-  Serial.begin(115200);
-
-  // Init WiFi/EspNow FIRST to avoid pin conflicts (Fixes LED flicker)
-  comms.begin();
-  delay(100);
-
-  // THEN init Hardware (Pins) to ensure they stay set
-  hw.begin();
-
-  // Init Logic State Machine
-  logic.begin(&hw, &comms);
-
-  Serial.println("Hydration Slave Ready (Modular Framework)");
-
-  // Request Time on Boot
-  Serial.println("Requesting Time...");
-  comms.send(CMD_REQUEST_TIME, 0);
-}
-
-void loop() {
-  // Update Sleep State
-  int hour = getHour();
-  bool isSleeping = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
-  logic.setSleep(isSleeping);
-
-  // Update Logic (Bottle Detection, Alerts)
-  logic.update();
-
-  // Check for incoming commands
+// Helper to process any received ESP-NOW packets
+void processIncomingPackets() {
   if (packetReceived) {
     packetReceived = false;
 
@@ -125,6 +97,66 @@ void loop() {
       break;
     }
   }
+}
+
+void waitForTimeSync() {
+  Serial.println("Waiting for Time Sync from Pi...");
+  unsigned long lastRequest = 0;
+
+  while (!timeSynced) {
+    // 1. Animate Rainbow (Visual Feedback)
+    hw.animateRainbow(10); // Update every 10ms
+
+    // 2. Request Time every 5 seconds
+    if (millis() - lastRequest > 5000) {
+      lastRequest = millis();
+      Serial.println("Requesting Time...");
+      comms.send(CMD_REQUEST_TIME, 0);
+    }
+
+    // 3. Check for Response
+    processIncomingPackets();
+
+    // Tiny delay to yield
+    delay(5);
+  }
+
+  Serial.println("Time Synced! Starting Main Logic.");
+  hw.setRgb(0); // Turn off Rainbow
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Init WiFi/EspNow FIRST to avoid pin conflicts (Fixes LED flicker)
+  comms.begin();
+  delay(100);
+
+  // THEN init Hardware (Pins) to ensure they stay set
+  hw.begin();
+
+  Serial.println("Hydration Slave Booting...");
+
+  // BLOCKING: Wait for Time Sync before starting logic
+  waitForTimeSync();
+
+  // Init Logic State Machine
+  logic.begin(&hw, &comms);
+
+  Serial.println("Hydration Slave Ready (Modular Framework)");
+}
+
+void loop() {
+  // Update Sleep State
+  int hour = getHour();
+  bool isSleeping = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
+  logic.setSleep(isSleeping);
+
+  // Update Logic (Bottle Detection, Alerts)
+  logic.update();
+
+  // Check for incoming commands
+  processIncomingPackets();
 
   // Periodic Reporting (Every 5 Seconds)
   static unsigned long lastReportTime = 0;
@@ -134,10 +166,4 @@ void loop() {
     comms.sendFloat(CMD_REPORT_WEIGHT, weight);
     // Serial.print("Auto-Report Weight: "); Serial.println(weight);
   }
-}
-
-// Optional helper to check presence on demand
-void checkPresence() {
-  Serial.println("Requesting Presence Check...");
-  comms.send(CMD_REQUEST_PRESENCE, 0);
 }
