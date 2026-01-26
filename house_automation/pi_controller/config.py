@@ -10,4 +10,4 @@ SLAVE_MACS = {
 }
 
 # Default Port
-SERIAL_PORT = '/dev/ttyUSB0'
+SERIAL_PORT = '/dev/serial0'
