@@ -169,6 +169,19 @@ void processIncomingPackets() {
       if (val > 0)
         sendPower(true); // Ensure ON
       break;
+
+    case 0x13: // CMD_SET_MODE
+      // Data packed as: 0x0000[MODE][SPEED]
+      // Speed = data & 0xFF
+      // Mode = (data >> 8) & 0xFF
+      {
+        uint8_t speed = incomingPacket.data & 0xFF;
+        uint8_t mode = (incomingPacket.data >> 8) & 0xFF;
+        Serial.printf("Set Mode: %d Speed: %d\n", mode, speed);
+        sendMode(mode, speed);
+        sendPower(true); // Ensure ON
+      }
+      break;
     }
   }
 }

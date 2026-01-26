@@ -56,6 +56,34 @@ class LEDHandler:
              else:
                   logger.warning("Usage: led rgb <id>")
 
+        elif subcmd == 'mode':
+             # led mode <id> <speed>
+             if len(parts) > 3:
+                  try:
+                      mode = int(parts[2])
+                      speed = int(parts[3])
+                      # 0x13 = CMD_SET_MODE
+                      # Data: 0x0000[MODE][SPEED] -> Little Endian Bytes: [SPEED][MODE][00][00]
+                      # Packed as uint32 (I)
+                      # Value = (mode << 8) | speed
+                      val = (mode << 8) | speed
+                      # Struct pack <I (Little Endian uint32)
+                      hex_payload = "0113" + struct.pack('<I', val).hex()
+                      self.controller.send_command(mac, hex_payload)
+                      logger.info(f"Sent LED Mode {mode} Speed {speed}")
+                  except ValueError:
+                      logger.error("Usage: led mode <id> <speed> (integers)")
+             else:
+                  logger.warning("Usage: led mode <id> <speed>")
+
+        elif subcmd == 'rainbow':
+             # Fast Rainbow Shortcut (Mode 37, Speed 100)
+             # Val = (37 << 8) | 100 = 0x2564
+             val = (37 << 8) | 100
+             hex_payload = "0113" + struct.pack('<I', val).hex()
+             self.controller.send_command(mac, hex_payload)
+             logger.info("Sent LED Rainbow Mode")
+
         elif subcmd == 'raw':
              # led raw <HEX_PAYLOAD>
              if len(parts) > 2:
