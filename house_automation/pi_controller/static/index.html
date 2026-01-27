@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Home Control</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
@@ -20,8 +21,18 @@
                 <i class="fa-solid fa-house-signal"></i>
                 <h1>Smart<span class="highlight">Hydration</span></h1>
             </div>
-            <div class="status-pill online">
-                <span class="dot"></span> System Online
+
+            <div class="header-controls">
+                <div class="status-pill online">
+                    <span class="dot"></span> Online
+                </div>
+                <div class="master-switch">
+                    <span>Master</span>
+                    <label class="switch">
+                        <input type="checkbox" id="master-toggle" onclick="toggleMaster(this)">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
             </div>
         </header>
 
@@ -44,102 +55,159 @@
                             <i class="fa-solid fa-scale-balanced"></i> Tare
                         </button>
                         <button onclick="sendHydration('test_alert')" class="btn-glass warning">
-                            <i class="fa-solid fa-bell"></i> Test Alert
+                            <i class="fa-solid fa-bell"></i> Signal Alert
                         </button>
                     </div>
+
+                    <button class="btn-text" onclick="toggleHydrationAdvanced()">Advanced Options <i
+                            class="fa-solid fa-chevron-down"></i></button>
+
+                    <div id="hyd-advanced" class="advanced-panel" style="display: none;">
+                        <div class="control-group">
+                            <button onclick="sendHydrationCmd('0x52')" class="btn-glass danger">Force Reminder</button>
+                            <button onclick="sendHydrationCmd('0x53')" class="btn-glass success">Silence Alert</button>
+                        </div>
+                        <div class="control-group">
+                            <button onclick="sendHydrationCmd('0x11', 1)" class="btn-glass">Test Buzzer</button>
+                            <button onclick="sendHydrationCmd('0x10', 1)" class="btn-glass">Test LED</button>
+                        </div>
+                        <div class="control-group">
+                            <button onclick="sendHydrationCmd('0x40')" class="btn-glass secondary">Ping
+                                Presence</button>
+                            <button onclick="sendHydrationCmd('0x30')" class="btn-glass secondary">Sync Time</button>
+                        </div>
+                    </div>
                 </div>
             </div>
+    </div>
 
-            <!-- LED Control Card -->
-            <div class="card led-card">
-                <div class="card-header">
-                    <div class="icon-box"><i class="fa-regular fa-lightbulb"></i></div>
-                    <h2>LED Ambience</h2>
+    </div>
+
+    <!-- Room Lights Card (AIO) -->
+    <div class="card lights-card">
+        <div class="card-header">
+            <div class="icon-box"><i class="fa-solid fa-lightbulb"></i></div>
+            <h2>Room Lights</h2>
+        </div>
+        <div class="card-body">
+            <div class="light-row">
+                <div class="light-info">
+                    <i class="fa-solid fa-bolt highlight"></i>
+                    <span>Neon Lights</span>
                 </div>
-                <div class="card-body">
-                    <div class="power-toggle">
-                        <button onclick="sendLED('on')" class="btn-glass success large">ON</button>
-                        <button onclick="sendLED('off')" class="btn-glass danger large">OFF</button>
-                    </div>
-
-                    <div class="color-grid">
-                        <div class="color-btn" style="--clr:#ff2e2e" onclick="sendColor(1)"></div> <!-- Red -->
-                        <div class="color-btn" style="--clr:#2eff2e" onclick="sendColor(2)"></div> <!-- Green -->
-                        <div class="color-btn" style="--clr:#2e2eff" onclick="sendColor(3)"></div> <!-- Blue -->
-                        <div class="color-btn" style="--clr:#ffffff" onclick="sendColor(4)"></div> <!-- White -->
-                        <div class="color-btn" style="--clr:#ffaa00" onclick="sendColor(6)"></div> <!-- Orange -->
-                        <div class="color-btn" style="--clr:#aa00ff" onclick="sendColor(8)"></div> <!-- Purple -->
-                    </div>
-
-                    <button onclick="sendColor(37)" class="btn-glass rainbow-btn">
-                        <i class="fa-solid fa-rainbow"></i> Party Mode
-                    </button>
+                <label class="switch">
+                    <input type="checkbox" onchange="sendAIO('neon', this.checked ? 'on' : 'off')">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="light-row">
+                <div class="light-info">
+                    <i class="fa-solid fa-sun highlight"></i>
+                    <span>Spot Lights</span>
                 </div>
+                <label class="switch">
+                    <input type="checkbox" onchange="sendAIO('spot', this.checked ? 'on' : 'off')">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- LED Control Card -->
+    <div class="card led-card">
+        <div class="card-header">
+            <div class="icon-box"><i class="fa-regular fa-lightbulb"></i></div>
+            <h2>LED Ambience</h2>
+        </div>
+        <div class="card-body">
+            <div class="power-toggle">
+                <button onclick="sendLED('on')" class="btn-glass success large">ON</button>
+                <button onclick="sendLED('off')" class="btn-glass danger large">OFF</button>
             </div>
 
-            <!-- IR Remote Card -->
-            <div class="card remote-card">
-                <div class="card-header">
-                    <div class="icon-box"><i class="fa-regular fa-lightbulb"></i></div>
-                    <h2>RGB Light Remote</h2>
-                </div>
-                <div class="remote-layout">
-                    <div class="row">
-                        <button onclick="sendIR('F7F00F')" class="btn-circle power"><i
-                                class="fa-solid fa-power-off"></i></button>
-                        <!-- Smooth/Power? User said F7F00F is Smooth? Wait. User said F7F00F is Smooth. F700FF is probably ON/OFF or similar? Checking user request -->
-                        <!-- User codes: 
+            <div class="color-grid">
+                <div class="color-btn" style="--clr:#ff2e2e" onclick="sendColor(1)"></div> <!-- Red -->
+                <div class="color-btn" style="--clr:#2eff2e" onclick="sendColor(2)"></div> <!-- Green -->
+                <div class="color-btn" style="--clr:#2e2eff" onclick="sendColor(3)"></div> <!-- Blue -->
+                <div class="color-btn" style="--clr:#ffffff" onclick="sendColor(4)"></div> <!-- White -->
+                <div class="color-btn" style="--clr:#ffaa00" onclick="sendColor(6)"></div> <!-- Orange -->
+                <div class="color-btn" style="--clr:#aa00ff" onclick="sendColor(8)"></div> <!-- Purple -->
+            </div>
+
+            <div class="mode-grid">
+                <button onclick="sendColor(37)" class="btn-glass mode-btn">Rainbow</button>
+                <button onclick="sendColor(38)" class="btn-glass mode-btn">Red Pulse</button>
+                <button onclick="sendColor(39)" class="btn-glass mode-btn">Green Pulse</button>
+                <button onclick="sendColor(40)" class="btn-glass mode-btn">Blue Pulse</button>
+                <button onclick="sendColor(41)" class="btn-glass mode-btn">Yellow Pulse</button>
+                <button onclick="sendColor(42)" class="btn-glass mode-btn">Cyan Pulse</button>
+                <button onclick="sendColor(43)" class="btn-glass mode-btn">Purple Pulse</button>
+                <button onclick="sendColor(44)" class="btn-glass mode-btn">White Pulse</button>
+                <button onclick="sendColor(45)" class="btn-glass mode-btn">Red/Green Cross</button>
+                <button onclick="sendColor(46)" class="btn-glass mode-btn">Red/Blue Cross</button>
+                <button onclick="sendColor(47)" class="btn-glass mode-btn">Green/Blue Cross</button>
+                <button onclick="sendColor(48)" class="btn-glass mode-btn">Seven Color Strobe</button>
+                <button onclick="sendColor(49)" class="btn-glass mode-btn">Red Strobe</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IR Remote Card -->
+    <div class="card remote-card">
+        <div class="card-header">
+            <div class="icon-box"><i class="fa-regular fa-lightbulb"></i></div>
+            <h2>RGB Light Remote</h2>
+        </div>
+        <div class="remote-layout">
+            <div class="row">
+                <button onclick="sendIR('F7F00F')" class="btn-circle power"><i
+                        class="fa-solid fa-power-off"></i></button>
+                <!-- Smooth/Power? User said F7F00F is Smooth? Wait. User said F7F00F is Smooth. F700FF is probably ON/OFF or similar? Checking user request -->
+                <!-- User codes: 
                              F720DF red
                              F7609F blue
                              F708F7 yellow
                              F7F00F smooth 
                              F7D02F flash
                         -->
-                        <!-- Let's map these specific verified codes -->
-                        <button onclick="sendIR('F700FF')" class="btn-pill small">Bright+</button>
-                        <!-- Guessing standard China Remote -->
-                        <button onclick="sendIR('F7807F')" class="btn-pill small">Bright-</button>
-                    </div>
+                <!-- Let's map these specific verified codes -->
+                <button onclick="sendIR('F700FF')" class="btn-pill small">Bright+</button>
+                <!-- Guessing standard China Remote -->
+                <button onclick="sendIR('F7807F')" class="btn-pill small">Bright-</button>
+            </div>
 
-                    <div class="color-grid-ir">
-                        <button onclick="sendIR('F720DF')" class="btn-color" style="background:red"
-                            title="Red"></button>
-                        <button onclick="sendIR('F720DF')" class="btn-color" style="background:#00ff00"
-                            title="Green (Guess: F7A05F?)"></button>
-                        <button onclick="sendIR('F7609F')" class="btn-color" style="background:blue"
-                            title="Blue"></button>
-                        <button onclick="sendIR('F708F7')" class="btn-color" style="background:yellow"
-                            title="Yellow"></button>
-                        <button onclick="sendIR('F7F00F')" class="btn-glass">Smooth</button>
-                        <button onclick="sendIR('F7D02F')" class="btn-glass">Flash</button>
-                    </div>
+            <div class="color-grid-ir">
+                <button onclick="sendIR('F720DF')" class="btn-color" style="background:red" title="Red"></button>
+                <button onclick="sendIR('F720DF')" class="btn-color" style="background:#00ff00"
+                    title="Green (Guess: F7A05F?)"></button>
+                <button onclick="sendIR('F7609F')" class="btn-color" style="background:blue" title="Blue"></button>
+                <button onclick="sendIR('F708F7')" class="btn-color" style="background:yellow" title="Yellow"></button>
+                <button onclick="sendIR('F7F00F')" class="btn-glass">Smooth</button>
+                <button onclick="sendIR('F7D02F')" class="btn-glass">Flash</button>
+            </div>
 
-                    <div class="row">
-                        <button onclick="sendIR('F7C03F')" class="btn-glass">Fade</button>
-                        <button onclick="sendIR('F7E01F')" class="btn-glass">Strobe</button>
-                    </div>
+            <div class="row">
+                <button onclick="sendIR('F7C03F')" class="btn-glass">Fade</button>
+                <button onclick="sendIR('F7E01F')" class="btn-glass">Strobe</button>
+            </div>
 
-                    <div class="row vol-ch">
-                        <div class="vertical-group">
-                            <span class="label">VOL</span>
-                            <button onclick="sendIR('F7807F')" class="btn-glass"><i
-                                    class="fa-solid fa-plus"></i></button>
-                            <button onclick="sendIR('F7D02F')" class="btn-glass"><i
-                                    class="fa-solid fa-minus"></i></button>
-                        </div>
-                        <div class="vertical-group">
-                            <span class="label">CH</span>
-                            <button onclick="sendIR('F720DF')" class="btn-glass"><i
-                                    class="fa-solid fa-angle-up"></i></button>
-                            <button onclick="sendIR('F7A05F')" class="btn-glass"><i
-                                    class="fa-solid fa-angle-down"></i></button>
-                        </div>
-                    </div>
+            <div class="row vol-ch">
+                <div class="vertical-group">
+                    <span class="label">VOL</span>
+                    <button onclick="sendIR('F7807F')" class="btn-glass"><i class="fa-solid fa-plus"></i></button>
+                    <button onclick="sendIR('F7D02F')" class="btn-glass"><i class="fa-solid fa-minus"></i></button>
+                </div>
+                <div class="vertical-group">
+                    <span class="label">CH</span>
+                    <button onclick="sendIR('F720DF')" class="btn-glass"><i class="fa-solid fa-angle-up"></i></button>
+                    <button onclick="sendIR('F7A05F')" class="btn-glass"><i class="fa-solid fa-angle-down"></i></button>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
-    <script src="app.js"></script>
+    </main>
+    </div>
+    <script src="app.js?v=2"></script>
 </body>
 
 </html>

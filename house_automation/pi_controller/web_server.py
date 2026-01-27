@@ -4,6 +4,8 @@ import time
 import logging
 import sys
 import os
+import requests
+import json
 
 # Import Controller
 from controller import SerialController
@@ -72,32 +74,125 @@ def led_cmd():
 @app.route('/api/hydration/cmd', methods=['POST'])
 def hydration_cmd():
     data = request.json
-    cmd = data.get('cmd') # 'tare', 'test_alert', 'test_stop'
+    cmd = data.get('cmd') # 'tare' or raw hex/int
+    val = data.get('val', 0) # optional value for the command
     
     if controller and 'hydration' in controller.handlers:
         handler = controller.handlers['hydration']
-        
-        # We need MAC address for hydration commands usually
-        # The handler's methods usually require it, or we can use the 'test' logic
+        mac = config.SLAVE_MACS.get('hydration', '00:00:00:00:00:00')
+
+        # Handle Named Commands
         if cmd == 'tare':
-            # Need to invoke handle_user_input logic or manual send
-            # Use manual send logic from handler
-            mac = config.SLAVE_MACS.get('hydration')
-            if mac:
-                controller.send_command(mac, "012200000000")
-                return jsonify({"status": "tare_sent"})
-        elif cmd == 'test_alert':
-            # Simulate 0x52
-            mac = config.SLAVE_MACS.get('hydration', '00:00:00:00:00:00')
+            # CMD_TARE = 0x22
+            controller.send_command(mac, "012200000000")
+            return jsonify({"status": "tare_sent"})
+        
+        # Handle Raw/Generic Commands
+        # If cmd is integer or string representation of int
+        try:
+            cmd_id = int(cmd) if isinstance(cmd, int) else int(cmd, 16) if cmd.startswith('0x') else int(cmd)
+            
+            # Construct Generic Packet: Type (1) + Cmd + Val (Float -> Hex)
+            import struct
+            val_bytes = struct.pack('<f', float(val)).hex()
+            payload = f"01{cmd_id:02X}{val_bytes}"
+            
+            controller.send_command(mac, payload)
+            logger.info(f"Sent Generic Hydration CMD: {payload}")
+            return jsonify({"status": "sent", "payload": payload})
+            
+        except ValueError:
+            pass # Not a recognized number, might be a test string
+
+        # Handle Legacy Test Strings (if needed, but Generic covers them)
+        if cmd == 'test_alert':
             handler.handle_packet(0x52, 0, mac)
             return jsonify({"status": "test_alert_triggered"})
         elif cmd == 'test_stop':
-            # Simulate 0x53
-            mac = config.SLAVE_MACS.get('hydration', '00:00:00:00:00:00')
             handler.handle_packet(0x53, 0, mac)
             return jsonify({"status": "test_stop_triggered"})
             
     return jsonify({"status": "ok"})
+
+# --- API: Adafruit IO ---
+@app.route('/api/aio/cmd', methods=['POST'])
+def aio_cmd():
+    data = request.json
+    device = data.get('device') # 'neon', 'spot'
+    action = data.get('action') # 'on', 'off'
+    
+    if device in config.LIGHT_CMDS and action in config.LIGHT_CMDS[device]:
+        value = config.LIGHT_CMDS[device][action]
+        try:
+            headers = {
+                'X-AIO-Key': config.AIO_KEY,
+                'Content-Type': 'application/json'
+            }
+            payload = {'value': value}
+            response = requests.post(config.AIO_FEED_URL, headers=headers, json=payload, timeout=5)
+            
+            if response.status_code == 200:
+                logger.info(f"AIO Success: {device} -> {action}")
+                return jsonify({"status": "sent", "aio_response": response.json()})
+            else:
+                logger.error(f"AIO Fail: {response.text}")
+                return jsonify({"error": "AIO Error", "details": response.text}), 502
+                
+        except Exception as e:
+            logger.error(f"AIO Request Failed: {e}")
+            return jsonify({"error": str(e)}), 500
+            
+    return jsonify({"error": "Invalid Device or Action"}), 400
+
+# --- API: Master Control ---
+@app.route('/api/master/cmd', methods=['POST'])
+def master_cmd():
+    data = request.json
+    action = data.get('action') # 'on', 'off'
+    
+    if action not in ['on', 'off']:
+        return jsonify({"error": "Invalid Action"}), 400
+        
+    logger.info(f"MASTER CONTROL: Turning ALL {action.upper()}")
+    
+    # 1. Room Lights (AIO) - Run in Threads to avoid blocking? 
+    # For now, sequential/fire-and-forget logic might be better but let's just do sequential for simplicity
+    # Or use a thread
+    def toggle_lights():
+        headers = {'X-AIO-Key': config.AIO_KEY, 'Content-Type': 'application/json'}
+        # Neon
+        val = config.LIGHT_CMDS['neon'][action]
+        try: requests.post(config.AIO_FEED_URL, headers=headers, json={'value': val}, timeout=2)
+        except: pass
+        # Spot
+        val = config.LIGHT_CMDS['spot'][action]
+        try: requests.post(config.AIO_FEED_URL, headers=headers, json={'value': val}, timeout=2)
+        except: pass
+
+    threading.Thread(target=toggle_lights).start()
+
+    # 2. Local Devices (IR, LED)
+    if controller:
+        # IR Power (Assuming Toggle, but ideally we have discrete ON/OFF)
+        # User only gave 'F7F00F' (Smooth/Power?). If it is a toggle, syncing is hard.
+        # Assuming F7F00F is POWER toggle.
+        if action == 'off':
+             # Send Power Toggle
+             if 'ir' in controller.handlers:
+                 controller.handlers['ir'].send_nec('F7F00F')
+             # LED OFF
+             if 'led' in controller.handlers:
+                 controller.handlers['led'].send_cmd("021000000000", "OFF")
+        
+        elif action == 'on':
+             # Send Power Toggle
+             if 'ir' in controller.handlers:
+                 controller.handlers['ir'].send_nec('F7F00F')
+             # LED ON (White default?)
+             if 'led' in controller.handlers:
+                 controller.handlers['led'].send_cmd("02100000803F", "ON")
+
+    return jsonify({"status": "master_sequence_started"})
 
 def start_controller():
     global controller

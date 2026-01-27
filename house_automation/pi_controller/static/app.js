@@ -31,3 +31,23 @@ function sendColor(val) {
 function sendHydration(cmd) {
     apiCall('/api/hydration/cmd', { cmd: cmd });
 }
+
+function sendHydrationCmd(cmd, val = 0) {
+    apiCall('/api/hydration/cmd', { cmd: cmd, val: val });
+}
+
+function toggleHydrationAdvanced() {
+    const p = document.getElementById('hyd-advanced');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function sendAIO(device, action) {
+    apiCall('/api/aio/cmd', { device: device, action: action });
+}
+
+function toggleMaster(checkbox) {
+    const action = checkbox.checked ? 'on' : 'off';
+    apiCall('/api/master/cmd', { action: action });
+    // Optimistic Update for UI? Or waiting for confirmation?
+    // For now, fire and forget.
+}
