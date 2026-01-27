@@ -537,3 +537,59 @@ input:checked+.slider:before {
     color: var(--text-muted);
     font-weight: bold;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .glass-container {
+        padding: 15px;
+        margin: 10px;
+        min-height: auto;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        /* Force single column on mobile */
+        gap: 15px;
+    }
+
+    .display-value {
+        font-size: 2.5rem;
+    }
+
+    .btn-glass {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    .color-grid {
+        grid-template-columns: repeat(6, 1fr);
+        /* Keep 6 colors but smaller */
+        gap: 5px;
+    }
+
+    .mode-grid {
+        grid-template-columns: 1fr;
+        /* Stack modes on really small screens */
+    }
+
+    .remote-layout .row {
+        gap: 10px;
+    }
+
+    .btn-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 1rem;
+    }
+}
