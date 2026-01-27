@@ -33,12 +33,12 @@ class LEDHandler:
 
         if subcmd == 'on':
             # 0x10 = SET_LED. Payload: 1.0
-            self.controller.send_command(mac, "01100000803F")
+            self.controller.send_command(mac, "02100000803F")
             logger.info("Sent LED ON")
 
         elif subcmd == 'off':
             # 0x10 = SET_LED. Payload: 0.0
-            self.controller.send_command(mac, "011000000000")
+            self.controller.send_command(mac, "021000000000")
             logger.info("Sent LED OFF")
 
         elif subcmd == 'rgb':
@@ -48,7 +48,7 @@ class LEDHandler:
                       code = int(parts[2])
                       # 0x12 = SET_RGB. Float representation
                       float_hex = struct.pack('<f', code).hex()
-                      hex_payload = "0112" + float_hex
+                      hex_payload = "0212" + float_hex
                       self.controller.send_command(mac, hex_payload)
                       logger.info(f"Sent LED RGB {code}")
                   except ValueError:
@@ -68,7 +68,7 @@ class LEDHandler:
                       # Value = (mode << 8) | speed
                       val = (mode << 8) | speed
                       # Struct pack <I (Little Endian uint32)
-                      hex_payload = "0113" + struct.pack('<I', val).hex()
+                      hex_payload = "0213" + struct.pack('<I', val).hex()
                       self.controller.send_command(mac, hex_payload)
                       logger.info(f"Sent LED Mode {mode} Speed {speed}")
                   except ValueError:
@@ -80,7 +80,7 @@ class LEDHandler:
              # Fast Rainbow Shortcut (Mode 37, Speed 100)
              # Val = (37 << 8) | 100 = 0x2564
              val = (37 << 8) | 100
-             hex_payload = "0113" + struct.pack('<I', val).hex()
+             hex_payload = "0213" + struct.pack('<I', val).hex()
              self.controller.send_command(mac, hex_payload)
              logger.info("Sent LED Rainbow Mode")
 
