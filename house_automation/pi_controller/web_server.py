@@ -13,7 +13,7 @@ import config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("WebServer")
 
-app = Flask(__name__, static_folder='static', template_folder='static')
+app = Flask(__name__, static_url_path='', static_folder='static', template_folder='static')
 
 # Global Controller Instance
 controller = None
@@ -21,6 +21,10 @@ controller = None
 @app.route('/')
 def index():
     return send_from_directory('static', 'index.html')
+
+@app.route('/<path:path>')
+def static_files(path):
+    return send_from_directory('static', path)
 
 # --- API: IR Remote ---
 @app.route('/api/ir/send', methods=['POST'])

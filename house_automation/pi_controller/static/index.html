@@ -4,80 +4,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home Dashboard</title>
+    <title>Smart Home Control</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <!-- Optional for icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
-    <div class="container">
+    <div class="background-shape shape-1"></div>
+    <div class="background-shape shape-2"></div>
+
+    <div class="glass-container">
         <header>
-            <h1><span class="accent">Smart</span> Controller</h1>
-            <div id="status-indicator" class="status-online">Online</div>
+            <div class="logo">
+                <i class="fa-solid fa-house-signal"></i>
+                <h1>Smart<span class="highlight">Hydration</span></h1>
+            </div>
+            <div class="status-pill online">
+                <span class="dot"></span> System Online
+            </div>
         </header>
 
-        <main>
+        <main class="dashboard-grid">
             <!-- Hydration Card -->
-            <section class="card hydration-card">
-                <h2><i class="fas fa-tint"></i> Hydration</h2>
-                <div class="card-content">
-                    <div class="stat-box">
-                        <span class="label">Status</span>
-                        <span class="value" id="hyd-status">Active</span>
+            <div class="card hydration-card">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-glass-water"></i></div>
+                    <h2>Hydration Monitor</h2>
+                </div>
+                <div class="card-body">
+                    <div class="display-value">
+                        <span id="hyd-weight" class="value">--</span>
+                        <span class="unit">ml</span>
                     </div>
-                    <div class="actions">
-                        <button onclick="sendHydration('tare')" class="btn secondary">Tare Scale</button>
-                        <button onclick="sendHydration('test_alert')" class="btn warning">Test Alert</button>
-                        <button onclick="sendHydration('test_stop')" class="btn success">Stop Alert</button>
+                    <div class="status-text" id="hyd-status">Waiting for data...</div>
+
+                    <div class="control-group">
+                        <button onclick="sendHydration('tare')" class="btn-glass secondary">
+                            <i class="fa-solid fa-scale-balanced"></i> Tare
+                        </button>
+                        <button onclick="sendHydration('test_alert')" class="btn-glass warning">
+                            <i class="fa-solid fa-bell"></i> Test Alert
+                        </button>
                     </div>
                 </div>
-            </section>
-
-            <!-- IR Remote Card -->
-            <section class="card ir-card">
-                <h2><i class="fas fa-tv"></i> TV Remote</h2>
-                <div class="remote-grid">
-                    <button onclick="sendIR('F7F00F')" class="btn-round power"><i class="fas fa-power-off"></i>
-                        PWR</button>
-                    <button onclick="sendIR('F7C03F')" class="btn-round">Src</button>
-                    <button onclick="sendIR('F740BF')" class="btn-round">Mute</button>
-
-                    <button onclick="sendIR('F7807F')" class="btn-pill">Vol+</button>
-                    <button onclick="sendIR('F7D02F')" class="btn-pill">Vol-</button>
-                    <button onclick="sendIR('F720DF')" class="btn-pill">Ch+</button>
-                    <button onclick="sendIR('F7A05F')" class="btn-pill">Ch-</button>
-
-                    <button onclick="sendIR('F700FF')" class="btn-round">UP</button>
-                    <button onclick="sendIR('F7807F')" class="btn-round">OK</button>
-                    <button onclick="sendIR('F710EF')" class="btn-round">DN</button>
-                </div>
-            </section>
+            </div>
 
             <!-- LED Control Card -->
-            <section class="card led-card">
-                <h2><i class="fas fa-lightbulb"></i> LED Strip</h2>
-                <div class="card-content">
-                    <div class="toggle-group">
-                        <button onclick="sendLED('on')" class="btn success">ON</button>
-                        <button onclick="sendLED('off')" class="btn danger">OFF</button>
+            <div class="card led-card">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-regular fa-lightbulb"></i></div>
+                    <h2>LED Ambience</h2>
+                </div>
+                <div class="card-body">
+                    <div class="power-toggle">
+                        <button onclick="sendLED('on')" class="btn-glass success large">ON</button>
+                        <button onclick="sendLED('off')" class="btn-glass danger large">OFF</button>
                     </div>
 
-                    <div class="color-picker">
-                        <div class="color-option" style="background: #ff0000;" onclick="sendColor(1)"></div>
-                        <div class="color-option" style="background: #00ff00;" onclick="sendColor(2)"></div>
-                        <div class="color-option" style="background: #0000ff;" onclick="sendColor(3)"></div>
-                        <div class="color-option" style="background: #ffffff;" onclick="sendColor(4)"></div>
-                        <div class="color-option" style="background: #ffaa00;" onclick="sendColor(6)"></div>
-                        <div class="color-option" style="background: #aa00ff;" onclick="sendColor(8)"></div>
+                    <div class="color-grid">
+                        <div class="color-btn" style="--clr:#ff2e2e" onclick="sendColor(1)"></div> <!-- Red -->
+                        <div class="color-btn" style="--clr:#2eff2e" onclick="sendColor(2)"></div> <!-- Green -->
+                        <div class="color-btn" style="--clr:#2e2eff" onclick="sendColor(3)"></div> <!-- Blue -->
+                        <div class="color-btn" style="--clr:#ffffff" onclick="sendColor(4)"></div> <!-- White -->
+                        <div class="color-btn" style="--clr:#ffaa00" onclick="sendColor(6)"></div> <!-- Orange -->
+                        <div class="color-btn" style="--clr:#aa00ff" onclick="sendColor(8)"></div> <!-- Purple -->
                     </div>
 
-                    <div class="mode-select">
-                        <button onclick="sendColor(37)" class="btn secondary">Rainbow Mode</button>
+                    <button onclick="sendColor(37)" class="btn-glass rainbow-btn">
+                        <i class="fa-solid fa-rainbow"></i> Party Mode
+                    </button>
+                </div>
+            </div>
+
+            <!-- IR Remote Card -->
+            <div class="card remote-card">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-tv"></i></div>
+                    <h2>TV Control</h2>
+                </div>
+                <div class="remote-layout">
+                    <div class="row">
+                        <button onclick="sendIR('F7F00F')" class="btn-circle power"><i
+                                class="fa-solid fa-power-off"></i></button>
+                        <button onclick="sendIR('F7C03F')" class="btn-pill small">Source</button>
+                        <button onclick="sendIR('F740BF')" class="btn-pill small">Mute</button>
+                    </div>
+
+                    <div class="d-pad">
+                        <button onclick="sendIR('F700FF')" class="btn-nav up"><i
+                                class="fa-solid fa-chevron-up"></i></button>
+                        <button onclick="sendIR('F720DF')" class="btn-nav left"><i
+                                class="fa-solid fa-chevron-left"></i></button>
+                        <button onclick="sendIR('F7807F')" class="btn-nav ok">OK</button>
+                        <button onclick="sendIR('F7A05F')" class="btn-nav right"><i
+                                class="fa-solid fa-chevron-right"></i></button>
+                        <button onclick="sendIR('F710EF')" class="btn-nav down"><i
+                                class="fa-solid fa-chevron-down"></i></button>
+                    </div>
+
+                    <div class="row vol-ch">
+                        <div class="vertical-group">
+                            <span class="label">VOL</span>
+                            <button onclick="sendIR('F7807F')" class="btn-glass"><i
+                                    class="fa-solid fa-plus"></i></button>
+                            <button onclick="sendIR('F7D02F')" class="btn-glass"><i
+                                    class="fa-solid fa-minus"></i></button>
+                        </div>
+                        <div class="vertical-group">
+                            <span class="label">CH</span>
+                            <button onclick="sendIR('F720DF')" class="btn-glass"><i
+                                    class="fa-solid fa-angle-up"></i></button>
+                            <button onclick="sendIR('F7A05F')" class="btn-glass"><i
+                                    class="fa-solid fa-angle-down"></i></button>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
         </main>
     </div>
     <script src="app.js"></script>
