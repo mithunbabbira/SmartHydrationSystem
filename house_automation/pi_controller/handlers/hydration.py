@@ -7,12 +7,18 @@ logger = logging.getLogger("PiController")
 class HydrationHandler:
     def __init__(self, controller):
         self.controller = controller
-        # We can key off controller.config if attached, or just import config in controller and pass values
-        # For now, let's assume controller has access to config or we pass macs
+        self.current_data = {
+            'weight': 0.0,
+            'status': 'Waiting for data...',
+            'last_update': 0
+        }
         
     def handle_packet(self, cmd, val, mac):
         # 0x21: REPORT_WEIGHT
         if cmd == 0x21:
+            self.current_data['weight'] = val
+            self.current_data['last_update'] = time.time()
+            self.current_data['status'] = 'Active'
             logger.info(f"HYDRATION WEIGHT: {val:.2f} g")
         
         # 0x30: REQUEST_TIME from Slave

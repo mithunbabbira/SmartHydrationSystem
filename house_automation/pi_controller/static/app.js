@@ -45,9 +45,39 @@ function sendAIO(device, action) {
     apiCall('/api/aio/cmd', { device: device, action: action });
 }
 
-function toggleMaster(checkbox) {
-    const action = checkbox.checked ? 'on' : 'off';
-    apiCall('/api/master/cmd', { action: action });
+const action = checkbox.checked ? 'on' : 'off';
+apiCall('/api/master/cmd', { action: action });
     // Optimistic Update for UI? Or waiting for confirmation?
     // For now, fire and forget.
 }
+
+// --- Data Polling ---
+function fetchData() {
+    fetch('/api/data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.hydration) {
+                const weightEl = document.getElementById('hyd-weight');
+                const statusEl = document.getElementById('hyd-status');
+
+                if (weightEl) weightEl.innerText = data.hydration.weight;
+                if (statusEl) {
+                    statusEl.innerText = data.hydration.status;
+                    // Optional: Visual cue for active/stale
+                    if ((Date.now() / 1000 - data.hydration.last_update) > 60) {
+                        statusEl.style.color = 'var(--text-muted)';
+                        statusEl.innerText += " (Stale)";
+                    } else {
+                        statusEl.style.color = 'var(--success)';
+                    }
+                }
+            }
+        })
+        .catch(err => console.error("Poll Error:", err));
+}
+
+// Run polling every 2 seconds
+setInterval(fetchData, 2000);
+
+// Initial Call
+document.addEventListener('DOMContentLoaded', fetchData);

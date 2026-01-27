@@ -144,6 +144,30 @@ def aio_cmd():
             
     return jsonify({"error": "Invalid Device or Action"}), 400
 
+# --- API: System Status (Polling) ---
+@app.route('/api/data', methods=['GET'])
+def get_data():
+    if not controller:
+        return jsonify({"error": "Controller off"}), 503
+    
+    response = {
+        "hydration": {
+            "weight": 0,
+            "status": "Offline"
+        }
+    }
+    
+    # Hydration Data
+    if 'hydration' in controller.handlers:
+        h_data = controller.handlers['hydration'].current_data
+        response['hydration'] = {
+            "weight": round(h_data.get('weight', 0), 1),
+            "status": h_data.get('status', 'Unknown'),
+            "last_update": h_data.get('last_update', 0)
+        }
+        
+    return jsonify(response)
+
 # --- API: Master Control ---
 @app.route('/api/master/cmd', methods=['POST'])
 def master_cmd():
