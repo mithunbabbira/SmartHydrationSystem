@@ -154,5 +154,21 @@ class HydrationHandler:
             self.controller.send_command(mac, "012200000000")
             logger.info("Sent TARE command.")
 
+        elif subcmd == 'test':
+             if len(parts) > 2:
+                  action = parts[2].lower()
+                  if action == 'alert':
+                       # Simulate 0x52 ALERT_REMINDER
+                       logger.info("TEST: Simulating ALERT START (0x52)...")
+                       self.handle_packet(0x52, 0, mac)
+                  elif action == 'stop':
+                       # Simulate 0x53 ALERT_STOPPED
+                       logger.info("TEST: Simulating ALERT STOP (0x53)...")
+                       self.handle_packet(0x53, 0, mac)
+                  else:
+                       logger.warning("Usage: hydration test [alert|stop]")
+             else:
+                  logger.warning("Usage: hydration test [alert|stop]")
+
         else:
             logger.warning("Unknown hydration command.")
