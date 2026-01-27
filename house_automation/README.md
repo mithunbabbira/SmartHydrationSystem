@@ -60,3 +60,34 @@ Connect the UART pins directly. **Common Ground is essential.**
 
 *Note: The current `master_esp32.ino` uses the standard `Serial` object, which is routed to the USB port and usually GPIO1/3. If using USB, do not connect GPIO1/3 to anything else.*
 
+## Managing the Auto-Start Service
+
+The system includes a service file `pi_controller/smart-home.service` to run the dashboard automatically on boot.
+
+### Installation
+```bash
+sudo cp house_automation/pi_controller/smart-home.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable smart-home.service
+sudo systemctl start smart-home.service
+```
+
+### Management Commands
+```bash
+# Start/Stop
+sudo systemctl start smart-home.service
+sudo systemctl stop smart-home.service
+
+# Check Status (Logs)
+sudo systemctl status smart-home.service
+
+# Restart (After git pull)
+sudo systemctl restart smart-home.service
+```
+
+### Bluetooth Requirement
+This system uses `l2ping` (part of `bluez`) for presence detection.
+```bash
+sudo apt-get install bluez
+```
+

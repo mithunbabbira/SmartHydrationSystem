@@ -1,0 +1,13 @@
+[Unit]
+Description=Smart Hydration Home Automation Server
+After=network.target
+
+[Service]
+User=mithun
+WorkingDirectory=/home/mithun/projects/water_bottle/SmartHydrationSystem
+Environment="AIO_KEY=YOUR_AIO_KEY_HERE"
+ExecStart=/usr/bin/python3 house_automation/pi_controller/web_server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

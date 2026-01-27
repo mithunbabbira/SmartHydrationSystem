@@ -155,21 +155,19 @@ def master_cmd():
         
     logger.info(f"MASTER CONTROL: Turning ALL {action.upper()}")
     
-    # 1. Room Lights (AIO) - Run in Threads to avoid blocking? 
-    # For now, sequential/fire-and-forget logic might be better but let's just do sequential for simplicity
-    # Or use a thread
-    def toggle_lights():
+    # 1. Room Lights (AIO) - Run in Parallel Threads
+    def send_aio(val):
         headers = {'X-AIO-Key': config.AIO_KEY, 'Content-Type': 'application/json'}
-        # Neon
-        val = config.LIGHT_CMDS['neon'][action]
-        try: requests.post(config.AIO_FEED_URL, headers=headers, json={'value': val}, timeout=2)
-        except: pass
-        # Spot
-        val = config.LIGHT_CMDS['spot'][action]
         try: requests.post(config.AIO_FEED_URL, headers=headers, json={'value': val}, timeout=2)
         except: pass
 
-    threading.Thread(target=toggle_lights).start()
+    # Neon Thread
+    neon_val = config.LIGHT_CMDS['neon'][action]
+    threading.Thread(target=send_aio, args=(neon_val,)).start()
+
+    # Spot Thread
+    spot_val = config.LIGHT_CMDS['spot'][action]
+    threading.Thread(target=send_aio, args=(spot_val,)).start()
 
     # 2. Local Devices (IR, LED)
     if controller:
@@ -201,6 +199,56 @@ def start_controller():
     controller = SerialController(port, 115200)
     controller.start(headless=True)
     logger.info("Controller Background Thread Started")
+
+    # Start Scheduler Thread
+    threading.Thread(target=daily_scheduler, daemon=True).start()
+
+def send_aio_global(device, action):
+    if device in config.LIGHT_CMDS and action in config.LIGHT_CMDS[device]:
+        val = config.LIGHT_CMDS[device][action]
+        headers = {'X-AIO-Key': config.AIO_KEY, 'Content-Type': 'application/json'}
+        try:
+            requests.post(config.AIO_FEED_URL, headers=headers, json={'value': val}, timeout=5)
+            logger.info(f"Scheduler: {device} turned {action}")
+        except Exception as e:
+            logger.error(f"Scheduler AIO Error: {e}")
+
+def daily_scheduler():
+    logger.info("Daily Scheduler Started")
+    from datetime import datetime
+    while True:
+        now = datetime.now()
+        # Sleep until the start of the next minute to align checks
+        # But simple sleep 60 is fine for now
+
+        # Morning Routine: 10:00 AM
+        if now.hour == 10 and now.minute == 0:
+            logger.info("Scheduler: Checking Morning Routine...")
+            if controller and controller.is_phone_home():
+                logger.info("User Home! Executing Morning Routine.")
+                # LED ON
+                if 'led' in controller.handlers:
+                    controller.handlers['led'].send_cmd("02100000803F", "ON")
+                # IR ON
+                if 'ir' in controller.handlers:
+                    controller.handlers['ir'].send_nec('F7C03F')
+            else:
+                logger.info("User Away. Skipping Morning Routine.")
+            time.sleep(60) # Prevent multiple executions
+
+        # Evening Routine: 5:00 PM (17:00)
+        elif now.hour == 17 and now.minute == 0:
+            logger.info("Scheduler: Checking Evening Routine...")
+            if controller and controller.is_phone_home():
+                logger.info("User Home! Executing Evening Routine.")
+                # Neon & Spot ON
+                threading.Thread(target=send_aio_global, args=('neon', 'on')).start()
+                threading.Thread(target=send_aio_global, args=('spot', 'on')).start()
+            else:
+                logger.info("User Away. Skipping Evening Routine.")
+            time.sleep(60)
+
+        time.sleep(10) # check 
 
 if __name__ == '__main__':
     # Start Controller in separate thread (or just before app run since it's headless)
