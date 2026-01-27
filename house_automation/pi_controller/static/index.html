@@ -80,27 +80,43 @@
             <!-- IR Remote Card -->
             <div class="card remote-card">
                 <div class="card-header">
-                    <div class="icon-box"><i class="fa-solid fa-tv"></i></div>
-                    <h2>TV Control</h2>
+                    <div class="icon-box"><i class="fa-regular fa-lightbulb"></i></div>
+                    <h2>RGB Light Remote</h2>
                 </div>
                 <div class="remote-layout">
                     <div class="row">
                         <button onclick="sendIR('F7F00F')" class="btn-circle power"><i
                                 class="fa-solid fa-power-off"></i></button>
-                        <button onclick="sendIR('F7C03F')" class="btn-pill small">Source</button>
-                        <button onclick="sendIR('F740BF')" class="btn-pill small">Mute</button>
+                        <!-- Smooth/Power? User said F7F00F is Smooth? Wait. User said F7F00F is Smooth. F700FF is probably ON/OFF or similar? Checking user request -->
+                        <!-- User codes: 
+                             F720DF red
+                             F7609F blue
+                             F708F7 yellow
+                             F7F00F smooth 
+                             F7D02F flash
+                        -->
+                        <!-- Let's map these specific verified codes -->
+                        <button onclick="sendIR('F700FF')" class="btn-pill small">Bright+</button>
+                        <!-- Guessing standard China Remote -->
+                        <button onclick="sendIR('F7807F')" class="btn-pill small">Bright-</button>
                     </div>
 
-                    <div class="d-pad">
-                        <button onclick="sendIR('F700FF')" class="btn-nav up"><i
-                                class="fa-solid fa-chevron-up"></i></button>
-                        <button onclick="sendIR('F720DF')" class="btn-nav left"><i
-                                class="fa-solid fa-chevron-left"></i></button>
-                        <button onclick="sendIR('F7807F')" class="btn-nav ok">OK</button>
-                        <button onclick="sendIR('F7A05F')" class="btn-nav right"><i
-                                class="fa-solid fa-chevron-right"></i></button>
-                        <button onclick="sendIR('F710EF')" class="btn-nav down"><i
-                                class="fa-solid fa-chevron-down"></i></button>
+                    <div class="color-grid-ir">
+                        <button onclick="sendIR('F720DF')" class="btn-color" style="background:red"
+                            title="Red"></button>
+                        <button onclick="sendIR('F720DF')" class="btn-color" style="background:#00ff00"
+                            title="Green (Guess: F7A05F?)"></button>
+                        <button onclick="sendIR('F7609F')" class="btn-color" style="background:blue"
+                            title="Blue"></button>
+                        <button onclick="sendIR('F708F7')" class="btn-color" style="background:yellow"
+                            title="Yellow"></button>
+                        <button onclick="sendIR('F7F00F')" class="btn-glass">Smooth</button>
+                        <button onclick="sendIR('F7D02F')" class="btn-glass">Flash</button>
+                    </div>
+
+                    <div class="row">
+                        <button onclick="sendIR('F7C03F')" class="btn-glass">Fade</button>
+                        <button onclick="sendIR('F7E01F')" class="btn-glass">Strobe</button>
                     </div>
 
                     <div class="row vol-ch">

@@ -321,14 +321,30 @@ header {
     cursor: pointer;
 }
 
-.d-pad {
+/* Color Grid IR */
+.color-grid-ir {
     display: grid;
-    grid-template-areas:
-        ". up ."
-        "left ok right"
-        ". down .";
-    gap: 5px;
-    margin: 10px 0;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.btn-color {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-color:hover {
+    transform: scale(1.1);
+    border-color: white;
+}
+
+/* Remove old D-pad styles if unused or keep for compatibility */
+.d-pad {
+    display: none;
 }
 
 .up {
