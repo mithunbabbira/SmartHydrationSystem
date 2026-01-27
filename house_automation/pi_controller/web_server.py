@@ -177,17 +177,17 @@ def master_cmd():
         # User only gave 'F7F00F' (Smooth/Power?). If it is a toggle, syncing is hard.
         # Assuming F7F00F is POWER toggle.
         if action == 'off':
-             # Send Power Toggle
+             # Send IR OFF
              if 'ir' in controller.handlers:
-                 controller.handlers['ir'].send_nec('F7F00F')
+                 controller.handlers['ir'].send_nec('F740BF')
              # LED OFF
              if 'led' in controller.handlers:
                  controller.handlers['led'].send_cmd("021000000000", "OFF")
         
         elif action == 'on':
-             # Send Power Toggle
+             # Send IR ON
              if 'ir' in controller.handlers:
-                 controller.handlers['ir'].send_nec('F7F00F')
+                 controller.handlers['ir'].send_nec('F7C03F')
              # LED ON (White default?)
              if 'led' in controller.handlers:
                  controller.handlers['led'].send_cmd("02100000803F", "ON")
