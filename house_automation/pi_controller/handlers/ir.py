@@ -12,6 +12,7 @@ class IRHandler:
         logger.info(f"IR [{mac}] -> Cmd:0x{cmd:02X} Val:{val:.2f}")
 
     def send_nec(self, hex_code):
+        import time
         try:
             code_val = int(hex_code, 16)
             # Protocol: Type=3 (IR), Cmd=0x31 (NEC)
@@ -26,8 +27,13 @@ class IRHandler:
             mac = config.SLAVE_MACS.get('ir_remote', '00:00:00:00:00:00')
             
             if mac != '00:00:00:00:00:00':
-                 self.controller.send_command(mac, payload)
-                 logger.info(f"Sent IR NEC: 0x{code_val:08X}")
+                 # BURST SEND: Send 3 times to ensure reception (RCA: 10% failure rate)
+                 for i in range(3):
+                     self.controller.send_command(mac, payload)
+                     # Small delay between bursts to allow ESP/IR receiver to reset
+                     if i < 2: 
+                         time.sleep(0.1) 
+                 logger.info(f"Sent IR NEC: 0x{code_val:08X} (Burst x3)")
             else:
                  logger.error("Cannot send NEC: IR MAC not configured")
 
