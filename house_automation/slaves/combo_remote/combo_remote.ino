@@ -247,6 +247,9 @@ void setup() {
   irsend.sendNEC(0xF7F00F, 32);
   Serial.println("Boot Sequence: Sent 0xF7F00F");
 
+  // Create Queue
+  commandQueue = xQueueCreate(10, sizeof(CommandItem));
+
   Serial.println("Ready.");
 }
 
