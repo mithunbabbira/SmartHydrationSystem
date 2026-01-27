@@ -222,6 +222,13 @@ void setup() {
   irsend.begin();
   Serial.printf("IR Init on Pin %d\n", kIrLed);
 
+  // Boot Sequence: Send 0xF7F00F, wait 2s, Send again
+  Serial.println("Running Boot Sequence: IR 0xF7F00F");
+  irsend.sendNEC(0xF7F00F, 32);
+  delay(2000);
+  irsend.sendNEC(0xF7F00F, 32);
+  Serial.println("Boot Sequence Complete.");
+
   // 3. ESP-NOW
   if (esp_now_init() != ESP_OK) {
     Serial.println("ESP-NOW Init Failed");
