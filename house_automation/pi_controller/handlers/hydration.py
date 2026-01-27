@@ -32,10 +32,24 @@ class HydrationHandler:
         # 0x50: ALERT_MISSING
         elif cmd == 0x50:
             logger.warning(f"ALERT [{mac}]: Bottle Missing! (Timer Expired)")
+            
+            # Trigger External Actions (IR + LED)
+            if 'ir' in self.controller.handlers:
+                 self.controller.handlers['ir'].send_nec("F7D02F")
+            
+            if 'led' in self.controller.handlers:
+                 self.controller.handlers['led'].send_cmd("02120000803F", "ALERT (Red)")
         
         # 0x51: ALERT_REPLACED
         elif cmd == 0x51:
              logger.info(f"ALERT [{mac}]: Bottle Replaced. Stabilizing...")
+
+             # Revert External Actions
+             if 'ir' in self.controller.handlers:
+                 self.controller.handlers['ir'].send_nec("F7F00F")
+
+             if 'led' in self.controller.handlers:
+                 self.controller.handlers['led'].send_cmd("021000000000", "ALERT STOPPED (Off)")
 
         # 0x52: ALERT_REMINDER (NEW)
         elif cmd == 0x52:
