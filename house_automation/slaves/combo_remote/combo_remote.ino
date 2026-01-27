@@ -45,6 +45,15 @@ typedef struct __attribute__((packed)) {
 ControlPacket incomingPacket;
 volatile bool packetReceived = false;
 
+// --- Queue ---
+#include <queue>
+QueueHandle_t commandQueue;
+struct CommandItem {
+  uint8_t type;
+  uint8_t command;
+  uint32_t data;
+};
+
 // Raw BLE Buffer
 volatile int rawBleLen = 0;
 uint8_t rawBleBuffer[20];
@@ -181,27 +190,26 @@ void handleIrCommand(uint8_t cmd, uint32_t data) {
 }
 
 // ==================== ESP-NOW Callback ====================
+// ==================== ESP-NOW Callback ====================
 void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData,
                 int len) {
   if (len == sizeof(ControlPacket)) {
     ControlPacket *packet = (ControlPacket *)incomingData;
 
-    Serial.printf("RX Type:%d Cmd:0x%02X Data:0x%08X\n", packet->type,
-                  packet->command, packet->data);
+    // Push to Queue (Non-blocking)
+    CommandItem item;
+    item.type = packet->type;
+    item.command = packet->command;
+    item.data = packet->data;
 
-    // Dispatch
-    if (packet->type == TYPE_LED) {
-      handleLedCommand(packet->command, packet->data);
-    } else if (packet->type == TYPE_IR) {
-      handleIrCommand(packet->command, packet->data);
-    } else {
-      Serial.println("Unknown Type");
-    }
+    // Send to back of queue, don't wait if full
+    xQueueSendFromISR(commandQueue, &item, NULL);
+
   } else if (len > 0 && len <= 20) {
-    // Raw BLE Passthrough
+    // Raw BLE Passthrough (Still direct for now, or could queue too)
+    // For now, let's keep BLE Raw direct as it's just a write
     if (connected && pRemoteCharacteristic != nullptr) {
       pRemoteCharacteristic->writeValue((uint8_t *)incomingData, len);
-      Serial.printf("BLE TX Raw: %d bytes\n", len);
     }
   }
 }
@@ -243,6 +251,18 @@ void setup() {
 }
 
 void loop() {
+  // Process Queue
+  CommandItem item;
+  if (xQueueReceive(commandQueue, &item, 0) == pdTRUE) {
+    Serial.printf("Processing Queue Item: Type %d\n", item.type);
+
+    if (item.type == TYPE_LED) {
+      handleLedCommand(item.command, item.data);
+    } else if (item.type == TYPE_IR) {
+      handleIrCommand(item.command, item.data);
+    }
+  }
+
   // BLE Auto-reconnect
   static unsigned long lastBleCheck = 0;
   if (!connected) {
@@ -251,5 +271,5 @@ void loop() {
       connectToDevice();
     }
   }
-  delay(50);
+  delay(10); // Check often
 }
