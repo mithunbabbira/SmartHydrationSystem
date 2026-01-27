@@ -56,7 +56,11 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    flex-direction: column;
+    /* Ensure vertical stacking */
     padding: 20px 0;
+    overflow-x: hidden;
+    /* Prevent scroll */
     /* Soft ambient gradient behind everything */
     background-image:
         radial-gradient(circle at 10% 10%, rgba(208, 188, 255, 0.05), transparent 40%),
@@ -431,11 +435,9 @@ input:checked+.slider:before {
         flex-direction: column;
         align-items: flex-start;
         gap: 20px;
-        border-radius: 0 0 24px 24px;
-        /* Only round bottom on mobile? Or keep full */
-        margin: -20px -16px 20px -16px;
-        /* Bleed to edges */
-        width: calc(100% + 32px);
+        border-radius: var(--md-sys-shape-corner-large);
+        margin: 0 0 20px 0;
+        width: 100%;
     }
 
     .header-controls {
@@ -448,7 +450,8 @@ input:checked+.slider:before {
     }
 
     .display-value {
-        font-size: 3.5rem;
+        font-size: 2.5rem;
+        /* Reduced from 3.5rem to prevent overflow */
     }
 
     .btn-glass {
