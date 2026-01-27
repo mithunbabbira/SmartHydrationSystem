@@ -33,11 +33,9 @@ class LEDHandler:
         # but for specific Logic inside cases we might use send_cmd.
 
         if subcmd == 'on':
-        if subcmd == 'on':
             # 0x10 = SET_LED. Payload: 1.0
             self.send_cmd("02100000803F", "ON")
 
-        elif subcmd == 'off':
         elif subcmd == 'off':
             # 0x10 = SET_LED. Payload: 0.0
             self.send_cmd("021000000000", "OFF")
