@@ -39,7 +39,8 @@ class SerialController:
         # Initialize Handlers
         self.handlers = {
             'hydration': HydrationHandler(self),
-            'led': LEDHandler(self)
+            'led': LEDHandler(self),
+            'ir': IRHandler(self)
         }
 
     def connect(self):
