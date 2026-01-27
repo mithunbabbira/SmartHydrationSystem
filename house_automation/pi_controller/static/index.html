@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- Optional for icons -->
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="accent">Smart</span> Controller</h1>
+            <div id="status-indicator" class="status-online">Online</div>
+        </header>
+
+        <main>
+            <!-- Hydration Card -->
+            <section class="card hydration-card">
+                <h2><i class="fas fa-tint"></i> Hydration</h2>
+                <div class="card-content">
+                    <div class="stat-box">
+                        <span class="label">Status</span>
+                        <span class="value" id="hyd-status">Active</span>
+                    </div>
+                    <div class="actions">
+                        <button onclick="sendHydration('tare')" class="btn secondary">Tare Scale</button>
+                        <button onclick="sendHydration('test_alert')" class="btn warning">Test Alert</button>
+                        <button onclick="sendHydration('test_stop')" class="btn success">Stop Alert</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- IR Remote Card -->
+            <section class="card ir-card">
+                <h2><i class="fas fa-tv"></i> TV Remote</h2>
+                <div class="remote-grid">
+                    <button onclick="sendIR('F7F00F')" class="btn-round power"><i class="fas fa-power-off"></i>
+                        PWR</button>
+                    <button onclick="sendIR('F7C03F')" class="btn-round">Src</button>
+                    <button onclick="sendIR('F740BF')" class="btn-round">Mute</button>
+
+                    <button onclick="sendIR('F7807F')" class="btn-pill">Vol+</button>
+                    <button onclick="sendIR('F7D02F')" class="btn-pill">Vol-</button>
+                    <button onclick="sendIR('F720DF')" class="btn-pill">Ch+</button>
+                    <button onclick="sendIR('F7A05F')" class="btn-pill">Ch-</button>
+
+                    <button onclick="sendIR('F700FF')" class="btn-round">UP</button>
+                    <button onclick="sendIR('F7807F')" class="btn-round">OK</button>
+                    <button onclick="sendIR('F710EF')" class="btn-round">DN</button>
+                </div>
+            </section>
+
+            <!-- LED Control Card -->
+            <section class="card led-card">
+                <h2><i class="fas fa-lightbulb"></i> LED Strip</h2>
+                <div class="card-content">
+                    <div class="toggle-group">
+                        <button onclick="sendLED('on')" class="btn success">ON</button>
+                        <button onclick="sendLED('off')" class="btn danger">OFF</button>
+                    </div>
+
+                    <div class="color-picker">
+                        <div class="color-option" style="background: #ff0000;" onclick="sendColor(1)"></div>
+                        <div class="color-option" style="background: #00ff00;" onclick="sendColor(2)"></div>
+                        <div class="color-option" style="background: #0000ff;" onclick="sendColor(3)"></div>
+                        <div class="color-option" style="background: #ffffff;" onclick="sendColor(4)"></div>
+                        <div class="color-option" style="background: #ffaa00;" onclick="sendColor(6)"></div>
+                        <div class="color-option" style="background: #aa00ff;" onclick="sendColor(8)"></div>
+                    </div>
+
+                    <div class="mode-select">
+                        <button onclick="sendColor(37)" class="btn secondary">Rainbow Mode</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>

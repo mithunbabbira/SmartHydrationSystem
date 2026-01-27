@@ -136,7 +136,7 @@ class SerialController:
         except Exception as e:
             logger.error(f"Error sending data: {e}")
 
-    def start(self):
+    def start(self, headless=False):
         if not self.connect():
             return
 
@@ -151,7 +151,10 @@ class SerialController:
         self.read_thread.daemon = True
         self.read_thread.start()
         
-        self.ui_loop()
+        if not headless:
+            self.ui_loop()
+        else:
+            logger.info("Controller started in HEADLESS mode.")
 
     def ui_loop(self):
         print("\n--- House Automation Controller (Modular) ---")
