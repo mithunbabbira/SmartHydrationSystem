@@ -12,6 +12,7 @@ import subprocess
 # Import Handlers
 from handlers.hydration import HydrationHandler
 from handlers.led import LEDHandler
+from handlers.ir import IRHandler
 
 # --- Configuration ---
 SERIAL_PORT = config.SERIAL_PORT

@@ -1,186 +1,103 @@
 /*
- * ESP8266 IR Receiver & Transmitter (Stubbed)
- *
- * Hardware Requirements:
- * - NodeMCU ESP8266
- * - IR Receiver Module (VS1838B or similar)
- *
- * Wiring:
- * - IR Receiver Signal -> GPIO 14 (D5)
- * - IR Receiver VCC    -> 3.3V
- * - IR Receiver GND    -> G
- *
- * Note: Transmitter pin is defined as GPIO 4 (D2) but is optional for this
- * receiver-only test.
+ * ESP8266 IR Remote Node (ESP-NOW Slave)
+ * Hardware: NodeMCU ESP8266
+ * IR LED: GPIO 4 (D2)
+ * Status LED: GPIO 2 (D4, Builtin)
  */
 
-#include <Arduino.h>
-#include <IRrecv.h>
+#include <ESP8266WiFi.h>
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
-#include <IRutils.h>
+#include <espnow.h>
 
-// Pin Definitions
-const uint16_t IR_RECV_PIN = 14; // D5
-const uint16_t IR_SEND_PIN = 4;  // D2 - Optional if only receiving
+// ==================== Configuration ====================
+// Master MAC (Must match your Master ESP32)
+uint8_t masterMac[] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4};
 
-// Create Objects
-// Increase buffer to 1024, timeout 50ms, save buffer true
-IRrecv irReceiver(IR_RECV_PIN, 1024, 50, true);
+// Pins
+const uint16_t IR_SEND_PIN = 4; // D2
+
+// Objects
 IRsend irSender(IR_SEND_PIN);
-decode_results results;
 
-// Global State
-bool transmitMode = false;
-uint64_t lastReceivedCode = 0;
-decode_type_t lastProtocol = UNKNOWN;
-uint16_t lastBits = 0;
-uint16_t lastRawLen = 0;
-uint16_t lastRawData[256];
+// Protocol Commands
+enum CmdType { CMD_SEND_NEC = 0x31 };
 
+// Data Packet (6 Bytes - Matching Main System)
+typedef struct __attribute__((packed)) {
+  uint8_t type; // 3 = IR (We can define this arbitrarily for Slaves)
+  uint8_t command;
+  uint32_t data;
+} ControlPacket;
+
+ControlPacket incomingPacket;
+
+// ==================== Callbacks ====================
+// ESP8266 Callback Signature: (u8 *mac, u8 *data, u8 len)
+void OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
+  // Verify sender is Master? (Optional, but good practice)
+  // For now, accept from anyone to verify connectivity easily
+
+  if (len == sizeof(ControlPacket)) {
+    memcpy(&incomingPacket, incomingData, sizeof(ControlPacket));
+
+    // Interpret Data
+    if (incomingPacket.command == CMD_SEND_NEC) {
+      uint32_t code = incomingPacket.data;
+      Serial.printf("IR TX NEC: 0x%08X\n", code);
+
+      // Blink
+      digitalWrite(LED_BUILTIN, LOW);
+      irSender.sendNEC(code, 32);
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
+  } else {
+    Serial.printf("Unknown Packet Len: %d\n", len);
+  }
+}
+
+void OnDataSent(uint8_t *mac_addr, uint8_t status) {
+  // Only essential if we send data back
+}
+
+// ==================== Main ====================
 void setup() {
-  // Initialize Serial
-  Serial.begin(9600);
-  while (!Serial)
-    delay(50);
+  Serial.begin(115200);
+  Serial.println("\nBooting IR Remote Node (ESP8266)...");
 
-  // Initialize IR Hardware
-  irReceiver.enableIRIn();
+  // Init IR
   irSender.begin();
 
-  // Print Welcome Message
-  Serial.println();
-  Serial.println("=============================");
-  Serial.println("ESP8266 IR Receiver");
-  Serial.println("=============================");
-  Serial.println("Ready to receive signals.");
-  Serial.println("Connect IR Receiver to Pin D5 (GPIO 14).");
-  Serial.println();
-  Serial.println("Commands:");
-  Serial.println("  t - Simulates transmitting the last received code");
-  Serial.println("=============================");
-}
+  // Init LED
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH); // OFF
 
-void loop() {
-  // Check for incoming Serial commands (to start transmit or stop loop)
-  handleSerialCommands();
+  // Init WiFi
+  WiFi.mode(WIFI_STA);
+  delay(100);
+  Serial.print("MY MAC ADDRESS: ");
+  Serial.println(WiFi.macAddress());
 
-  if (transmitMode) {
-    // Transmit loop
-    Serial.print("TX: 0x");
-    serialPrintUint64(lastReceivedCode, HEX);
-    Serial.println();
-
-    // Send the code (Defaulting to NEC 32-bit for manual input)
-    // Note: If you want to support other protocols manually, you'd need more
-    // complex parsing
-    irSender.sendNEC(lastReceivedCode, 32);
-
-    // Delay between transmits
-    delay(500); // 500ms delay
-  } else {
-    // Receive mode
-    receiveIR();
-  }
-}
-
-void handleSerialCommands() {
-  if (Serial.available() > 0) {
-    // If we are in transmit mode, ANY char stops it
-    if (transmitMode) {
-      // Consume all input
-      while (Serial.available())
-        Serial.read();
-
-      transmitMode = false;
-      irReceiver.enableIRIn(); // Re-enable receiver
-      Serial.println(">> STOPPED Transmission. Switched to RECEIVE mode.");
-      return;
-    }
-
-    // Otherwise, parse command
-    String input = Serial.readStringUntil('\n');
-    input.trim();
-
-    if (input.length() == 0)
-      return;
-
-    char cmd = input.charAt(0);
-
-    if (cmd == 't' || cmd == 'T') {
-      // Check if there's a code provided: "t 0xC16DB24D"
-      int spaceIdx = input.indexOf(' ');
-      if (spaceIdx > 0) {
-        String codeStr = input.substring(spaceIdx + 1);
-        lastReceivedCode = strtoull(codeStr.c_str(), NULL, 16);
-        lastProtocol = NEC; // Default to NEC for manual entry
-        lastBits = 32;
-        Serial.print(">> Manual Code Set: 0x");
-        serialPrintUint64(lastReceivedCode, HEX);
-        Serial.println();
-      }
-
-      startTransmitLoop();
-    }
-  }
-}
-
-void receiveIR() {
-  if (irReceiver.decode(&results)) {
-    // Check for overflow
-    if (results.overflow) {
-      Serial.println("WARNING: IR code too long. Buffer full. Potential noise "
-                     "or very long code.");
-      // We still try to display what we got, just warn
-    }
-
-    // Filter out short UNKNOWN codes (Noise)
-    if (results.decode_type == UNKNOWN && results.bits < 12) {
-      // Ignore likely noise
-    } else if (results.value == 0xFFFFFFFFFFFFFFFF && lastProtocol == NEC) {
-      Serial.println("--- Repeat Code (held down) ---");
-    } else {
-      // Store the data
-      lastProtocol = results.decode_type;
-      lastBits = results.bits;
-      lastReceivedCode = results.value;
-      lastRawLen = results.rawlen;
-
-      // Generic copy for raw data
-      for (uint16_t i = 0; i < results.rawlen && i < 256; i++) {
-        lastRawData[i] = results.rawbuf[i];
-      }
-
-      Serial.println();
-      Serial.println("--- IR Signal Received ---");
-      Serial.print("Protocol: ");
-      Serial.println(typeToString(results.decode_type));
-      Serial.print("Code: 0x");
-      serialPrintUint64(results.value, HEX);
-      Serial.println();
-      Serial.print("Bits: ");
-      Serial.println(results.bits);
-      Serial.println("-------------------------");
-    }
-
-    // Resume listening
-    irReceiver.resume();
-  }
-}
-
-void startTransmitLoop() {
-  if (lastReceivedCode == 0) {
-    Serial.println(">> ERROR: No code to transmit. Use 't 0x...' to set one.");
+  // Init ESP-NOW
+  if (esp_now_init() != 0) {
+    Serial.println("Error initializing ESP-NOW");
     return;
   }
 
-  transmitMode = true;
-  Serial.println();
-  Serial.println(">>> STARTING TRANSMIT LOOP <<<");
-  Serial.println("Sending NEC Code repeatedly...");
-  Serial.println("Type ANY character to STOP.");
-  Serial.println("------------------------------");
+  // Set Role (ESP8266 Specific)
+  esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+
+  // Register Peers
+  esp_now_add_peer(masterMac, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
+
+  // Register Callbacks
+  esp_now_register_recv_cb(OnDataRecv);
+  esp_now_register_send_cb(OnDataSent); // Optional
+
+  Serial.println("System Ready. Waiting for IR Commands...");
 }
 
-// simulateTransmit is deprecated/replaced by startTransmitLoop logic
-void simulateTransmit() { startTransmitLoop(); }
+void loop() {
+  // Nothing to do in loop, everything is event-driven
+  yield();
+}
