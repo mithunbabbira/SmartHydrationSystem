@@ -45,8 +45,9 @@ function sendAIO(device, action) {
     apiCall('/api/aio/cmd', { device: device, action: action });
 }
 
-const action = checkbox.checked ? 'on' : 'off';
-apiCall('/api/master/cmd', { action: action });
+function toggleMaster(checkbox) {
+    const action = checkbox.checked ? 'on' : 'off';
+    apiCall('/api/master/cmd', { action: action });
     // Optimistic Update for UI? Or waiting for confirmation?
     // For now, fire and forget.
 }
