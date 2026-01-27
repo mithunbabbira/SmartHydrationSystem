@@ -1,13 +1,45 @@
 :root {
-    --bg-dark: #0f172a;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --primary: #3b82f6;
-    --accent: #8b5cf6;
-    --success: #10b981;
-    --danger: #ef4444;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    /* MD3 Dark Theme Tokens */
+    --md-sys-color-background: #141218;
+    --md-sys-color-on-background: #E6E1E5;
+
+    --md-sys-color-surface: #141218;
+    --md-sys-color-surface-container-low: #1D1B20;
+    --md-sys-color-surface-container: #211F26;
+    --md-sys-color-surface-container-high: #2B2930;
+
+    --md-sys-color-primary: #D0BCFF;
+    --md-sys-color-on-primary: #381E72;
+    --md-sys-color-primary-container: #4F378B;
+    --md-sys-color-on-primary-container: #EADDFF;
+
+    --md-sys-color-secondary: #CCC2DC;
+    --md-sys-color-on-secondary: #332D41;
+    --md-sys-color-secondary-container: #4A4458;
+    --md-sys-color-on-secondary-container: #E8DEF8;
+
+    --md-sys-color-tertiary: #EFB8C8;
+    --md-sys-color-on-tertiary: #492532;
+    --md-sys-color-tertiary-container: #633B48;
+    --md-sys-color-on-tertiary-container: #FFD8E4;
+
+    --md-sys-color-error: #F2B8B5;
+    --md-sys-color-on-error: #601410;
+
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-large: 16px;
+    --md-sys-shape-corner-medium: 12px;
+
+    --md-sys-elevation-level-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+    --md-sys-elevation-level-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+
+    /* Mappings to Old Variables for compatibility */
+    --bg-dark: var(--md-sys-color-background);
+    --text-main: var(--md-sys-color-on-background);
+    --text-muted: var(--md-sys-color-secondary);
+    --glass-bg: var(--md-sys-color-surface-container);
+    --glass-border: var(--md-sys-color-surface-container-high);
+    --primary: var(--md-sys-color-primary);
 }
 
 * {
@@ -18,65 +50,25 @@
 
 body {
     font-family: 'Outfit', sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--text-main);
+    /* Keep Outfit as it looks modern */
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
-    overflow-x: hidden;
-    position: relative;
-}
-
-/* Animated Background */
-.background-shape {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    z-index: -1;
-    animation: float 20s infinite alternate;
-}
-
-.shape-1 {
-    width: 400px;
-    height: 400px;
-    background: var(--primary);
-    top: -10%;
-    left: -10%;
-    opacity: 0.3;
-}
-
-.shape-2 {
-    width: 500px;
-    height: 500px;
-    background: var(--accent);
-    bottom: -10%;
-    right: -10%;
-    opacity: 0.2;
-    animation-delay: -5s;
-}
-
-@keyframes float {
-    0% {
-        transform: translate(0, 0);
-    }
-
-    100% {
-        transform: translate(50px, 50px);
-    }
+    padding: 20px 0;
+    /* Soft ambient gradient behind everything */
+    background-image:
+        radial-gradient(circle at 10% 10%, rgba(208, 188, 255, 0.05), transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(239, 184, 200, 0.05), transparent 40%);
 }
 
 .glass-container {
     width: 100%;
-    max-width: 1200px;
-    min-height: 90vh;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 30px;
-    margin: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    max-width: 1000px;
+    /* Removed Glassmorphism, added Material Page Layout */
+    background: transparent;
+    padding: 0 20px;
 }
 
 /* Header */
@@ -84,31 +76,65 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    box-shadow: var(--md-sys-elevation-level-1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+}
+
+.logo i {
+    color: var(--md-sys-color-primary);
+    font-size: 1.8rem;
+}
+
+.highlight {
+    color: var(--md-sys-color-tertiary);
+    font-weight: 700;
 }
 
 .header-controls {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     align-items: center;
 }
 
-.master-switch {
+.status-pill {
+    padding: 8px 16px;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: 100px;
+    font-size: 0.875rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    color: var(--text-main);
+    gap: 8px;
 }
 
-/* Toggle Switch */
+.dot {
+    width: 8px;
+    height: 8px;
+    background: #a3e635;
+    /* Lime green for online */
+    border-radius: 50%;
+    box-shadow: 0 0 8px #a3e635;
+}
+
+/* MD3 Switch */
 .switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 26px;
+    width: 52px;
+    height: 32px;
 }
 
 .switch input {
@@ -124,432 +150,292 @@ header {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.1);
-    transition: .4s;
-    border: 1px solid var(--glass-border);
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: 32px;
+    border: 2px solid var(--md-sys-color-outline, #79747E);
+    transition: .2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 20px;
-    width: 20px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    transition: .4s;
+    height: 16px;
+    width: 16px;
+    left: 6px;
+    bottom: 6px;
+    background-color: var(--md-sys-color-outline, #79747E);
+    border-radius: 50%;
+    transition: .2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 input:checked+.slider {
-    background-color: var(--primary);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    background-color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
 }
 
 input:checked+.slider:before {
-    transform: translateX(24px);
+    transform: translateX(20px);
+    background-color: var(--md-sys-color-on-primary);
+    width: 24px;
+    height: 24px;
+    left: 2px;
+    bottom: 2px;
 }
 
-.slider.round {
-    border-radius: 34px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    font-size: 1.5rem;
-    font-weight: 800;
-}
-
-.logo i {
-    color: var(--primary);
-}
-
-.highlight {
-    color: var(--primary);
-}
-
-.status-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    border-radius: 50px;
-    color: var(--success);
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    background: var(--success);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--success);
-}
-
-/* Grid */
+/* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
 }
 
-/* Cards */
+/* MD3 Cards */
 .card {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 25px;
-    transition: transform 0.3s ease;
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 24px;
+    transition: background 0.2s;
+    /* No border */
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.08);
-}
+/* Make Hydration Card larger/heroic if needed, or keep uniform */
 
 .card-header {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .icon-box {
-    width: 40px;
-    height: 40px;
-    background: rgba(59, 130, 246, 0.1);
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: 16px;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: var(--primary);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
 }
 
 .card h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.375rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
 }
 
-/* Light Rows */
-.light-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
-    margin-bottom: 15px;
-}
-
-.light-info {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-weight: 600;
-}
-
-/* Controls */
+/* Hydration Specifics */
 .display-value {
-    font-size: 3rem;
-    font-weight: 800;
-    margin-bottom: 5px;
-    background: linear-gradient(135deg, #fff, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 4rem;
+    font-weight: 600;
+    color: var(--md-sys-color-primary);
+    line-height: 1;
+    margin-bottom: 8px;
 }
 
 .unit {
-    font-size: 1rem;
-    color: var(--text-muted);
-    -webkit-text-fill-color: initial;
+    font-size: 1.5rem;
+    color: var(--md-sys-color-secondary);
 }
 
 .status-text {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 25px;
+    font-size: 1rem;
+    color: var(--md-sys-color-outline, #938F99);
+    margin-bottom: 32px;
 }
 
+/* Buttons - MD3 Tonal & Filled */
 .btn-glass {
-    width: 100%;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    color: var(--text-main);
+    /* Mapped to MD3 Tonal Button */
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border: none;
+    border-radius: 20px;
+    padding: 14px 24px;
     font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: 0.2s;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    width: 100%;
 }
 
 .btn-glass:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #5D5866;
+    /* Approximation of slightly darker state */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.btn-glass.success {
+    background: #D9F7BE;
+    /* Pastel Green */
+    color: #135200;
+}
+
+.btn-glass.danger {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+}
+
+.btn-glass.warning {
+    background: #FFF7E6;
+    color: #D46B08;
 }
 
 .control-group {
     display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-.power-toggle {
+/* Light Card Rows */
+.light-row {
+    background: var(--md-sys-color-surface-container-high);
+    padding: 16px;
+    border-radius: 16px;
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
-.large {
-    padding: 15px;
-    font-size: 1.1rem;
+.light-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
 }
 
-/* Advanced Panel */
-.btn-text {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    cursor: pointer;
-    margin: 10px 0;
-    width: 100%;
-    text-align: center;
+.light-info i {
+    color: var(--md-sys-color-primary);
 }
 
-.btn-text:hover {
-    color: white;
-}
-
-.advanced-panel {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    border-radius: 12px;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.success {
-    color: var(--success);
-    border-color: rgba(16, 185, 129, 0.3);
-}
-
-.success:hover {
-    background: rgba(16, 185, 129, 0.1);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
-}
-
-.danger {
-    color: var(--danger);
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.danger:hover {
-    background: rgba(239, 68, 68, 0.1);
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
-}
-
-/* Color Grid */
+/* LED Control */
 .color-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin: 24px 0;
 }
 
 .color-btn {
     aspect-ratio: 1;
     border-radius: 50%;
     background: var(--clr);
+    border: 2px solid transparent;
     cursor: pointer;
-    box-shadow: 0 0 10px transparent;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: 0.2s;
 }
 
 .color-btn:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 15px var(--clr);
+    transform: scale(1.1);
+    border-color: var(--md-sys-color-on-surface);
 }
 
 .mode-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-top: 15px;
+    gap: 12px;
 }
 
 .mode-btn {
-    font-size: 0.8rem;
-    padding: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.85rem;
+    padding: 12px;
 }
 
-.rainbow-btn {
-    background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    border: 0;
-}
-
-/* Remote Layout */
+/* IR Remote Layout */
 .remote-layout {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
     align-items: center;
+}
+
+.remote-grid {
+    /* If used instead of flex */
 }
 
 .row {
     display: flex;
-    gap: 15px;
-    width: 100%;
+    gap: 16px;
     justify-content: center;
-}
-
-.btn-circle {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid var(--danger);
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-circle:hover {
-    background: var(--danger);
-    color: white;
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    width: 100%;
 }
 
 .btn-pill {
-    padding: 10px 20px;
-    border-radius: 30px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    color: white;
+    padding: 12px 24px;
+    border-radius: 100px;
+    border: none;
+    font-weight: 600;
     cursor: pointer;
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
 }
 
-/* Color Grid IR */
-.color-grid-ir {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 15px 0;
+.btn-pill.success {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.btn-pill.danger {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
 }
 
 .btn-color {
     aspect-ratio: 1;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: none;
     cursor: pointer;
     transition: transform 0.2s;
 }
 
-.btn-color:hover {
-    transform: scale(1.1);
-    border-color: white;
+.color-grid-ir {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 250px;
 }
 
-/* Remove old D-pad styles if unused or keep for compatibility */
-.d-pad {
-    display: none;
+/* Advanced Panel Animation */
+.advanced-panel {
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 16px;
 }
 
-.up {
-    grid-area: up;
-}
-
-.down {
-    grid-area: down;
-}
-
-.left {
-    grid-area: left;
-}
-
-.right {
-    grid-area: right;
-}
-
-.ok {
-    grid-area: ok;
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-}
-
-.btn-nav {
-    background: rgba(255, 255, 255, 0.05);
+.btn-text {
+    width: 100%;
+    background: none;
     border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
+    color: var(--md-sys-color-primary);
+    font-weight: 600;
+    padding: 12px;
     cursor: pointer;
 }
 
-.vol-ch {
-    justify-content: space-around;
-}
-
-.vertical-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 5px;
-    border-radius: 20px;
-}
-
-.label {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    font-weight: bold;
-}
-
-/* Mobile Responsiveness */
+/* Mobile */
 @media (max-width: 768px) {
     .glass-container {
-        padding: 15px;
-        margin: 10px;
-        min-height: auto;
+        padding: 0 16px;
     }
 
     header {
         flex-direction: column;
-        gap: 20px;
         align-items: flex-start;
+        gap: 20px;
+        border-radius: 0 0 24px 24px;
+        /* Only round bottom on mobile? Or keep full */
+        margin: -20px -16px 20px -16px;
+        /* Bleed to edges */
+        width: calc(100% + 32px);
     }
 
     .header-controls {
@@ -559,37 +445,14 @@ input:checked+.slider:before {
 
     .dashboard-grid {
         grid-template-columns: 1fr;
-        /* Force single column on mobile */
-        gap: 15px;
     }
 
     .display-value {
-        font-size: 2.5rem;
+        font-size: 3.5rem;
     }
 
     .btn-glass {
-        padding: 10px;
-        font-size: 0.9rem;
-    }
-
-    .color-grid {
-        grid-template-columns: repeat(6, 1fr);
-        /* Keep 6 colors but smaller */
-        gap: 5px;
-    }
-
-    .mode-grid {
-        grid-template-columns: 1fr;
-        /* Stack modes on really small screens */
-    }
-
-    .remote-layout .row {
-        gap: 10px;
-    }
-
-    .btn-circle {
-        width: 50px;
-        height: 50px;
-        font-size: 1rem;
+        padding: 16px;
+        /* Larger touch targets */
     }
 }
