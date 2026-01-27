@@ -354,84 +354,99 @@ input:checked+.slider:before {
 
 /* IR Remote Layout */
 /* Remote specific grid */
+/* IR Remote - CSS Grid Layout */
+.remote-layout {
+    display: grid;
+    grid-template-areas:
+        "on off"
+        "bright-inc bright-dec"
+        "colors colors"
+        "modes modes"
+        "nav nav";
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+/* Define Grid Areas for structure */
+.row {
+    display: contents;
+}
+
+/* Remove row wrappers, let content sit in grid */
+
+/* We need to restructure HTML slightly or target nth-child, but let's try to keep HTML structure if possible */
+/* Actually, for the existing HTML structure (rows of buttons), Flex column is fine IF we manage spacing */
+/* The overlap in the screenshot suggests fixed heights or negative margins. */
+
+/* Let's try a safer Flex approach first that GUARANTEES spacing */
 .remote-layout {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
+    /* generous gap */
     width: 100%;
-    max-width: 300px;
-    /* Limit width on desktop too */
+    max-width: 320px;
     margin: 0 auto;
+    padding-bottom: 20px;
 }
 
 .row {
     display: flex;
     gap: 12px;
-    justify-content: center;
+    justify-content: space-between;
     width: 100%;
+}
+
+/* Color Grid Fixed */
+.color-grid-ir {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+/* Navigation Group Fixed */
+.vol-ch {
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: 24px;
+    padding: 20px;
+    justify-content: space-around;
+    align-items: flex-start;
+}
+
+.vertical-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 }
 
 .btn-pill {
+    min-height: 56px;
+    /* Taller targets */
     flex: 1;
-    /* Stretch to fill row */
-    padding: 12px;
-    border-radius: 12px;
-    /* Softer rect */
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    background: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-on-surface);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 48px;
-    /* Touch target */
+    font-size: 0.9rem;
+    margin: 0;
+    /* No margins, use gap */
 }
 
-.btn-pill.success {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-}
-
-.btn-pill.danger {
-    background: var(--md-sys-color-error);
-    color: var(--md-sys-color-on-error);
-}
-
-.btn-color {
-    aspect-ratio: 1;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.color-grid-ir {
+/* Specific overrides for circular/icon buttons in Nav */
+.vertical-group .btn-glass {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    padding: 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    width: 100%;
-    max-width: 250px;
+    place-items: center;
+    font-size: 1.2rem;
 }
 
-/* Advanced Panel Animation */
-.advanced-panel {
-    background: var(--md-sys-color-surface-container-high);
-    border-radius: 16px;
-    padding: 16px;
-    margin-top: 16px;
-}
-
-.btn-text {
-    width: 100%;
-    background: none;
-    border: none;
-    color: var(--md-sys-color-primary);
-    font-weight: 600;
-    padding: 12px;
-    cursor: pointer;
-}
 
 /* Mobile */
 @media (max-width: 768px) {
