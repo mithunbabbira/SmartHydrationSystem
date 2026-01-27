@@ -209,6 +209,7 @@ public:
 
   // --- Helpers ---
   void enterState(State newState) {
+    State oldState = currentState;
     currentState = newState;
     stateStartTime = millis();
     hw->stopAll();
@@ -216,6 +217,15 @@ public:
     // Set Status Color based on Mode
     if (currentState == STATE_MONITORING) {
       hw->setRgb(isSleeping ? COLOR_SLEEP : COLOR_IDLE);
+    }
+
+    // Check if we are stopping an active alert
+    if (oldState == STATE_REMINDER_PRE || oldState == STATE_REMINDER_ACTIVE) {
+      if (currentState != STATE_REMINDER_PRE &&
+          currentState != STATE_REMINDER_ACTIVE) {
+        Serial.println("Logic: Alert Stopped -> Sending Notification");
+        comms->send(CMD_ALERT_STOPPED, 0);
+      }
     }
   }
 

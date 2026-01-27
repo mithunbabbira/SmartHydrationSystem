@@ -40,6 +40,35 @@ class HydrationHandler:
         # 0x52: ALERT_REMINDER (NEW)
         elif cmd == 0x52:
              logger.warning(f"ALERT [{mac}]: Hydration Reminder! Drink Detected: NO. User is HOME.")
+             
+             # Trigger External Actions (IR + LED)
+             # IR: 0xF7D02F (Alert)
+             if 'ir' in self.controller.handlers:
+                 self.controller.handlers['ir'].send_nec("F7D02F")
+             
+             # LED: Turn Red (RGB 1)
+             if 'led' in self.controller.handlers:
+                 # 02 12 ... 
+                 # Let's just use the send_cmd helper directly if we could, but better to reuse handler logic
+                 # Or manually construct packet. LED Handler has send_cmd(hex_payload)
+                 # Red = 1.0 -> 00 00 80 3F
+                 # Type 2 (LED) Cmd 0x12 (RGB) Data 1.0
+                 self.controller.handlers['led'].send_cmd("02120000803F", "ALERT (Red)")
+
+        # 0x53: ALERT_STOPPED (NEW)
+        elif cmd == 0x53:
+             logger.info(f"ALERT [{mac}]: Hydration Alert STOPPED.")
+
+             # Revert External Actions
+             # IR: 0xF7F00F (Normal)
+             if 'ir' in self.controller.handlers:
+                 self.controller.handlers['ir'].send_nec("F7F00F")
+
+             # LED: Turn Off (or Green? User said "revert them")
+             # Let's turn it OFF for now as that's safer than guessing a "normal" color
+             if 'led' in self.controller.handlers:
+                 # Type 2 (LED) Cmd 0x10 (Main) Data 0.0 (Off)
+                 self.controller.handlers['led'].send_cmd("021000000000", "ALERT STOPPED (Off)")
 
         # 0x60: DRINK_DETECTED
         elif cmd == 0x60:
@@ -68,6 +97,13 @@ class HydrationHandler:
         
         try:
             mac = config.SLAVE_MACS['hydration']
+        except AttributeError:
+             # Fallback if config is different structure
+             try:
+                 mac = config.SLAVE_MACS.get('hydration')
+             except:
+                 logger.error("Config Error")
+                 return
         except KeyError:
             logger.error("Hydration MAC not found in config")
             return
