@@ -353,32 +353,40 @@ input:checked+.slider:before {
 }
 
 /* IR Remote Layout */
+/* Remote specific grid */
 .remote-layout {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    align-items: center;
-}
-
-.remote-grid {
-    /* If used instead of flex */
+    gap: 16px;
+    width: 100%;
+    max-width: 300px;
+    /* Limit width on desktop too */
+    margin: 0 auto;
 }
 
 .row {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     justify-content: center;
     width: 100%;
 }
 
 .btn-pill {
-    padding: 12px 24px;
-    border-radius: 100px;
+    flex: 1;
+    /* Stretch to fill row */
+    padding: 12px;
+    border-radius: 12px;
+    /* Softer rect */
     border: none;
     font-weight: 600;
     cursor: pointer;
     background: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 48px;
+    /* Touch target */
 }
 
 .btn-pill.success {
