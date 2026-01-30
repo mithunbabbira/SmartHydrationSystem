@@ -16,6 +16,7 @@ enum CmdType {
   CMD_GET_WEIGHT = 0x20,
   CMD_REPORT_WEIGHT = 0x21,
   CMD_TARE = 0x22,
+  CMD_REQUEST_DAILY_TOTAL = 0x23,  // Pi requests current daily total; slave replies with CMD_DAILY_TOTAL
   CMD_REQUEST_TIME = 0x30,
   CMD_REPORT_TIME = 0x31,
   CMD_REQUEST_PRESENCE = 0x40,

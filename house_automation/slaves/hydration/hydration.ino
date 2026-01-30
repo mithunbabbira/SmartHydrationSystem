@@ -85,10 +85,17 @@ void processIncomingPackets() {
 
     case CMD_GET_WEIGHT: {
       float weight = hw.getWeight();
-      // Send raw bits of float
       comms.sendFloat(CMD_REPORT_WEIGHT, weight);
       Serial.print("Sent Weight: ");
       Serial.println(weight);
+      break;
+    }
+
+    case CMD_REQUEST_DAILY_TOTAL: {
+      float total = logic.getDailyTotal();
+      comms.sendFloat(CMD_DAILY_TOTAL, total);
+      Serial.print("Sent Daily Total: ");
+      Serial.println(total);
       break;
     }
 

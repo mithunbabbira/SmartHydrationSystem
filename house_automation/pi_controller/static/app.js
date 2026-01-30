@@ -76,19 +76,25 @@ function fetchData() {
         .then(response => response.json())
         .then(data => {
             if (data.hydration) {
+                const h = data.hydration;
                 const weightEl = document.getElementById('hyd-weight');
                 const statusEl = document.getElementById('hyd-status');
+                const lastDrinkEl = document.getElementById('hyd-last-drink');
+                const dailyTotalEl = document.getElementById('hyd-daily-total');
 
-                if (weightEl) weightEl.innerText = data.hydration.weight;
+                if (weightEl) weightEl.innerText = h.weight ?? '--';
                 if (statusEl) {
-                    statusEl.innerText = data.hydration.status;
-                    // Optional: Visual cue for active/stale
-                    if ((Date.now() / 1000 - data.hydration.last_update) > 60) {
-                        statusEl.style.color = 'var(--text-muted)';
-                        statusEl.innerText += " (Stale)";
-                    } else {
-                        statusEl.style.color = 'var(--success)';
-                    }
+                    const stale = (Date.now() / 1000 - (h.last_update || 0)) > 60;
+                    statusEl.style.color = stale ? 'var(--text-muted)' : 'var(--success)';
+                    statusEl.innerText = (h.status || 'Unknown') + (stale ? ' (Stale)' : '');
+                }
+                if (lastDrinkEl) {
+                    const ml = h.last_drink_ml;
+                    lastDrinkEl.innerText = (ml != null && ml > 0) ? ml + ' ml' : (ml === 0 ? '0 ml' : '-- ml');
+                }
+                if (dailyTotalEl) {
+                    const ml = h.daily_total_ml;
+                    dailyTotalEl.innerText = (ml != null && ml >= 0) ? ml + ' ml' : '-- ml';
                 }
             }
         })
@@ -97,6 +103,20 @@ function fetchData() {
 
 // Run polling every 2 seconds
 setInterval(fetchData, 2000);
+
+// Request daily total from slave so "Today total" updates (on load and every 60s)
+function requestDailyTotal() {
+    fetch('/api/hydration/cmd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cmd: 'request_daily_total' })
+    }).catch(function () {});
+}
+document.addEventListener('DOMContentLoaded', function () {
+    requestDailyTotal();
+    setTimeout(requestDailyTotal, 2000);
+});
+setInterval(requestDailyTotal, 60000);  // refresh daily total every 60s
 
 // --- Master serial log (data from master) ---
 function fetchMasterLog() {

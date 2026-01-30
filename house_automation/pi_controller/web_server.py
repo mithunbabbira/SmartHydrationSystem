@@ -126,6 +126,11 @@ def hydration_cmd():
         if cmd == 'ping_presence':
             controller.send_command(mac, "0140" + "00000000")  # slave will reply with 0x40, we send presence in 0x41
             return jsonify({"status": "ping_presence_sent"})
+        # Request current daily total from slave (slave replies with 0x61 so UI updates)
+        if cmd == 'request_daily_total':
+            import struct
+            controller.send_command(mac, "0123" + struct.pack('<f', 0.0).hex())
+            return jsonify({"status": "request_daily_total_sent"})
 
         # Handle Raw/Generic Commands
         # If cmd is integer or string representation of int
@@ -263,7 +268,10 @@ def get_data():
         response['hydration'] = {
             "weight": round(h_data.get('weight', 0), 1),
             "status": h_data.get('status', 'Unknown'),
-            "last_update": h_data.get('last_update', 0)
+            "last_update": h_data.get('last_update', 0),
+            "last_drink_ml": round(h_data.get('last_drink_ml', 0), 1),
+            "last_drink_time": h_data.get('last_drink_time', 0),
+            "daily_total_ml": round(h_data.get('daily_total_ml', 0), 1),
         }
         
     return jsonify(response)

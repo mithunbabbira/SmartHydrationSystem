@@ -10,7 +10,10 @@ class HydrationHandler:
         self.current_data = {
             'weight': 0.0,
             'status': 'Waiting for data...',
-            'last_update': 0
+            'last_update': 0,
+            'last_drink_ml': 0.0,
+            'last_drink_time': 0,
+            'daily_total_ml': 0.0,
         }
         
     def handle_packet(self, cmd, val, mac):
@@ -92,11 +95,22 @@ class HydrationHandler:
 
         # 0x60: DRINK_DETECTED
         elif cmd == 0x60:
-            logger.info(f"HYDRATION [{mac}]: Drink Detected: {val:.2f} ml")
+            ml = round(val, 1)
+            self.current_data['last_drink_ml'] = ml
+            self.current_data['last_drink_time'] = time.time()
+            self.current_data['last_update'] = time.time()
+            logger.info(f"HYDRATION [{mac}]: Drink Detected: {ml} ml")
+            if getattr(self.controller, 'append_log_line', None):
+                self.controller.append_log_line(f"  >> Drink detected: {ml} ml")
 
         # 0x61: DAILY_TOTAL
         elif cmd == 0x61:
-            logger.info(f"HYDRATION [{mac}]: Daily Total: {val:.2f} ml")
+            ml = round(val, 1)
+            self.current_data['daily_total_ml'] = ml
+            self.current_data['last_update'] = time.time()
+            logger.info(f"HYDRATION [{mac}]: Daily Total: {ml} ml")
+            if getattr(self.controller, 'append_log_line', None):
+                self.controller.append_log_line(f"  >> Today total: {ml} ml")
 
     def handle_user_input(self, parts):
         # parts: ['hydration', 'cmd', 'arg']

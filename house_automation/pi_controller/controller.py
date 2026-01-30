@@ -143,10 +143,10 @@ class SerialController:
     def process_incoming_data(self, line):
         # ... (Heartbeat check) ...
 
-        match = re.search(r'RX:([0-9A-Fa-f:]+):([0-9A-Fa-f]+)', line)
+        match = re.search(r'RX:([0-9A-Fa-f:]+):([0-9A-Fa-f\s]+)', line)
         if match:
             mac = match.group(1)
-            hex_data = match.group(2)
+            hex_data = match.group(2).replace(' ', '').replace('\r', '').strip()
             try:
                 data_bytes = bytes.fromhex(hex_data)
                 
@@ -186,6 +186,11 @@ class SerialController:
         """Return last `limit` lines from master serial (for dashboard)."""
         with self._log_lock:
             return list(self._serial_log)[-limit:]
+
+    def append_log_line(self, msg):
+        """Append a human-readable line to the serial log (e.g. drink detected, today total)."""
+        with self._log_lock:
+            self._serial_log.append({"t": time.time(), "line": msg})
 
     def health(self):
         """Return dict with serial status and last activity for monitoring."""

@@ -335,6 +335,8 @@ public:
     }
   }
 
+  float getDailyTotal() const { return dailyTotal; }
+
   void setSleep(bool sleeping) {
     bool changed = (isSleeping != sleeping);
     isSleeping = sleeping;

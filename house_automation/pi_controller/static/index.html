@@ -47,6 +47,17 @@
                         <span class="unit">ml</span>
                     </div>
                     <div class="status-text" id="hyd-status">Waiting for data...</div>
+                    <div class="hydration-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Last drink</span>
+                            <span id="hyd-last-drink" class="stat-value">-- ml</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Today total</span>
+                            <span id="hyd-daily-total" class="stat-value">-- ml</span>
+                        </div>
+                    </div>
+                    <p class="hydration-hint">Last drink / Today total update when the bottle detects a drink. Today total is also requested on load and every 60s.</p>
 
                     <div class="control-group">
                         <button type="button" onclick="sendHydration('tare')" class="btn-glass secondary">
