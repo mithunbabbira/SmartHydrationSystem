@@ -1,45 +1,27 @@
+/* SmartHydration Dashboard – clean layout, Mac + phone */
 :root {
-    /* MD3 Dark Theme Tokens */
-    --md-sys-color-background: #141218;
-    --md-sys-color-on-background: #E6E1E5;
-
-    --md-sys-color-surface: #141218;
-    --md-sys-color-surface-container-low: #1D1B20;
-    --md-sys-color-surface-container: #211F26;
-    --md-sys-color-surface-container-high: #2B2930;
-
-    --md-sys-color-primary: #D0BCFF;
-    --md-sys-color-on-primary: #381E72;
-    --md-sys-color-primary-container: #4F378B;
-    --md-sys-color-on-primary-container: #EADDFF;
-
-    --md-sys-color-secondary: #CCC2DC;
-    --md-sys-color-on-secondary: #332D41;
-    --md-sys-color-secondary-container: #4A4458;
-    --md-sys-color-on-secondary-container: #E8DEF8;
-
-    --md-sys-color-tertiary: #EFB8C8;
-    --md-sys-color-on-tertiary: #492532;
-    --md-sys-color-tertiary-container: #633B48;
-    --md-sys-color-on-tertiary-container: #FFD8E4;
-
-    --md-sys-color-error: #F2B8B5;
-    --md-sys-color-on-error: #601410;
-
-    --md-sys-shape-corner-extra-large: 28px;
-    --md-sys-shape-corner-large: 16px;
-    --md-sys-shape-corner-medium: 12px;
-
-    --md-sys-elevation-level-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
-    --md-sys-elevation-level-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
-
-    /* Mappings to Old Variables for compatibility */
-    --bg-dark: var(--md-sys-color-background);
-    --text-main: var(--md-sys-color-on-background);
-    --text-muted: var(--md-sys-color-secondary);
-    --glass-bg: var(--md-sys-color-surface-container);
-    --glass-border: var(--md-sys-color-surface-container-high);
-    --primary: var(--md-sys-color-primary);
+    --bg: #0f0f12;
+    --surface: #18181c;
+    --surface-2: #1f1f24;
+    --surface-3: #26262c;
+    --text: #f4f4f5;
+    --text-muted: #a1a1aa;
+    --primary: #a78bfa;
+    --on-primary: #1e1b4b;
+    --success: #22c55e;
+    --on-success: #052e16;
+    --danger: #ef4444;
+    --on-danger: #450a0a;
+    --warning: #eab308;
+    --on-warning: #422006;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --space-xs: 6px;
+    --space-sm: 12px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --touch: 44px;
 }
 
 * {
@@ -49,436 +31,537 @@
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
-    /* Keep Outfit as it looks modern */
-    background-color: var(--md-sys-color-background);
-    color: var(--md-sys-color-on-background);
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    /* Ensure vertical stacking */
-    padding: 20px 0;
-    overflow-x: hidden;
-    /* Prevent scroll */
-    /* Soft ambient gradient behind everything */
-    background-image:
-        radial-gradient(circle at 10% 10%, rgba(208, 188, 255, 0.05), transparent 40%),
-        radial-gradient(circle at 90% 90%, rgba(239, 184, 200, 0.05), transparent 40%);
+    padding: var(--space-md);
+    -webkit-font-smoothing: antialiased;
+}
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(167, 139, 250, 0.08), transparent);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .glass-container {
+    position: relative;
+    z-index: 1;
     width: 100%;
-    max-width: 1000px;
-    /* Removed Glassmorphism, added Material Page Layout */
-    background: transparent;
-    padding: 0 20px;
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
 /* Header */
 header {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background: var(--md-sys-color-surface-container-low);
-    border-radius: var(--md-sys-shape-corner-extra-large);
-    box-shadow: var(--md-sys-elevation-level-1);
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background: var(--surface);
+    border-radius: var(--radius-lg);
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 1.5rem;
-    font-weight: 500;
-    letter-spacing: -0.5px;
+    gap: var(--space-sm);
+    font-size: 1.35rem;
+    font-weight: 600;
 }
-
 .logo i {
-    color: var(--md-sys-color-primary);
-    font-size: 1.8rem;
+    color: var(--primary);
+    font-size: 1.5rem;
 }
-
 .highlight {
-    color: var(--md-sys-color-tertiary);
-    font-weight: 700;
+    color: var(--primary);
 }
 
 .header-controls {
     display: flex;
-    gap: 16px;
     align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
 }
 
 .status-pill {
-    padding: 8px 16px;
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--surface-2);
     border-radius: 100px;
     font-size: 0.875rem;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    color: var(--text-muted);
 }
-
-.dot {
+.status-pill .dot {
     width: 8px;
     height: 8px;
-    background: #a3e635;
-    /* Lime green for online */
+    background: var(--success);
     border-radius: 50%;
-    box-shadow: 0 0 8px #a3e635;
+    box-shadow: 0 0 10px var(--success);
 }
 
-/* MD3 Switch */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 32px;
+.master-buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+.master-buttons .master-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.master-buttons .btn-glass {
+    min-height: var(--touch);
+    min-width: 72px;
+    padding: 0 var(--space-md);
 }
 
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--md-sys-color-surface-container-high);
-    border-radius: 32px;
-    border: 2px solid var(--md-sys-color-outline, #79747E);
-    transition: .2s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 6px;
-    bottom: 6px;
-    background-color: var(--md-sys-color-outline, #79747E);
-    border-radius: 50%;
-    transition: .2s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-input:checked+.slider {
-    background-color: var(--md-sys-color-primary);
-    border-color: var(--md-sys-color-primary);
-}
-
-input:checked+.slider:before {
-    transform: translateX(20px);
-    background-color: var(--md-sys-color-on-primary);
-    width: 24px;
-    height: 24px;
-    left: 2px;
-    bottom: 2px;
-}
-
-/* Dashboard Grid */
+/* Dashboard grid – equal columns, responsive */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-lg);
+    align-items: start;
 }
 
-/* MD3 Cards */
 .card {
-    background: var(--md-sys-color-surface-container);
-    border-radius: var(--md-sys-shape-corner-medium);
-    padding: 24px;
-    transition: background 0.2s;
-    /* No border */
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    border: 1px solid var(--surface-2);
 }
-
-/* Make Hydration Card larger/heroic if needed, or keep uniform */
 
 .card-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--surface-2);
 }
 
 .icon-box {
-    width: 48px;
-    height: 48px;
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-    border-radius: 16px;
+    width: 40px;
+    height: 40px;
     display: flex;
-    justify-content: center;
     align-items: center;
-    font-size: 1.4rem;
+    justify-content: center;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    color: var(--primary);
+    font-size: 1.1rem;
 }
 
 .card h2 {
-    font-size: 1.375rem;
-    font-weight: 500;
-    color: var(--md-sys-color-on-surface);
-}
-
-/* Hydration Specifics */
-.display-value {
-    font-size: 4rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    color: var(--md-sys-color-primary);
-    line-height: 1;
-    margin-bottom: 8px;
+    color: var(--text);
 }
 
-.unit {
-    font-size: 1.5rem;
-    color: var(--md-sys-color-secondary);
-}
-
-.status-text {
-    font-size: 1rem;
-    color: var(--md-sys-color-outline, #938F99);
-    margin-bottom: 32px;
-}
-
-/* Buttons - MD3 Tonal & Filled */
-.btn-glass {
-    /* Mapped to MD3 Tonal Button */
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-    border: none;
-    border-radius: 20px;
-    padding: 14px 24px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: 0.2s;
+.card-body {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
+    flex-direction: column;
+    gap: var(--space-md);
 }
 
-.btn-glass:hover {
-    background: #5D5866;
-    /* Approximation of slightly darker state */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+/* Section labels */
+.section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-top: var(--space-sm);
+    margin-bottom: var(--space-xs);
 }
 
-.btn-glass.success {
-    background: #D9F7BE;
-    /* Pastel Green */
-    color: #135200;
+/* Hydration */
+.display-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.1;
 }
-
-.btn-glass.danger {
-    background: var(--md-sys-color-error);
-    color: var(--md-sys-color-on-error);
+.unit {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
-
-.btn-glass.warning {
-    background: #FFF7E6;
-    color: #D46B08;
+.status-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
 }
 
 .control-group {
     display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
 }
 
-/* Light Card Rows */
-.light-row {
-    background: var(--md-sys-color-surface-container-high);
-    padding: 16px;
-    border-radius: 16px;
+.btn-text.advanced-toggle {
+    width: 100%;
+    padding: var(--space-sm) 0;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    justify-content: center;
+    gap: 6px;
+    border-radius: var(--radius);
+    transition: background 0.2s;
+}
+.btn-text.advanced-toggle:hover {
+    background: var(--surface-2);
+    color: var(--text);
 }
 
-.light-info {
+.advanced-panel {
     display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--surface-2);
+}
+
+/* Buttons */
+.btn-glass {
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--touch);
+    padding: 0 var(--space-md);
+    font-size: 0.9rem;
     font-weight: 600;
-    color: var(--md-sys-color-on-surface);
+    font-family: inherit;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    touch-action: manipulation;
+    flex: 1;
+    min-width: 0;
+}
+.btn-glass:active {
+    transform: scale(0.98);
+}
+.btn-glass {
+    background: var(--surface-2);
+    color: var(--text);
+}
+.btn-glass:hover {
+    background: var(--surface-3);
+}
+.btn-glass.success {
+    background: var(--success);
+    color: var(--on-success);
+}
+.btn-glass.success:hover {
+    filter: brightness(1.1);
+}
+.btn-glass.danger {
+    background: var(--danger);
+    color: var(--on-danger);
+}
+.btn-glass.danger:hover {
+    filter: brightness(1.1);
+}
+.btn-glass.warning {
+    background: var(--warning);
+    color: var(--on-danger);
+}
+.btn-glass.secondary {
+    background: var(--surface-3);
+    color: var(--text-muted);
 }
 
-.light-info i {
-    color: var(--md-sys-color-primary);
+/* ON/OFF rows */
+.power-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+}
+.power-toggle .btn-glass.large {
+    min-height: var(--touch);
 }
 
-/* LED Control */
+.btn-toggle-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: var(--space-sm);
+}
+.btn-toggle-row .row-label {
+    font-weight: 500;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-toggle-row .btn-glass {
+    flex: none;
+    min-width: 64px;
+}
+
+/* LED card */
 .color-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
-    margin: 24px 0;
+    gap: var(--space-sm);
 }
-
 .color-btn {
     aspect-ratio: 1;
+    min-width: 36px;
+    min-height: 36px;
     border-radius: 50%;
     background: var(--clr);
     border: 2px solid transparent;
     cursor: pointer;
-    transition: 0.2s;
+    transition: transform 0.15s, border-color 0.15s;
+    touch-action: manipulation;
 }
-
 .color-btn:hover {
-    transform: scale(1.1);
-    border-color: var(--md-sys-color-on-surface);
+    transform: scale(1.08);
+    border-color: var(--surface-3);
 }
 
+.effect-speed {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+.effect-speed .raw-label {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+.effect-speed input[type="range"] {
+    flex: 1;
+    min-width: 0;
+    accent-color: var(--primary);
+    height: 8px;
+}
+.effect-speed span {
+    font-variant-numeric: tabular-nums;
+    min-width: 2ch;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+/* Effect grid – 3 columns so 13 items = 5+5+3, no orphan */
 .mode-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
 }
-
 .mode-btn {
+    min-height: var(--touch);
+    font-size: 0.8rem;
+    padding: 0 var(--space-sm);
+}
+
+.raw-panel {
+    margin-top: var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--surface-2);
+}
+.raw-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.raw-row {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+.raw-input {
+    flex: 1;
+    min-width: 0;
+    height: var(--touch);
+    padding: 0 var(--space-md);
+    font-family: 'JetBrains Mono', monospace;
     font-size: 0.85rem;
-    padding: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--radius);
+    color: var(--text);
+}
+.raw-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+.raw-row .btn-glass {
+    flex: none;
 }
 
-/* IR Remote Layout */
-/* Remote specific grid */
-/* IR Remote - CSS Grid Layout */
-.remote-layout {
-    display: grid;
-    grid-template-areas:
-        "on off"
-        "bright-inc bright-dec"
-        "colors colors"
-        "modes modes"
-        "nav nav";
-    gap: 12px;
-    width: 100%;
-    max-width: 320px;
-    margin: 0 auto;
-    padding: 10px;
+/* Log card full width */
+.log-card.full-width {
+    grid-column: 1 / -1;
+}
+.master-log {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: var(--space-md);
+    max-height: 260px;
+    overflow: auto;
+    color: #86efac;
+    border: 1px solid var(--surface-3);
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
 }
 
-/* Define Grid Areas for structure */
-.row {
-    display: contents;
-}
-
-/* Remove row wrappers, let content sit in grid */
-
-/* We need to restructure HTML slightly or target nth-child, but let's try to keep HTML structure if possible */
-/* Actually, for the existing HTML structure (rows of buttons), Flex column is fine IF we manage spacing */
-/* The overlap in the screenshot suggests fixed heights or negative margins. */
-
-/* Let's try a safer Flex approach first that GUARANTEES spacing */
+/* IR Remote */
 .remote-layout {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    /* generous gap */
+    gap: var(--space-lg);
     width: 100%;
-    max-width: 320px;
-    margin: 0 auto;
-    padding-bottom: 20px;
 }
-
-.row {
+.remote-layout .row {
     display: flex;
-    gap: 12px;
-    justify-content: space-between;
-    width: 100%;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+.remote-layout .row .btn-glass,
+.remote-layout .row .btn-pill {
+    flex: 1;
+    min-width: 0;
+}
+.btn-pill {
+    min-height: var(--touch);
+    font-size: 0.9rem;
+}
+.btn-pill.small {
+    flex: 0.5;
+    min-width: 60px;
 }
 
-/* Color Grid Fixed */
 .color-grid-ir {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    width: 100%;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+}
+.color-grid-ir .btn-color {
+    aspect-ratio: 1;
+    min-height: 44px;
+    border-radius: var(--radius);
+    border: 2px solid var(--surface-3);
+    cursor: pointer;
+    transition: transform 0.15s;
+    touch-action: manipulation;
+}
+.color-grid-ir .btn-color:hover {
+    transform: scale(1.05);
+}
+.color-grid-ir .btn-glass.mode-btn {
+    grid-column: span 1;
 }
 
-/* Navigation Group Fixed */
 .vol-ch {
-    background: var(--md-sys-color-surface-container-high);
-    border-radius: 24px;
-    padding: 20px;
-    justify-content: space-around;
-    align-items: flex-start;
+    display: flex;
+    gap: var(--space-lg);
+    justify-content: center;
+    padding: var(--space-md);
+    background: var(--surface-2);
+    border-radius: var(--radius);
 }
-
 .vertical-group {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-xs);
 }
-
-.btn-pill {
-    min-height: 56px;
-    /* Taller targets */
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.9rem;
-    margin: 0;
-    /* No margins, use gap */
+.vertical-group .label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
 }
-
-/* Specific overrides for circular/icon buttons in Nav */
 .vertical-group .btn-glass {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    display: grid;
-    place-items: center;
-    font-size: 1.2rem;
+    flex: none;
+    border-radius: 50%;
 }
-
 
 /* Mobile */
-@media (max-width: 768px) {
-    .glass-container {
-        padding: 0 16px;
+@media (max-width: 640px) {
+    body {
+        padding: var(--space-sm);
     }
-
     header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-        border-radius: var(--md-sys-shape-corner-large);
-        margin: 0 0 20px 0;
-        width: 100%;
+        align-items: stretch;
+        padding: var(--space-md);
     }
-
     .header-controls {
-        width: 100%;
-        justify-content: space-between;
+        flex-direction: column;
+        align-items: stretch;
     }
-
+    .master-buttons {
+        justify-content: stretch;
+    }
+    .master-buttons .btn-glass {
+        flex: 1;
+    }
     .dashboard-grid {
         grid-template-columns: 1fr;
+        gap: var(--space-md);
     }
-
     .display-value {
-        font-size: 2.5rem;
-        /* Reduced from 3.5rem to prevent overflow */
+        font-size: 2rem;
     }
+    .color-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    .color-btn {
+        min-width: 40px;
+        min-height: 40px;
+    }
+    .mode-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .btn-toggle-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+    }
+    .btn-toggle-row .row-label {
+        grid-column: 1 / -1;
+    }
+    .btn-toggle-row .btn-glass {
+        grid-column: span 1;
+    }
+}
 
-    .btn-glass {
-        padding: 16px;
-        /* Larger touch targets */
+@media (min-width: 641px) and (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .log-card.full-width {
+        grid-column: 1 / -1;
     }
 }

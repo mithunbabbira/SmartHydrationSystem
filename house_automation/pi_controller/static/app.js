@@ -28,6 +28,23 @@ function sendColor(val) {
     apiCall('/api/led/cmd', { cmd: 'rgb', val: val });
 }
 
+/** LED effect/mode (Rainbow, Red Pulse, etc.) – sends mode + speed, not rgb. */
+function sendLEDMode(mode, speed) {
+    speed = speed ?? getLEDEffectSpeed();
+    apiCall('/api/led/cmd', { cmd: 'mode', mode: mode, speed: speed });
+}
+
+function getLEDEffectSpeed() {
+    const el = document.getElementById('led-effect-speed');
+    return el ? parseInt(el.value, 10) || 50 : 50;
+}
+
+function sendLEDRaw(hex) {
+    hex = (hex || '').trim().replace(/^0x/i, '');
+    if (!hex) { alert('Enter hex payload'); return; }
+    apiCall('/api/led/raw', { hex: hex });
+}
+
 function sendHydration(cmd) {
     apiCall('/api/hydration/cmd', { cmd: cmd });
 }
@@ -45,11 +62,12 @@ function sendAIO(device, action) {
     apiCall('/api/aio/cmd', { device: device, action: action });
 }
 
-function toggleMaster(checkbox) {
-    const action = checkbox.checked ? 'on' : 'off';
-    apiCall('/api/master/cmd', { action: action });
-    // Optimistic Update for UI? Or waiting for confirmation?
-    // For now, fire and forget.
+function masterOn() {
+    apiCall('/api/master/cmd', { action: 'on' });
+}
+
+function masterOff() {
+    apiCall('/api/master/cmd', { action: 'off' });
 }
 
 // --- Data Polling ---
@@ -79,6 +97,22 @@ function fetchData() {
 
 // Run polling every 2 seconds
 setInterval(fetchData, 2000);
+
+// --- Master serial log (data from master) ---
+function fetchMasterLog() {
+    fetch('/api/master/log?limit=150')
+        .then(response => response.json())
+        .then(data => {
+            const el = document.getElementById('master-log-content');
+            if (!el) return;
+            const lines = data.lines || [];
+            el.textContent = lines.join('\n');
+            el.scrollTop = el.scrollHeight;
+        })
+        .catch(err => console.error('Master log:', err));
+}
+setInterval(fetchMasterLog, 1500);
+document.addEventListener('DOMContentLoaded', fetchMasterLog);
 
 // Initial Call
 document.addEventListener('DOMContentLoaded', fetchData);

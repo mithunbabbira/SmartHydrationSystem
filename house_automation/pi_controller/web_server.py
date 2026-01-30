@@ -44,36 +44,57 @@ def ir_send():
 # --- API: LED Control ---
 @app.route('/api/led/cmd', methods=['POST'])
 def led_cmd():
-    data = request.json
-    cmd = data.get('cmd') # 'on', 'off', 'rgb'
-    val = data.get('val') # hex for rgb, or None
-    
+    data = request.json or {}
+    cmd = (data.get('cmd') or '').lower()
+    val = data.get('val')
+    mode = data.get('mode')
+    speed = data.get('speed', 50)
+
     if controller and 'led' in controller.handlers:
-        # Construct payload manually or use handler helpers if available
-        # Using send_cmd directly from handler if possible, otherwise simulating input
         handler = controller.handlers['led']
-        
+        import struct
+
         if cmd == 'on':
             handler.send_cmd("02100000803F", "ON")
         elif cmd == 'off':
             handler.send_cmd("021000000000", "OFF")
         elif cmd == 'rgb':
-             # Expecting val to be color ID (0-8) or hex?
-             # Let's support preset IDs for now as per handler
-             if val is not None:
-                 # 0x12 = SET_RGB. Float representation of int code.
-                 import struct
-                 float_hex = struct.pack('<f', int(val)).hex()
-                 payload = "0212" + float_hex
-                 handler.send_cmd(payload, f"Color {val}")
-        
+            # Static color: val = color ID (1-8)
+            if val is not None:
+                float_hex = struct.pack('<f', int(val)).hex()
+                payload = "0212" + float_hex
+                handler.send_cmd(payload, f"Color {val}")
+        elif cmd == 'mode' or cmd == 'effect':
+            # Effect/mode: mode number (e.g. 37=Rainbow), speed 1-100
+            m = int(mode) if mode is not None else int(val) if val is not None else None
+            if m is not None and 1 <= m <= 255:
+                sp = max(1, min(100, int(speed)))
+                val_u32 = (m << 8) | sp
+                payload = "0213" + struct.pack('<I', val_u32).hex()
+                handler.send_cmd(payload, f"Mode {m} Speed {sp}")
+            else:
+                return jsonify({"error": "Invalid mode (1-255)"}), 400
+        else:
+            return jsonify({"error": "Unknown cmd"}), 400
         return jsonify({"status": "ok"})
+    return jsonify({"error": "Controller not ready"}), 503
+
+
+@app.route('/api/led/raw', methods=['POST'])
+def led_raw():
+    data = request.json or {}
+    hex_payload = (data.get('hex') or data.get('payload') or '').strip().replace('0x', '')
+    if not hex_payload or not all(c in '0123456789ABCDEFabcdef' for c in hex_payload) or len(hex_payload) % 2 != 0:
+        return jsonify({"error": "Invalid hex payload"}), 400
+    if controller and 'led' in controller.handlers:
+        controller.handlers['led'].send_cmd(hex_payload, "RAW")
+        return jsonify({"status": "sent", "hex": hex_payload})
     return jsonify({"error": "Controller not ready"}), 503
 
 # --- API: Hydration ---
 @app.route('/api/hydration/cmd', methods=['POST'])
 def hydration_cmd():
-    data = request.json
+    data = request.json or {}
     cmd = data.get('cmd') # 'tare' or raw hex/int
     val = data.get('val', 0) # optional value for the command
     
@@ -83,10 +104,29 @@ def hydration_cmd():
 
         # Handle Named Commands
         if cmd == 'tare':
-            # CMD_TARE = 0x22
             controller.send_command(mac, "012200000000")
             return jsonify({"status": "tare_sent"})
-        
+        # Hydration slave LED (0x10): on/off without ESP32 changes
+        if cmd == 'led_on':
+            controller.send_command(mac, "0110" + "0000803F")  # float 1.0
+            return jsonify({"status": "led_on"})
+        if cmd == 'led_off':
+            controller.send_command(mac, "0110" + "00000000")  # float 0.0
+            return jsonify({"status": "led_off"})
+        # Hydration slave Buzzer (0x11): on/off
+        if cmd == 'buzzer_on':
+            controller.send_command(mac, "0111" + "0000803F")
+            return jsonify({"status": "buzzer_on"})
+        if cmd == 'buzzer_off':
+            controller.send_command(mac, "0111" + "00000000")
+            return jsonify({"status": "buzzer_off"})
+        if cmd == 'sync_time':
+            controller.send_command(mac, "0130" + "00000000")  # slave will reply with 0x30, we send time in 0x31
+            return jsonify({"status": "sync_time_sent"})
+        if cmd == 'ping_presence':
+            controller.send_command(mac, "0140" + "00000000")  # slave will reply with 0x40, we send presence in 0x41
+            return jsonify({"status": "ping_presence_sent"})
+
         # Handle Raw/Generic Commands
         # If cmd is integer or string representation of int
         try:
@@ -143,6 +183,66 @@ def aio_cmd():
             return jsonify({"error": str(e)}), 500
             
     return jsonify({"error": "Invalid Device or Action"}), 400
+
+# --- API: Master serial log (data from master ESP32) ---
+@app.route('/api/master/log', methods=['GET'])
+def master_log():
+    limit = request.args.get('limit', 200, type=int)
+    limit = min(500, max(1, limit))
+    if not controller:
+        return jsonify({"lines": [], "error": "Controller off"})
+    entries = controller.get_serial_log(limit=limit)
+    return jsonify({"lines": [e["line"] for e in entries], "count": len(entries)})
+
+
+# --- API: Health (for monitoring and debugging Pi crashes) ---
+@app.route('/api/health', methods=['GET'])
+def health():
+    """Returns controller health, serial status, and optional Pi system stats."""
+    include_system = request.args.get('system', 'false').lower() in ('1', 'true', 'yes')
+    out = {
+        "ok": controller is not None,
+        "controller": "running" if controller else "not_started",
+        "serial": {},
+        "system": {} if include_system else None,
+    }
+    if controller:
+        try:
+            out["serial"] = controller.health()
+        except Exception as e:
+            out["serial"] = {"error": str(e)}
+    if include_system:
+        try:
+            import subprocess
+            # Memory (MB)
+            with open("/proc/meminfo") as f:
+                lines = f.read()
+            mem_total = _parse_meminfo(lines, "MemTotal")
+            mem_avail = _parse_meminfo(lines, "MemAvailable")
+            out["system"]["memory_mb"] = {"total": mem_total, "available": mem_avail}
+            # Load average
+            with open("/proc/loadavg") as f:
+                la = f.read().split()[:3]
+            out["system"]["load_avg"] = [float(x) for x in la]
+            # Disk root (optional)
+            r = subprocess.run(
+                ["df", "-m", "/"], capture_output=True, text=True, timeout=2
+            )
+            if r.returncode == 0 and r.stdout:
+                parts = r.stdout.strip().split("\n")[-1].split()
+                if len(parts) >= 4:
+                    out["system"]["disk_root_mb"] = {"used": int(parts[2]), "avail": int(parts[3])}
+        except Exception as e:
+            out["system"] = {"error": str(e)}
+    return jsonify(out)
+
+
+def _parse_meminfo(content, key):
+    for line in content.splitlines():
+        if line.startswith(key + ":"):
+            return int(line.split()[1]) // 1024  # kB -> MB
+    return 0
+
 
 # --- API: System Status (Polling) ---
 @app.route('/api/data', methods=['GET'])
@@ -218,13 +318,15 @@ def master_cmd():
 
 def start_controller():
     global controller
-    # Serial Port from Config or Default
     port = config.SERIAL_PORT
-    controller = SerialController(port, 115200)
-    controller.start(headless=True)
-    logger.info("Controller Background Thread Started")
-
-    # Start Scheduler Thread
+    try:
+        controller = SerialController(port, 115200)
+        controller.start(headless=True)
+        logger.info("Controller Background Thread Started")
+    except Exception as e:
+        logger.exception("Controller failed to start: %s", e)
+        controller = None
+        return
     threading.Thread(target=daily_scheduler, daemon=True).start()
 
 def send_aio_global(device, action):
@@ -275,10 +377,6 @@ def daily_scheduler():
         time.sleep(10) # check 
 
 if __name__ == '__main__':
-    # Start Controller in separate thread (or just before app run since it's headless)
-    # Since controller.start(headless=True) returns, we can just call it.
     start_controller()
-    
-    # Run Flask
-    # Host 0.0.0.0 to be accessible from LAN
+    # If controller failed to start, app still runs; /api/health and /api/data will report not ready
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)

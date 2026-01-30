@@ -3,11 +3,20 @@ Description=Smart Hydration Home Automation Server
 After=network.target
 
 [Service]
+Type=simple
 User=mithun
 WorkingDirectory=/home/mithun/projects/water_bottle/SmartHydrationSystem
-Environment="AIO_KEY=YOUR_AIO_KEY_HERE"
+# Set AIO_KEY via: sudo systemctl edit smart-home.service (add Environment= or EnvironmentFile=)
 ExecStart=/usr/bin/python3 house_automation/pi_controller/web_server.py
+# Restart with backoff so serial can settle after crash
 Restart=always
+RestartSec=5
+# Limit memory to avoid runaway process starving n8n (adjust if needed)
+MemoryMax=400M
+# Log to journal for debugging: journalctl -u smart-home.service -f
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=smart-home
 
 [Install]
 WantedBy=multi-user.target

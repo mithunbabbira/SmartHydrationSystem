@@ -8,6 +8,7 @@ import re
 import struct
 import config
 import subprocess
+from collections import deque
 
 # Import Handlers
 from handlers.hydration import HydrationHandler
@@ -35,7 +36,10 @@ class SerialController:
         self.serial_conn = None
         self.running = False
         self.send_queue = queue.Queue()
-        
+        # Ring buffer of raw lines from master (for dashboard log)
+        self._serial_log = deque(maxlen=500)
+        self._log_lock = threading.Lock()
+
         # Initialize Handlers
         self.handlers = {
             'hydration': HydrationHandler(self),
@@ -43,11 +47,35 @@ class SerialController:
             'ir': IRHandler(self)
         }
 
+    def _close_serial(self):
+        try:
+            if self.serial_conn and self.serial_conn.is_open:
+                self.serial_conn.close()
+        except Exception as e:
+            logger.debug(f"Close serial: {e}")
+        self.serial_conn = None
+        if getattr(self, "watchdog", None):
+            self.watchdog.serial_conn = None
+
+    def _reconnect_serial(self):
+        self._close_serial()
+        try:
+            self.serial_conn = serial.Serial(self.port, self.baud_rate, timeout=1)
+            self.serial_conn.dtr = False
+            time.sleep(0.1)
+            self.serial_conn.dtr = True
+            if getattr(self, "watchdog", None):
+                self.watchdog.serial_conn = self.serial_conn
+            logger.info(f"Reconnected to {self.port} at {self.baud_rate} baud.")
+            return True
+        except serial.SerialException as e:
+            logger.warning(f"Reconnect failed: {e}")
+            return False
+
     def connect(self):
         try:
             self.serial_conn = serial.Serial(self.port, self.baud_rate, timeout=1)
-            # Reset ESP32 via DTR (Optional, but good for clean start)
-            self.serial_conn.dtr = False 
+            self.serial_conn.dtr = False
             time.sleep(0.1)
             self.serial_conn.dtr = True
             logger.info(f"Connected to {self.port} at {self.baud_rate} baud.")
@@ -58,13 +86,27 @@ class SerialController:
 
     def reader_thread(self):
         logger.info("Reader thread started.")
-        while self.running and self.serial_conn and self.serial_conn.is_open:
+        while self.running:
             try:
+                if not self.serial_conn or not self.serial_conn.is_open:
+                    self._reconnect_serial()
+                    if not self.serial_conn:
+                        time.sleep(5)
+                    continue
                 if self.serial_conn.in_waiting > 0:
                     line = self.serial_conn.readline().decode('utf-8', errors='ignore').strip()
                     if line:
-                        self.watchdog.pet() # Reset watchdog on ANY valid serial data
+                        with self._log_lock:
+                            self._serial_log.append({"t": time.time(), "line": line})
+                        self.watchdog.pet()
                         self.process_incoming_data(line)
+                else:
+                    # Avoid busy-loop: sleep when no data (major cause of high CPU / Pi instability)
+                    time.sleep(0.02)
+            except (serial.SerialException, OSError, IOError) as e:
+                logger.error(f"Serial error (will reconnect): {e}")
+                self._close_serial()
+                time.sleep(2)
             except Exception as e:
                 logger.error(f"Error reading from serial: {e}")
                 time.sleep(1) 
@@ -125,16 +167,36 @@ class SerialController:
                 logger.error(f"Failed to decode data from {mac}: {e}")
 
     def send_command(self, mac_address, hex_data):
-        # Format: TX:<MAC>:<HEX_DATA>
         command = f"TX:{mac_address}:{hex_data}\n"
         try:
             if self.serial_conn and self.serial_conn.is_open:
                 self.serial_conn.write(command.encode('utf-8'))
+                with self._log_lock:
+                    self._serial_log.append({"t": time.time(), "line": f">> TX {mac_address} {hex_data}"})
                 logger.info(f"SENT to {mac_address}: {hex_data}")
             else:
                 logger.error("Serial connection lost. Cannot send.")
+        except (serial.SerialException, OSError) as e:
+            logger.error(f"Serial send failed: {e}")
+            self._close_serial()
         except Exception as e:
             logger.error(f"Error sending data: {e}")
+
+    def get_serial_log(self, limit=200):
+        """Return last `limit` lines from master serial (for dashboard)."""
+        with self._log_lock:
+            return list(self._serial_log)[-limit:]
+
+    def health(self):
+        """Return dict with serial status and last activity for monitoring."""
+        with self._log_lock:
+            last = list(self._serial_log)[-1] if self._serial_log else None
+        return {
+            "serial_connected": bool(self.serial_conn and self.serial_conn.is_open),
+            "serial_port": self.port,
+            "last_line_time": last["t"] if last else None,
+            "log_entries": len(self._serial_log),
+        }
 
     def start(self, headless=False):
         if not self.connect():
@@ -198,8 +260,7 @@ class SerialController:
             except Exception as e:
                 logger.error(f"Input Error: {e}")
 
-        if self.serial_conn:
-            self.serial_conn.close()
+        self._close_serial()
 
 class WatchdogThread(threading.Thread):
     def __init__(self, serial_conn, timeout=60):
@@ -226,8 +287,10 @@ class WatchdogThread(threading.Thread):
                 self.pet() # Reset timer to avoid loop while resetting
 
     def reset_master(self):
+        if not self.serial_conn or not self.serial_conn.is_open:
+            logger.warning("Cannot reset master: serial not connected.")
+            return
         try:
-            # Toggle DTR to reset ESP32
             self.serial_conn.dtr = False
             time.sleep(0.1)
             self.serial_conn.dtr = True
