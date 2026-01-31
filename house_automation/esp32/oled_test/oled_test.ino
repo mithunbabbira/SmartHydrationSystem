@@ -34,7 +34,7 @@ float priceUsd = 0;
 float change24h = 0;
 bool dataValid = false;
 unsigned long lastPriceUpdate = 0;
-unsigned long lastPiActivity = 0;   // Any Type3 packet from Pi (via Master) -> Pi up
+                                                                                                                                                                                                                  unsigned long lastPiActivity = 0;   // Any Type3 packet from Pi (via Master) -> Pi up
 unsigned long displaySwitchAt = 0;
 bool showingPrice = true;
 
@@ -71,7 +71,7 @@ void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len)
     memcpy(&sec, &data[5], 4);
     overrideUntil = millis() + (unsigned long)(sec * 1000);
     overrideRainbow = false;
-    overrideR = min(data[2], 30); overrideG = min(data[3], 30); overrideB = min(data[4], 30);  // Cap for LED without resistor
+    overrideR = (data[2] > 30) ? 30 : data[2]; overrideG = (data[3] > 30) ? 30 : data[3]; overrideB = (data[4] > 30) ? 30 : data[4];  // Cap for LED without resistor
     overrideTextMode = false;
   } else if (cmd == 0x60 && len >= 9) {
     float sec;
