@@ -435,31 +435,39 @@ def _health_snapshot_loop():
 
 
 ONO_PRICE_URL = "https://api.coingecko.com/api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true"
-ONO_PRICE_INTERVAL_SEC = 60  # CoinGecko free tier ~10/min
+ONO_PRICE_INTERVAL_SEC = 60   # Fetch from CoinGecko every 60s (rate limit)
+ONO_PUSH_INTERVAL_SEC = 15   # Re-send last price every 15s (displays get packet soon after boot)
 
 def _ono_price_loop():
-    """Fetch ONO price from CoinGecko and send to display via Master (ESP-NOW)."""
-    logger.info("ONO price fetcher started (every %ds)", ONO_PRICE_INTERVAL_SEC)
-    time.sleep(5)  # Wait for controller to be fully ready
+    """Fetch ONO price every 60s. Re-push last price every 15s so new boots see data within ~15s."""
+    logger.info("ONO price fetcher started (fetch %ds, push %ds)", ONO_PRICE_INTERVAL_SEC, ONO_PUSH_INTERVAL_SEC)
+    time.sleep(5)  # Wait for controller
+    last_price, last_change = None, 0.0
+    last_fetch = -999.0  # Force first fetch immediately
     while True:
+        now = time.time()
         if controller and 'ono' in controller.handlers:
-            try:
-                r = requests.get(ONO_PRICE_URL, timeout=10)
-                if r.status_code == 200:
-                    data = r.json()
-                    ono = data.get("onocoy-token")
-                    if ono:
-                        price_usd = ono.get("usd")
-                        change_24h = ono.get("usd_24h_change")
-                        if price_usd is not None:
-                            if change_24h is None:
-                                change_24h = 0.0
-                            controller.handlers['ono'].send_price(price_usd, change_24h)
-                elif r.status_code == 429:
-                    logger.warning("ONO price API: rate limited (429)")
-            except Exception as e:
-                logger.debug("ONO price fetch failed: %s", e)
-        time.sleep(ONO_PRICE_INTERVAL_SEC)
+            # Fetch from CoinGecko every 60s
+            if now - last_fetch >= ONO_PRICE_INTERVAL_SEC:
+                try:
+                    r = requests.get(ONO_PRICE_URL, timeout=10)
+                    if r.status_code == 200:
+                        data = r.json()
+                        ono = data.get("onocoy-token")
+                        if ono:
+                            p = ono.get("usd")
+                            c = ono.get("usd_24h_change")
+                            if p is not None:
+                                last_price, last_change = p, (c if c is not None else 0.0)
+                    elif r.status_code == 429:
+                        logger.warning("ONO price API: rate limited (429)")
+                except Exception as e:
+                    logger.debug("ONO price fetch failed: %s", e)
+                last_fetch = now
+            # Send to displays every 15s (fresh or last known price)
+            if last_price is not None:
+                controller.handlers['ono'].send_price(last_price, last_change)
+        time.sleep(ONO_PUSH_INTERVAL_SEC)
 
 
 def start_controller():
