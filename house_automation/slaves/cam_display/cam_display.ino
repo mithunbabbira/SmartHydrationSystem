@@ -81,7 +81,7 @@ void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len)
     memcpy(&sec, &data[5], 4);
     overrideUntil = millis() + (unsigned long)(sec * 1000);
     overrideRainbow = false;
-    overrideR = data[2]; overrideG = data[3]; overrideB = data[4];
+    overrideR = min(data[2], 30); overrideG = min(data[3], 30); overrideB = min(data[4], 30);  // Cap for LED without resistor
     overrideTextMode = false;
   } else if (cmd == 0x60 && len >= 9) {
     float sec;
