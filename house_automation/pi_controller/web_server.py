@@ -434,6 +434,33 @@ def _health_snapshot_loop():
         _write_health_snapshot()
 
 
+ONO_PRICE_URL = "https://api.coingecko.com/api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true"
+ONO_PRICE_INTERVAL_SEC = 60  # CoinGecko free tier ~10/min
+
+def _ono_price_loop():
+    """Fetch ONO price from CoinGecko and send to display via Master (ESP-NOW)."""
+    logger.info("ONO price fetcher started (every %ds)", ONO_PRICE_INTERVAL_SEC)
+    while True:
+        if controller and 'ono' in controller.handlers:
+            try:
+                r = requests.get(ONO_PRICE_URL, timeout=10)
+                if r.status_code == 200:
+                    data = r.json()
+                    ono = data.get("onocoy-token")
+                    if ono:
+                        price_usd = ono.get("usd")
+                        change_24h = ono.get("usd_24h_change")
+                        if price_usd is not None:
+                            if change_24h is None:
+                                change_24h = 0.0
+                            controller.handlers['ono'].send_price(price_usd, change_24h)
+                elif r.status_code == 429:
+                    logger.warning("ONO price API: rate limited (429)")
+            except Exception as e:
+                logger.debug("ONO price fetch failed: %s", e)
+        time.sleep(ONO_PRICE_INTERVAL_SEC)
+
+
 def start_controller():
     global controller
     port = config.SERIAL_PORT
@@ -446,6 +473,7 @@ def start_controller():
         controller = None
         return
     threading.Thread(target=daily_scheduler, daemon=True).start()
+    threading.Thread(target=_ono_price_loop, daemon=True).start()
     _write_health_snapshot()  # once at start
     threading.Thread(target=_health_snapshot_loop, daemon=True).start()
 

@@ -9,6 +9,7 @@ logger = logging.getLogger("PiController")
 # Cmd 0x50 = Rainbow (6 bytes: 03 50 + duration float)
 # Cmd 0x51 = Color (8 bytes: 03 51 R G B + duration float)
 # Cmd 0x60 = Text (9+ bytes: 03 60 + duration float + len + UTF-8 text)
+# Cmd 0x70 = Price update (10 bytes: 03 70 + price_usd float + change_24h float)
 
 class OledHandler:
     def __init__(self, controller):
@@ -49,6 +50,17 @@ class OledHandler:
             raw = raw[:80]
         payload = "03" + "60" + struct.pack('<f', float(duration_sec)).hex() + f"{len(raw):02x}" + raw.hex()
         self.send_cmd(payload, f"Text '{text[:20]}...' {duration_sec}s")
+
+    def send_price(self, price_usd, change_24h):
+        """Send ONO price and 24h change to display (Pi fetches from CoinGecko)."""
+        try:
+            p = float(price_usd)
+            c = float(change_24h)
+        except (TypeError, ValueError):
+            logger.warning("ONO send_price: invalid numbers")
+            return
+        payload = "03" + "70" + struct.pack('<f', p).hex() + struct.pack('<f', c).hex()
+        self.send_cmd(payload, f"Price ${p:.4f} 24h {c:+.2f}%")
 
     def handle_user_input(self, parts):
         if len(parts) < 2:
