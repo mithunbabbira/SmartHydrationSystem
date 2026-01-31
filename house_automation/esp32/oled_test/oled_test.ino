@@ -124,6 +124,7 @@ void setup() {
 void showPiDownScreen() {
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
+  display.setTextWrap(false);
   display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
   display.setTextSize(2);
   display.setCursor(0, (SCREEN_HEIGHT - 16) / 2);
@@ -134,6 +135,7 @@ void showPiDownScreen() {
 void showNoDataScreen() {
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
+  display.setTextWrap(false);
   display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
   display.setTextSize(1);
   display.setCursor(0, 12);
@@ -174,6 +176,7 @@ void rgbSetColor(int r, int g, int b) {
 void drawValue(const char* buf, int len) {
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
+  display.setTextWrap(false);
   display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
   int numSize = (len <= 6) ? 3 : 2;
   int charW = (numSize == 3) ? 18 : 12;
@@ -204,6 +207,7 @@ void showPiText(const char* txt) {
   if (!txt) return;
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
+  display.setTextWrap(false);  // Prevent wrapping to 2nd line
   display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
 
   int txtLen = (int)strlen(txt);
@@ -239,6 +243,7 @@ void loop() {
     } else if (overrideRainbow) {
       rgbRainbow();
       display.clearDisplay();
+      display.setTextWrap(false);
       display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
       display.setTextSize(2);
       display.setCursor(0, (SCREEN_HEIGHT - 16) / 2);

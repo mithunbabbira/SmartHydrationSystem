@@ -440,6 +440,7 @@ ONO_PRICE_INTERVAL_SEC = 60  # CoinGecko free tier ~10/min
 def _ono_price_loop():
     """Fetch ONO price from CoinGecko and send to display via Master (ESP-NOW)."""
     logger.info("ONO price fetcher started (every %ds)", ONO_PRICE_INTERVAL_SEC)
+    time.sleep(5)  # Wait for controller to be fully ready
     while True:
         if controller and 'ono' in controller.handlers:
             try:
