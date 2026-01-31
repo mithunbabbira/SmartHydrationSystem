@@ -1,12 +1,15 @@
 /*
- * CAM Display - ESP32-CAM + 0.91" I2C OLED + RGB LED
+ * CAM Display - ESP32-CAM hardware + 0.91" I2C OLED + RGB LED
  * ESP-NOW only. Pi sends price (0x70), text (0x60), rainbow (0x50), color (0x51).
  * Pi health: no packet from Pi (via Master) for NO_DATA_MS -> show "PI down" + rainbow.
  *
- * Board: ESP32-CAM (AI-Thinker) - select "ESP32-CAM Module" or "ESP32-CAM (no PSRAM)" if no PSRAM.
+ * IMPORTANT - Board selection to fix E(306) PSRAM boot loop:
+ *   Arduino IDE: Tools -> Board -> ESP32 Arduino -> ESP32 Dev Module (NOT ESP32-CAM)
+ *   Flash Size: 4MB, Partition: Default. PSRAM: Disabled.
+ *   Using ESP32 Dev Module avoids PSRAM/camera init that crashes on boards without PSRAM.
  *
- * Wiring - use safe pins (GPIO 2/12/15 cause boot loops when connected):
- *   OLED: VCC->3V3 GND->GND SDA->GPIO4 SCL->GPIO16
+ * Wiring (ESP32-CAM physical pins):
+ *   OLED: VCC->3V3 GND->GND SDA->GPIO4 SCL->GPIO14
  *   RGB (common anode): Red->GPIO12 Green->GPIO13 Blue->GPIO15, Common->3V3
  *   Add ~220Ω resistor on each RGB pin. Use good 5V USB power.
  */
@@ -24,8 +27,8 @@
 #define OLED_RESET    -1
 #define SCREEN_ADDRESS 0x3C
 
-#define SDA_PIN  4   // GPIO 2 causes boot loop; GPIO 4 is safer
-#define SCL_PIN  16
+#define SDA_PIN  4
+#define SCL_PIN  14   // Avoid GPIO 16 (PSRAM conflict)
 
 #define RGB_RED    12
 #define RGB_GREEN  13
