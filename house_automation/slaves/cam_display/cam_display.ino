@@ -8,9 +8,9 @@
  *   Flash Size: 4MB, Partition: Default. PSRAM: Disabled.
  *   Using ESP32 Dev Module avoids PSRAM/camera init that crashes on boards without PSRAM.
  *
- * Wiring (ESP32-CAM physical pins) - avoid GPIO 4 (flash LED):
- *   OLED: VCC->3V3 GND->GND SDA->GPIO13 SCL->GPIO14
- *   RGB (common anode): Red->GPIO12 Green->GPIO15 Blue->GPIO16, Common->3V3
+ * Wiring (ESP32-CAM physical pins) - GPIO 13/14 conflict with camera (LoadProhibited crash):
+ *   OLED: VCC->3V3 GND->GND SDA->GPIO4 SCL->GPIO14 (flash LED will glow when OLED connected)
+ *   RGB (common anode): Red->GPIO12 Green->GPIO13 Blue->GPIO15, Common->3V3
  *   Add ~220Ω resistor on each RGB pin. Use good 5V USB power.
  */
 
@@ -18,7 +18,6 @@
 #include <string.h>
 #include <WiFi.h>
 #include <esp_now.h>
-#include <esp_mac.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -27,12 +26,12 @@
 #define OLED_RESET    -1
 #define SCREEN_ADDRESS 0x3C
 
-#define SDA_PIN  13   // Avoid GPIO 4 (flash LED - OLED pull-up turns it on)
+#define SDA_PIN  4    // GPIO 13/14 conflict with camera -> crash; flash LED will glow
 #define SCL_PIN  14
 
 #define RGB_RED    12
-#define RGB_GREEN  15
-#define RGB_BLUE   16  // GPIO 13 used for I2C SDA
+#define RGB_GREEN  13
+#define RGB_BLUE   15
 
 #define PRICE_DISPLAY_MS   3000
 #define CHANGE_DISPLAY_MS  1000
@@ -58,7 +57,7 @@ char overrideText[MAX_TEXT_LEN] = "";
 bool overrideTextMode = false;
 
 void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len) {
-  if (len < 2 || data[0] != 3) return;
+  if (!data || len < 2 || data[0] != 3) return;
   uint8_t cmd = data[1];
   lastPiActivity = millis();
 
@@ -133,15 +132,8 @@ void setup() {
     esp_now_register_recv_cb(OnEspNowRecv);
     Serial.println("ESP-NOW ready");
   }
-  uint8_t mac[6];
-  esp_err_t e = esp_read_mac(mac, ESP_MAC_WIFI_STA);
-  if (e != ESP_OK) e = esp_read_mac(mac, ESP_MAC_EFUSE_FACTORY);
-  if (e == ESP_OK) {
-    Serial.printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X (add to config.py)\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  } else {
-    Serial.print("MAC: ");
-    Serial.println(WiFi.macAddress());
-  }
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
 }
 
 void showPiDownScreen() {
