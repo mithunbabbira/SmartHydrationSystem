@@ -15,6 +15,7 @@
 #include <string.h>
 #include <WiFi.h>
 #include <esp_now.h>
+#include <esp_mac.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -128,8 +129,15 @@ void setup() {
     esp_now_register_recv_cb(OnEspNowRecv);
     Serial.println("ESP-NOW ready");
   }
-  Serial.print("MAC: ");
-  Serial.println(WiFi.macAddress());
+  uint8_t mac[6];
+  esp_err_t e = esp_read_mac(mac, ESP_MAC_WIFI_STA);
+  if (e != ESP_OK) e = esp_read_mac(mac, ESP_MAC_EFUSE_FACTORY);
+  if (e == ESP_OK) {
+    Serial.printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X (add to config.py)\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  } else {
+    Serial.print("MAC: ");
+    Serial.println(WiFi.macAddress());
+  }
 }
 
 void showPiDownScreen() {
