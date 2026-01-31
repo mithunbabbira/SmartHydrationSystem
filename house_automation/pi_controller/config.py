@@ -8,7 +8,8 @@ SLAVE_MACS = {
     'hydration': 'F0:24:F9:0C:DE:54',
     'led_ble': 'A0:A3:B3:2A:20:C0', 
     'ir_remote': 'A0:A3:B3:2A:20:C0',
-    'my_phone': '48:EF:1C:49:6A:E7'
+    'my_phone': '48:EF:1C:49:6A:E7',
+    'ono_display': 'C0:CD:D6:85:70:CC',
 }
 
 # Default Port
