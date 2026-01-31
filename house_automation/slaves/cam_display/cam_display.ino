@@ -35,6 +35,7 @@
 #define PRICE_DISPLAY_MS  3000
 #define CHANGE_DISPLAY_MS 1000
 #define RGB_DIM_LEVEL     20
+#define RGB_RAINBOW_LEVEL 25   // Dim rainbow to save power
 #define NO_DATA_MS        90000
 #define MAX_TEXT_LEN      81
 #define SCROLL_SPEED_MS   120
@@ -171,15 +172,16 @@ void rgbRainbow() {
   unsigned long t = millis() / 80;
   int phase = (t % 7);
   int r = 0, g = 0, b = 0;
+  int m = RGB_RAINBOW_LEVEL;  // Dim to save power
   switch (phase) {
-    case 0: r = 255; g = 0;   b = 0;   break;
-    case 1: r = 255; g = 128; b = 0;   break;
-    case 2: r = 255; g = 255; b = 0;   break;
-    case 3: r = 0;   g = 255; b = 0;   break;
-    case 4: r = 0;   g = 255; b = 255; break;
-    case 5: r = 0;   g = 0;   b = 255; break;
-    case 6: r = 255; g = 0;   b = 255; break;
-    default: r = 255; g = 0; b = 0; break;
+    case 0: r = m;   g = 0;   b = 0;   break;
+    case 1: r = m;   g = m/2; b = 0;   break;
+    case 2: r = m;   g = m;   b = 0;   break;
+    case 3: r = 0;   g = m;   b = 0;   break;
+    case 4: r = 0;   g = m;   b = m;   break;
+    case 5: r = 0;   g = 0;   b = m;   break;
+    case 6: r = m;   g = 0;   b = m;   break;
+    default: r = m; g = 0; b = 0; break;
   }
   rgbSetColor(r, g, b);
 }
