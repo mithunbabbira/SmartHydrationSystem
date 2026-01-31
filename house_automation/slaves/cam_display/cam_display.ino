@@ -8,9 +8,9 @@
  *   Flash Size: 4MB, Partition: Default. PSRAM: Disabled.
  *   Using ESP32 Dev Module avoids PSRAM/camera init that crashes on boards without PSRAM.
  *
- * Wiring (ESP32-CAM physical pins):
- *   OLED: VCC->3V3 GND->GND SDA->GPIO4 SCL->GPIO14
- *   RGB (common anode): Red->GPIO12 Green->GPIO13 Blue->GPIO15, Common->3V3
+ * Wiring (ESP32-CAM physical pins) - avoid GPIO 4 (flash LED):
+ *   OLED: VCC->3V3 GND->GND SDA->GPIO13 SCL->GPIO14
+ *   RGB (common anode): Red->GPIO12 Green->GPIO15 Blue->GPIO16, Common->3V3
  *   Add ~220Ω resistor on each RGB pin. Use good 5V USB power.
  */
 
@@ -27,12 +27,12 @@
 #define OLED_RESET    -1
 #define SCREEN_ADDRESS 0x3C
 
-#define SDA_PIN  4
-#define SCL_PIN  14   // Avoid GPIO 16 (PSRAM conflict)
+#define SDA_PIN  13   // Avoid GPIO 4 (flash LED - OLED pull-up turns it on)
+#define SCL_PIN  14
 
 #define RGB_RED    12
-#define RGB_GREEN  13
-#define RGB_BLUE   15
+#define RGB_GREEN  15
+#define RGB_BLUE   16  // GPIO 13 used for I2C SDA
 
 #define PRICE_DISPLAY_MS   3000
 #define CHANGE_DISPLAY_MS  1000
