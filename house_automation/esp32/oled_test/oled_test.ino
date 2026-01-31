@@ -1,6 +1,7 @@
 /*
  * ONO Display - ESP32 + 0.91" Blue OLED
  * ESP-NOW only. Pi sends price (0x70), text (0x60), rainbow (0x50), color (0x51).
+ * Pi health: no packet from Pi (via Master) for NO_DATA_MS -> show "PI down" + rainbow.
  * Wiring: Display VCC/GND/SCK->22 SDA->21. RGB common anode R->27 G->14 B->12.
  */
 
@@ -23,7 +24,7 @@
 #define PRICE_DISPLAY_MS   3000
 #define CHANGE_DISPLAY_MS  1000
 #define RGB_DIM_LEVEL      20
-#define NO_DATA_MS        90000
+#define NO_DATA_MS        90000   // No packet from Pi this long -> PI down
 #define MAX_TEXT_LEN      81
 #define SCROLL_SPEED_MS   120
 
@@ -33,6 +34,7 @@ float priceUsd = 0;
 float change24h = 0;
 bool dataValid = false;
 unsigned long lastPriceUpdate = 0;
+unsigned long lastPiActivity = 0;   // Any Type3 packet from Pi (via Master) -> Pi up
 unsigned long displaySwitchAt = 0;
 bool showingPrice = true;
 
@@ -45,6 +47,7 @@ bool overrideTextMode = false;
 void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len) {
   if (len < 2 || data[0] != 3) return;
   uint8_t cmd = data[1];
+  lastPiActivity = millis();
 
   if (cmd == 0x70 && len >= 10) {
     memcpy(&priceUsd, &data[2], 4);
@@ -116,6 +119,16 @@ void setup() {
   }
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
+}
+
+void showPiDownScreen() {
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, (SCREEN_HEIGHT - 16) / 2);
+  display.print("PI down");
+  display.display();
 }
 
 void showNoDataScreen() {
@@ -243,6 +256,13 @@ void loop() {
 
   if (dataValid && (millis() - lastPriceUpdate >= NO_DATA_MS)) {
     dataValid = false;
+  }
+  bool piDown = (lastPiActivity == 0) || (millis() - lastPiActivity >= NO_DATA_MS);
+  if (piDown) {
+    rgbRainbow();
+    showPiDownScreen();
+    delay(100);
+    return;
   }
   if (!dataValid) {
     rgbRainbow();
