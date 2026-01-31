@@ -122,13 +122,20 @@ void setup() {
 }
 
 void showPiDownScreen() {
+  const char* txt = "PI down";
+  int len = 7;
+  int textSize = 3;
+  int charW = 18, textH = 24;
+  int totalW = len * charW;
+  int x = (SCREEN_WIDTH - totalW) / 2;
+  int y = (SCREEN_HEIGHT - textH) / 2;
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
   display.setTextWrap(false);
   display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
-  display.setTextSize(2);
-  display.setCursor(0, (SCREEN_HEIGHT - 16) / 2);
-  display.print("PI down");
+  display.setTextSize(textSize);
+  display.setCursor(x, y);
+  display.print(txt);
   display.display();
 }
 

@@ -18,13 +18,23 @@ class OledHandler:
     def handle_packet(self, cmd, val, mac):
         logger.info(f"ONO [{mac}] -> Cmd:0x{cmd:02X} Val:{val:.2f}")
 
+    def _display_macs(self):
+        """Return list of display MACs to send to (ono_display + cam_display)."""
+        macs = []
+        for key in ('ono_display', 'cam_display'):
+            m = config.SLAVE_MACS.get(key, '00:00:00:00:00:00')
+            if m != '00:00:00:00:00:00':
+                macs.append(m)
+        return macs
+
     def send_cmd(self, hex_payload, description="CMD"):
-        mac = config.SLAVE_MACS.get('ono_display', '00:00:00:00:00:00')
-        if mac == '00:00:00:00:00:00':
-            logger.error("ono_display MAC not configured – flash ESP32 and add MAC to config")
+        macs = self._display_macs()
+        if not macs:
+            logger.error("No display MAC configured (ono_display / cam_display)")
             return
-        self.controller.send_command(mac, hex_payload)
-        logger.info(f"Sent ONO {description}")
+        for mac in macs:
+            self.controller.send_command(mac, hex_payload)
+        logger.info(f"Sent ONO {description} to {len(macs)} display(s)")
 
     def send_rainbow(self, duration_sec=10):
         """Rainbow effect for `duration_sec` seconds."""
