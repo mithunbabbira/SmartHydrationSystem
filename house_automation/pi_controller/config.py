@@ -10,6 +10,7 @@ SLAVE_MACS = {
     'ir_remote': 'A0:A3:B3:2A:20:C0',
     'my_phone': '48:EF:1C:49:6A:E7',
     'ono_display': 'C0:CD:D6:85:70:CC',
+    'cam_display': '24:DC:C3:AC:B4:14',
 }
 
 # Default Port
