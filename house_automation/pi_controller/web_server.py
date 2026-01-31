@@ -82,6 +82,43 @@ def led_cmd():
     return jsonify({"error": "Controller not ready"}), 503
 
 
+# --- API: ONO Display (OLED + RGB) ---
+@app.route('/api/ono/text', methods=['POST'])
+def ono_text():
+    data = request.json or {}
+    text = (data.get('text') or '').strip()
+    duration = max(1, min(300, int(data.get('duration', 5))))
+    if not text:
+        return jsonify({"error": "Missing text"}), 400
+    if controller and 'ono' in controller.handlers:
+        controller.handlers['ono'].send_text(text, duration)
+        return jsonify({"status": "ok", "text": text[:50], "duration": duration})
+    return jsonify({"error": "Controller not ready"}), 503
+
+
+@app.route('/api/ono/rainbow', methods=['POST'])
+def ono_rainbow():
+    data = request.json or {}
+    duration = max(1, min(300, int(data.get('duration', 10))))
+    if controller and 'ono' in controller.handlers:
+        controller.handlers['ono'].send_rainbow(duration)
+        return jsonify({"status": "ok", "duration": duration})
+    return jsonify({"error": "Controller not ready"}), 503
+
+
+@app.route('/api/ono/color', methods=['POST'])
+def ono_color():
+    data = request.json or {}
+    r = max(0, min(255, int(data.get('r', 255))))
+    g = max(0, min(255, int(data.get('g', 0))))
+    b = max(0, min(255, int(data.get('b', 0))))
+    duration = max(1, min(300, int(data.get('duration', 10))))
+    if controller and 'ono' in controller.handlers:
+        controller.handlers['ono'].send_color(r, g, b, duration)
+        return jsonify({"status": "ok", "r": r, "g": g, "b": b, "duration": duration})
+    return jsonify({"error": "Controller not ready"}), 503
+
+
 @app.route('/api/led/raw', methods=['POST'])
 def led_raw():
     data = request.json or {}

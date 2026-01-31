@@ -39,6 +39,28 @@ function getLEDEffectSpeed() {
     return el ? parseInt(el.value, 10) || 50 : 50;
 }
 
+// --- ONO Display ---
+function sendOnoText() {
+    const text = document.getElementById('ono-text-input')?.value?.trim() || '';
+    const duration = parseInt(document.getElementById('ono-text-duration')?.value, 10) || 5;
+    if (!text) { alert('Enter text'); return; }
+    apiCall('/api/ono/text', { text, duration });
+}
+
+function sendOnoRainbow() {
+    const duration = parseInt(document.getElementById('ono-rainbow-duration')?.value, 10) || 10;
+    apiCall('/api/ono/rainbow', { duration });
+}
+
+function sendOnoColor() {
+    const hex = document.getElementById('ono-color-picker')?.value || '#ff0000';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const duration = parseInt(document.getElementById('ono-color-duration')?.value, 10) || 10;
+    apiCall('/api/ono/color', { r, g, b, duration });
+}
+
 function sendLEDRaw(hex) {
     hex = (hex || '').trim().replace(/^0x/i, '');
     if (!hex) { alert('Enter hex payload'); return; }

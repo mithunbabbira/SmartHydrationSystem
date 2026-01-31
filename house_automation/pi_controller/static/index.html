@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Home Control</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
@@ -164,6 +164,41 @@
                 </div>
             </div>
 
+            <!-- ONO Display Card (OLED + RGB) -->
+            <div class="card ono-card">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-display"></i></div>
+                    <h2>ONO Display</h2>
+                </div>
+                <div class="card-body">
+                    <div class="section-label">Send text to OLED (scrolls if long)</div>
+                    <div class="raw-row" style="flex-wrap:wrap">
+                        <input type="text" id="ono-text-input" placeholder="Enter text..." class="raw-input" maxlength="80" style="flex:1;min-width:120px">
+                        <span class="row-label">Duration</span>
+                        <input type="number" id="ono-text-duration" min="1" max="300" value="5" style="width:4em" title="How long to show (seconds)">
+                        <span>sec</span>
+                    </div>
+                    <button type="button" onclick="sendOnoText()" class="btn-glass success">
+                        <i class="fa-solid fa-font"></i> Send Text
+                    </button>
+                    <div class="section-label">RGB Color</div>
+                    <div class="raw-row" style="align-items:center;gap:8px">
+                        <input type="color" id="ono-color-picker" value="#ff0000" style="width:48px;height:36px;padding:2px">
+                        <input type="number" id="ono-color-duration" min="1" max="300" value="10" style="width:4em" title="Seconds">
+                    </div>
+                    <button type="button" onclick="sendOnoColor()" class="btn-glass secondary">
+                        <i class="fa-solid fa-palette"></i> Set Color
+                    </button>
+                    <div class="section-label">Effects</div>
+                    <div class="raw-row" style="align-items:center">
+                        <input type="number" id="ono-rainbow-duration" min="1" max="300" value="10" style="width:4em" title="Seconds">
+                        <button type="button" onclick="sendOnoRainbow()" class="btn-glass mode-btn">
+                            <i class="fa-solid fa-rainbow"></i> Rainbow
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- IR Remote Card -->
             <div class="card remote-card">
                 <div class="card-header">
@@ -223,7 +258,7 @@
             </div>
         </main>
     </div>
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 
 </html>

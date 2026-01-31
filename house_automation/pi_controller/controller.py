@@ -14,6 +14,7 @@ from collections import deque
 from handlers.hydration import HydrationHandler
 from handlers.led import LEDHandler
 from handlers.ir import IRHandler
+from handlers.ono import OledHandler
 
 # --- Configuration ---
 SERIAL_PORT = config.SERIAL_PORT
@@ -44,7 +45,8 @@ class SerialController:
         self.handlers = {
             'hydration': HydrationHandler(self),
             'led': LEDHandler(self),
-            'ir': IRHandler(self)
+            'ir': IRHandler(self),
+            'ono': OledHandler(self),
         }
 
     def _close_serial(self):
@@ -153,14 +155,16 @@ class SerialController:
                 # Check for Hydration or Protocol Commands (6 bytes)
                 if len(data_bytes) == 6:
                     ctype, cmd, val = struct.unpack('<BBf', data_bytes)
-                    
-                    # Route by Type
-                    if ctype == 1: # Hydration
+                    if ctype == 1:
                         self.handlers['hydration'].handle_packet(cmd, val, mac)
-                    elif ctype == 2: # LED (Future)
+                    elif ctype == 2:
                         self.handlers['led'].handle_packet(cmd, val, mac)
+                    elif ctype == 3:
+                        self.handlers['ono'].handle_packet(cmd, val, mac)
                     else:
                         logger.info(f"UNKNOWN TYPE [{mac}] -> Type:{ctype} Cmd:0x{cmd:02X} Val:{val:.2f}")
+                elif len(data_bytes) >= 2 and data_bytes[0] == 3:
+                    self.handlers['ono'].handle_packet(data_bytes[1], 0, mac)
                 else:
                     logger.info(f"DATA [{mac}] -> RAW HEX: {hex_data}")
             except Exception as e:
@@ -225,7 +229,7 @@ class SerialController:
 
     def ui_loop(self):
         print("\n--- House Automation Controller (Modular) ---")
-        print("Commands: hydration <cmd>, led <cmd>")
+        print("Commands: hydration <cmd>, led <cmd>, ono <cmd>")
         print("Type 'exit' to quit.\n")
         
         while self.running:
