@@ -1,17 +1,17 @@
 /*
- * CAM Display - ESP32-CAM hardware + 0.91" I2C OLED + RGB LED
- * ESP-NOW only. Pi sends price (0x70), text (0x60), rainbow (0x50), color (0x51).
- * Pi health: no packet from Pi (via Master) for NO_DATA_MS -> show "PI down" + rainbow.
+ * CAM Display - ESP32-CAM + 0.91" I2C OLED + RGB LED
  *
- * IMPORTANT - Board selection to fix E(306) PSRAM boot loop:
- *   Arduino IDE: Tools -> Board -> ESP32 Arduino -> ESP32 Dev Module (NOT ESP32-CAM)
- *   Flash Size: 4MB, Partition: Default. PSRAM: Disabled.
- *   Using ESP32 Dev Module avoids PSRAM/camera init that crashes on boards without PSRAM.
+ * Same protocol as oled_test: Pi sends price (0x70), text (0x60), rainbow (0x50), color (0x51).
+ * Pi health: no packet for 90s -> "PI down" + rainbow.
  *
- * Wiring (ESP32-CAM physical pins) - GPIO 13/14 conflict with camera (LoadProhibited crash):
- *   OLED: VCC->3V3 GND->GND SDA->GPIO4 SCL->GPIO14 (flash LED will glow when OLED connected)
- *   RGB (common anode): Red->GPIO12 Green->GPIO13 Blue->GPIO15, Common->3V3
- *   Add ~220Ω resistor on each RGB pin. Use good 5V USB power.
+ * Board: ESP32-CAM (AI-Thinker) or ESP32 Dev Module (if PSRAM boot loop)
+ *
+ * Wiring (original working config):
+ *   OLED: VCC->3V3  GND->GND  SDA->GPIO2  SCL->GPIO14
+ *   RGB (common anode): Red->GPIO12  Green->GPIO13  Blue->GPIO15  Common->3V3
+ *   Add ~220Ω resistor per RGB pin (or cap RGB to 30 in code if no resistor).
+ *
+ * If boot loop: add 10k resistor from GPIO 2 to GND (keeps it LOW at boot).
  */
 
 #include <Wire.h>
@@ -21,21 +21,20 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-#define SCREEN_WIDTH  128
-#define SCREEN_HEIGHT 32
-#define OLED_RESET    -1
+#define SCREEN_WIDTH   128
+#define SCREEN_HEIGHT  32
+#define OLED_RESET     -1
 #define SCREEN_ADDRESS 0x3C
 
-#define SDA_PIN  4    // GPIO 13/14 conflict with camera -> crash; flash LED will glow
+#define SDA_PIN  2
 #define SCL_PIN  14
-
 #define RGB_RED    12
 #define RGB_GREEN  13
 #define RGB_BLUE   15
 
-#define PRICE_DISPLAY_MS   3000
-#define CHANGE_DISPLAY_MS  1000
-#define RGB_DIM_LEVEL      20
+#define PRICE_DISPLAY_MS  3000
+#define CHANGE_DISPLAY_MS 1000
+#define RGB_DIM_LEVEL     20
 #define NO_DATA_MS        90000
 #define MAX_TEXT_LEN      81
 #define SCROLL_SPEED_MS   120
@@ -83,7 +82,9 @@ void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len)
     memcpy(&sec, &data[5], 4);
     overrideUntil = millis() + (unsigned long)(sec * 1000);
     overrideRainbow = false;
-    overrideR = (data[2] > 30) ? 30 : data[2]; overrideG = (data[3] > 30) ? 30 : data[3]; overrideB = (data[4] > 30) ? 30 : data[4];  // Cap for LED without resistor
+    overrideR = (data[2] > 30) ? 30 : data[2];
+    overrideG = (data[3] > 30) ? 30 : data[3];
+    overrideB = (data[4] > 30) ? 30 : data[4];
     overrideTextMode = false;
   } else if (cmd == 0x60 && len >= 9) {
     float sec;
@@ -110,11 +111,11 @@ void setup() {
   pinMode(RGB_BLUE, OUTPUT);
   rgbOff();
 
-  delay(500);  // Let power stabilize before I2C
+  delay(300);
   Wire.begin(SDA_PIN, SCL_PIN);
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println("OLED init failed - check SDA/SCL wiring");
+    Serial.println("OLED init failed - check SDA/SCL");
     while (1) delay(10);
   }
 
@@ -132,6 +133,7 @@ void setup() {
     esp_now_register_recv_cb(OnEspNowRecv);
     Serial.println("ESP-NOW ready");
   }
+
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
 }
@@ -139,9 +141,8 @@ void setup() {
 void showPiDownScreen() {
   const char* txt = "PI down";
   int len = 7;
-  int textSize = 3;  // Big as price (7*18=126 fits in 128)
-  int charW = (textSize == 3) ? 18 : 12;
-  int textH = (textSize == 3) ? 24 : 16;
+  int textSize = 3;
+  int charW = 18, textH = 24;
   int totalW = len * charW;
   int x = (SCREEN_WIDTH - totalW) / 2;
   int y = (SCREEN_HEIGHT - textH) / 2;
