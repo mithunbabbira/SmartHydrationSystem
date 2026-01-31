@@ -26,9 +26,6 @@
 #define NO_DATA_MS        90000
 #define MAX_TEXT_LEN      81
 #define SCROLL_SPEED_MS   120
-#define TEXT_SIZE          2   // Same big size as price (6px * 2 = 12px per char)
-#define TEXT_CHAR_W        12  // width per char at size 2
-#define TEXT_FIT_CHARS     (SCREEN_WIDTH / TEXT_CHAR_W)  // ~10
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -80,6 +77,8 @@ void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len)
     if (txtLen > 0 && txtLen < MAX_TEXT_LEN && len >= 7 + txtLen) {
       memcpy(overrideText, &data[7], txtLen);
       overrideText[txtLen] = '\0';
+      for (int i = 0; i < txtLen; i++)
+        if (overrideText[i] == '\n' || overrideText[i] == '\r') overrideText[i] = ' ';
       overrideUntil = millis() + (unsigned long)(sec * 1000);
       overrideRainbow = false;
       overrideTextMode = true;
@@ -187,23 +186,30 @@ void showChangeScreen() {
   drawValue(buf, strlen(buf));
 }
 
-// Pi text: same big size as price (size 2). Short text centered; long text scrolls at size 2.
+// Pi text: same size as price (size 3 for <=6 chars, size 2 otherwise). Single line only.
 void showPiText(const char* txt) {
+  if (!txt) return;
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
   display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
-  display.setTextSize(TEXT_SIZE);
-  int txtLen = strlen(txt);
-  int totalW = txtLen * TEXT_CHAR_W;
+
+  int txtLen = (int)strlen(txt);
+  if (txtLen <= 0) { display.display(); return; }
+
+  int textSize = (txtLen <= 6) ? 3 : 2;
+  int charW = (textSize == 3) ? 18 : 12;
+  int textH = (textSize == 3) ? 24 : 16;
+  int totalW = txtLen * charW;
+  int y = (SCREEN_HEIGHT - textH) / 2;
+
+  display.setTextSize(textSize);
   if (totalW <= SCREEN_WIDTH) {
     int x = (SCREEN_WIDTH - totalW) / 2;
-    int y = (SCREEN_HEIGHT - 16) / 2;  // size 2 height ~16
     display.setCursor(x, y);
     display.print(txt);
   } else {
     int pos = (millis() / SCROLL_SPEED_MS) % (totalW + 40);
     int x = SCREEN_WIDTH - pos;
-    int y = (SCREEN_HEIGHT - 16) / 2;
     display.setCursor(x, y);
     display.print(txt);
     display.setCursor(x + totalW + 40, y);
@@ -221,7 +227,7 @@ void loop() {
       rgbRainbow();
       display.clearDisplay();
       display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
-      display.setTextSize(TEXT_SIZE);
+      display.setTextSize(2);
       display.setCursor(0, (SCREEN_HEIGHT - 16) / 2);
       display.print("Rainbow");
       display.display();
