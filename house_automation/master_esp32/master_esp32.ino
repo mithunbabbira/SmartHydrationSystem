@@ -1,10 +1,6 @@
 #include <WiFi.h>
 #include <esp_now.h>
 
-// Same channel as ONO display (connects to "No 303")
-const char* WIFI_SSID = "No 303";
-const char* WIFI_PASS = "3.14159265";
-
 // Global buffer for serial input
 String inputBuffer = "";
 
@@ -79,16 +75,6 @@ void setup() {
     delay(10);
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  for (int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++) {
-    delay(500);
-  }
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("WiFi OK ch");
-    Serial.println(WiFi.channel());
-  } else {
-    Serial.println("WiFi skip (ESP-NOW ch0)");
-  }
 
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
@@ -145,10 +131,7 @@ void processSerialCommand(String cmd) {
   if (!esp_now_is_peer_exist(peerAddr)) {
     esp_now_peer_info_t peerInfo = {};
     memcpy(peerInfo.peer_addr, peerAddr, 6);
-    // ONO display is on WiFi channel; others (hydration, led_ble) use ch 0
-    uint8_t onoMac[] = {0xC0, 0xCD, 0xD6, 0x85, 0x70, 0xCC};
-    bool isOno = memcmp(peerAddr, onoMac, 6) == 0;
-    peerInfo.channel = (isOno && WiFi.status() == WL_CONNECTED) ? WiFi.channel() : 0;
+    peerInfo.channel = 0;
     peerInfo.encrypt = false;
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
       Serial.println("ERR:PeerAdd");
