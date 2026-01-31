@@ -7,12 +7,14 @@ import os
 import requests
 import json
 
+# Setup logging first: rotating file (recent logs only) + console
+from logging_setup import setup_logging
+LOG_DIR = setup_logging()
+
 # Import Controller
 from controller import SerialController
 import config
 
-# Setup Logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("WebServer")
 
 app = Flask(__name__, static_url_path='', static_folder='static', template_folder='static')
@@ -249,6 +251,36 @@ def _parse_meminfo(content, key):
     return 0
 
 
+# --- API: Debug / crash investigation ---
+@app.route('/api/debug/last_health', methods=['GET'])
+def debug_last_health():
+    """Return last health snapshot (written every 60s). Use after reboot to see pre-crash state."""
+    path = os.path.join(LOG_DIR, "last_health.json")
+    try:
+        with open(path) as f:
+            return jsonify(json.load(f))
+    except FileNotFoundError:
+        return jsonify({"error": "No snapshot yet"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/debug/log', methods=['GET'])
+def debug_log():
+    """Return last N lines of smart-home.log for crash debugging."""
+    lines = request.args.get('lines', 200, type=int)
+    lines = min(2000, max(1, lines))
+    path = os.path.join(LOG_DIR, "smart-home.log")
+    try:
+        with open(path) as f:
+            tail = f.readlines()[-lines:]
+        return jsonify({"lines": tail, "path": path})
+    except FileNotFoundError:
+        return jsonify({"lines": [], "path": path, "error": "Log file not found"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # --- API: System Status (Polling) ---
 @app.route('/api/data', methods=['GET'])
 def get_data():
@@ -324,6 +356,47 @@ def master_cmd():
 
     return jsonify({"status": "master_sequence_started"})
 
+def _write_health_snapshot():
+    """Write last-known health to a file so after crash/reboot we can inspect it."""
+    path = os.path.join(LOG_DIR, "last_health.json")
+    try:
+        data = {"ts": time.time()}
+        # Memory
+        try:
+            with open("/proc/meminfo") as f:
+                c = f.read()
+            for line in c.splitlines():
+                if line.startswith("MemAvailable:"):
+                    data["mem_available_kb"] = int(line.split()[1])
+                elif line.startswith("MemTotal:"):
+                    data["mem_total_kb"] = int(line.split()[1])
+        except Exception:
+            pass
+        # Load
+        try:
+            with open("/proc/loadavg") as f:
+                data["load_avg"] = f.read().strip().split()[:3]
+        except Exception:
+            pass
+        # Serial
+        if controller:
+            try:
+                data["serial"] = controller.health()
+            except Exception:
+                data["serial"] = "error"
+        with open(path, "w") as f:
+            json.dump(data, f, indent=0)
+    except Exception as e:
+        logger.debug("Health snapshot failed: %s", e)
+
+
+def _health_snapshot_loop():
+    """Daemon: write health snapshot every 60s for post-crash debug."""
+    while True:
+        time.sleep(60)
+        _write_health_snapshot()
+
+
 def start_controller():
     global controller
     port = config.SERIAL_PORT
@@ -336,6 +409,8 @@ def start_controller():
         controller = None
         return
     threading.Thread(target=daily_scheduler, daemon=True).start()
+    _write_health_snapshot()  # once at start
+    threading.Thread(target=_health_snapshot_loop, daemon=True).start()
 
 def send_aio_global(device, action):
     if device in config.LIGHT_CMDS and action in config.LIGHT_CMDS[device]:

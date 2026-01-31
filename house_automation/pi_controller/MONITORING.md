@@ -50,16 +50,47 @@ python3 house_automation/pi_controller/pi_health_check.py --api
 # */5 * * * * python3 /home/mithun/projects/water_bottle/SmartHydrationSystem/house_automation/pi_controller/pi_health_check.py --api --log /home/mithun/pi_health.log
 ```
 
-### 3. Service logs
+### 3. Rotating file log (recent only – no overload)
+
+The app writes logs to a **rotating file**. **Old logs are automatically deleted** so disk use never grows:
+
+- **Path:** `house_automation/pi_controller/logs/smart-home.log`
+- **Rotation:** When the current file reaches 1 MB it rotates; the oldest backup (`.log.3`) is **removed**. You keep at most 4 files (~4 MB total). No manual cleanup needed.
+- **After a crash:** Read the end of the log for exceptions or stack traces.
+
+**View from Pi or over SSH:**
+
+```bash
+tail -n 200 /home/mithun/projects/water_bottle/SmartHydrationSystem/house_automation/pi_controller/logs/smart-home.log
+```
+
+**Or use the API (from Mac/phone):**
+
+```bash
+curl -s "http://<Pi-IP>:5000/api/debug/log?lines=300"
+```
+
+### 4. Last health snapshot (pre-crash state)
+
+Every 60 seconds the app writes a **last_health.json** snapshot (memory, load, serial status). After a reboot you can see the state right before the process died (or before the Pi froze):
+
+- **Path:** `house_automation/pi_controller/logs/last_health.json`
+- **API:** `GET http://<Pi-IP>:5000/api/debug/last_health`
+
+Use this to check if the Pi was low on memory or serial was disconnected before the crash.
+
+### 5. Service logs (journald)
 
 ```bash
 journalctl -u smart-home.service -f
 journalctl -u smart-home.service -n 200 --no-pager
+# Previous boot (after reboot):
+journalctl -u smart-home.service -b -1 --no-pager
 ```
 
 Look for `Serial error (will reconnect)`, `Controller failed to start`, or Python tracebacks.
 
-### 4. Quick Pi resource check
+### 6. Quick Pi resource check
 
 ```bash
 free -m
@@ -68,10 +99,37 @@ df -h /
 lsof /dev/serial0   # who has the serial port
 ```
 
+## How to find why the Pi crashed
+
+After a crash or reboot, use this order:
+
+1. **Last health snapshot** – See state right before the process died or Pi froze:
+   ```bash
+   cat house_automation/pi_controller/logs/last_health.json
+   ```
+   Or: `curl http://<Pi-IP>:5000/api/debug/last_health`  
+   Check: low `mem_available_kb` → OOM; high `load_avg` → overload; `serial_connected: false` → serial issue.
+
+2. **Rotating log** – Last lines often contain the exception or error:
+   ```bash
+   tail -n 300 house_automation/pi_controller/logs/smart-home.log
+   ```
+   Or: `curl "http://<Pi-IP>:5000/api/debug/log?lines=300"`  
+   Look for: `ERROR`, `Exception`, `Traceback`, `Serial error`, `Controller failed to start`.
+
+3. **Previous boot (journal)** – If the whole Pi rebooted:
+   ```bash
+   journalctl -u smart-home.service -b -1 --no-pager | tail -n 200
+   ```
+
+Logs are **automatically limited** (rotation deletes old files), so the system is not overloaded by log growth.
+
+---
+
 ## If you still need to restart the Pi
 
 - **Only smart-home broken**: `sudo systemctl restart smart-home.service` (no need to reboot).
-- **Whole Pi unresponsive**: After reboot, run `pi_health_check.py --api` and check `pi_health.log` (if you set up cron) to see memory/load before the freeze; that will point to OOM or overload.
+- **Whole Pi unresponsive**: After reboot, check `last_health.json` and `smart-home.log` (see above) to see memory/load before the freeze; that will point to OOM or overload.
 
 ## Optional: reduce n8n load
 
