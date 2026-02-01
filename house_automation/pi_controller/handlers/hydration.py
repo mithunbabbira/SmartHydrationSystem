@@ -7,10 +7,9 @@ from .drink_celebration import (
     revert_led_and_ir_to_default,
     LED_RED_PULSE_ALERT_HEX,
 )
+from . import bottle_alert
 
 logger = logging.getLogger("PiController")
-
-ALERT_DISPLAY_RAINBOW_SEC = 300  # Display rainbow duration when alert; cleared on ALERT_STOPPED
 
 class HydrationHandler:
     def __init__(self, controller):
@@ -25,18 +24,17 @@ class HydrationHandler:
         }
 
     def _trigger_alert_display_and_led(self):
-        """Alert: display rainbow, LED red pulse speed 1, IR flash."""
+        """Alert: display loops rainbow(1s)/text(4s), LED red pulse speed 1, IR flash."""
         if 'ir' in self.controller.handlers:
             self.controller.handlers['ir'].send_nec("F7D02F")
         if 'led' in self.controller.handlers:
             self.controller.handlers['led'].send_cmd(LED_RED_PULSE_ALERT_HEX, "Alert (Red pulse)")
-        if 'ono' in self.controller.handlers:
-            self.controller.handlers['ono'].send_rainbow(ALERT_DISPLAY_RAINBOW_SEC)
+        # Start looping display animation: rainbow 1s -> "no bottle" 4s -> repeat
+        bottle_alert.start(self.controller)
 
     def _revert_alert_display_and_led(self):
-        """Revert: display override cleared (1s rainbow then back to price), LED Rainbow speed 5, IR Smooth."""
-        if 'ono' in self.controller.handlers:
-            self.controller.handlers['ono'].send_rainbow(1)  # Brief override, then display returns to price
+        """Revert: stop display alert loop, LED Rainbow speed 5, IR Smooth."""
+        bottle_alert.stop(self.controller)
         revert_led_and_ir_to_default(self.controller)
 
     def handle_packet(self, cmd, val, mac):
