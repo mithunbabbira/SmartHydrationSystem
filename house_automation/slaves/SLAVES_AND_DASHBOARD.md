@@ -15,7 +15,7 @@ This document lists all ESP-NOW slaves, what data they send/receive, and what ca
 | Command | Description | Dashboard Display |
 |---------|-------------|-------------------|
 | 0x21 REPORT_WEIGHT | Current weight (g) | **Weight** (ml) – main value |
-| 0x60 DRINK_DETECTED | Last drink volume (ml) | **Last drink** |
+| 0x60 DRINK_DETECTED | Last drink volume (ml) | **Last drink**; triggers drink celebration (display "drank X.X ml", green LED, green IR for 3s, then revert) |
 | 0x61 DAILY_TOTAL | Today's total (ml) | **Today total** |
 | 0x30 REQUEST_TIME | Slave asks for time | Pi sends 0x31 with unix timestamp |
 | 0x40 REQUEST_PRESENCE | Slave asks if user is home | Pi checks phone, sends 0x41 |

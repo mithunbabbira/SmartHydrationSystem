@@ -2,6 +2,8 @@ import logging
 import struct
 import time
 
+from .drink_celebration import trigger as trigger_drink_celebration
+
 logger = logging.getLogger("PiController")
 
 class HydrationHandler:
@@ -102,6 +104,7 @@ class HydrationHandler:
             logger.info(f"HYDRATION [{mac}]: Drink Detected: {ml} ml")
             if getattr(self.controller, 'append_log_line', None):
                 self.controller.append_log_line(f"  >> Drink detected: {ml} ml")
+            trigger_drink_celebration(self.controller, ml)
 
         # 0x61: DAILY_TOTAL
         elif cmd == 0x61:
