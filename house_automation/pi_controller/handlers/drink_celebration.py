@@ -1,6 +1,10 @@
 """
 Drink celebration effect: when DRINK_DETECTED is received from hydration slave,
-show "drank X.X ml" on display, green LED, green IR for a short duration, then revert.
+show "X.X ml" on display, green LED, green IR for a short duration, then revert.
+
+Shared LED/display defaults:
+- Default LED: Rainbow mode 37, speed 5
+- Alert LED: Red pulse mode 39, speed 1
 """
 import logging
 import struct
@@ -12,34 +16,39 @@ DURATION_SEC = 3
 IR_GREEN = "F7A05F"
 IR_DEFAULT = "F7F00F"  # Smooth / default state
 LED_GREEN_HEX = "0212" + struct.pack("<f", 2.0).hex()  # RGB color ID 2 = green
-LED_OFF_HEX = "021000000000"
+LED_RAINBOW_DEFAULT_HEX = "0213" + struct.pack("<I", (37 << 8) | 5).hex()  # Rainbow speed 5
+LED_RED_PULSE_ALERT_HEX = "0213" + struct.pack("<I", (39 << 8) | 1).hex()  # Red pulse speed 1
 
 _revert_timer = None
 _revert_lock = threading.Lock()
 
 
-def _revert_to_default(controller):
-    """Revert LED and IR to default state after celebration duration."""
-    with _revert_lock:
-        global _revert_timer
-        _revert_timer = None
+def revert_led_and_ir_to_default(controller):
+    """Revert LED to Rainbow speed 5 and IR to default (Smooth)."""
     if not controller:
         return
     try:
         if "led" in controller.handlers:
-            controller.handlers["led"].send_cmd(LED_OFF_HEX, "Drink revert (Off)")
+            controller.handlers["led"].send_cmd(LED_RAINBOW_DEFAULT_HEX, "Default (Rainbow)")
         if "ir" in controller.handlers:
             controller.handlers["ir"].send_nec(IR_DEFAULT)
-        logger.info("Drink celebration ended, reverted to default")
+        logger.info("Reverted LED and IR to default")
     except Exception as e:
-        logger.warning("Drink revert failed: %s", e)
+        logger.warning("Revert to default failed: %s", e)
+
+
+def _revert_to_default(controller):
+    """Revert LED and IR to default after celebration duration."""
+    with _revert_lock:
+        global _revert_timer
+        _revert_timer = None
+    revert_led_and_ir_to_default(controller)
 
 
 def trigger(controller, ml):
     """
-    Trigger drink celebration: display text, green LED, green IR for DURATION_SEC.
-    After duration, revert LED and IR to default. Cancel any pending revert if
-    a new drink arrives before the previous celebration ends.
+    Trigger drink celebration: display "X.X ml", green LED, green IR for DURATION_SEC.
+    After duration, revert LED to Rainbow speed 5 and IR to default.
     """
     global _revert_timer
     if not controller:
@@ -51,7 +60,7 @@ def trigger(controller, ml):
             _revert_timer = None
 
     ml_rounded = round(float(ml), 1)
-    text = f"drank {ml_rounded} ml"
+    text = f"{ml_rounded} ml"
 
     try:
         if "ono" in controller.handlers:

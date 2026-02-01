@@ -15,14 +15,14 @@ This document lists all ESP-NOW slaves, what data they send/receive, and what ca
 | Command | Description | Dashboard Display |
 |---------|-------------|-------------------|
 | 0x21 REPORT_WEIGHT | Current weight (g) | **Weight** (ml) – main value |
-| 0x60 DRINK_DETECTED | Last drink volume (ml) | **Last drink**; triggers drink celebration (display "drank X.X ml", green LED, green IR for 3s, then revert) |
+| 0x60 DRINK_DETECTED | Last drink volume (ml) | **Last drink**; triggers drink celebration (display "X.X ml", green LED, green IR for 3s, revert to Rainbow) |
 | 0x61 DAILY_TOTAL | Today's total (ml) | **Today total** |
 | 0x30 REQUEST_TIME | Slave asks for time | Pi sends 0x31 with unix timestamp |
 | 0x40 REQUEST_PRESENCE | Slave asks if user is home | Pi checks phone, sends 0x41 |
-| 0x50 ALERT_MISSING | Bottle missing (timer expired) | Triggers IR + LED alert |
-| 0x51 ALERT_REPLACED | Bottle replaced | Reverts IR + LED |
-| 0x52 ALERT_REMINDER | Hydration reminder (user home, no drink) | Triggers IR + LED alert |
-| 0x53 ALERT_STOPPED | Alert stopped | Reverts IR + LED |
+| 0x50 ALERT_MISSING | Bottle missing (timer expired) | Display rainbow, LED red pulse speed 1, IR flash |
+| 0x51 ALERT_REPLACED | Bottle replaced | Revert: Display clear, LED Rainbow speed 5, IR Smooth |
+| 0x52 ALERT_REMINDER | Hydration reminder (user home, no drink) | Display rainbow, LED red pulse speed 1, IR flash |
+| 0x53 ALERT_STOPPED | Alert stopped | Revert: Display clear, LED Rainbow speed 5, IR Smooth |
 
 ### Commands from Pi → Slave (controlled from dashboard)
 

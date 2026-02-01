@@ -2,9 +2,15 @@ import logging
 import struct
 import time
 
-from .drink_celebration import trigger as trigger_drink_celebration
+from .drink_celebration import (
+    trigger as trigger_drink_celebration,
+    revert_led_and_ir_to_default,
+    LED_RED_PULSE_ALERT_HEX,
+)
 
 logger = logging.getLogger("PiController")
+
+ALERT_DISPLAY_RAINBOW_SEC = 300  # Display rainbow duration when alert; cleared on ALERT_STOPPED
 
 class HydrationHandler:
     def __init__(self, controller):
@@ -17,7 +23,22 @@ class HydrationHandler:
             'last_drink_time': 0,
             'daily_total_ml': 0.0,
         }
-        
+
+    def _trigger_alert_display_and_led(self):
+        """Alert: display rainbow, LED red pulse speed 1, IR flash."""
+        if 'ir' in self.controller.handlers:
+            self.controller.handlers['ir'].send_nec("F7D02F")
+        if 'led' in self.controller.handlers:
+            self.controller.handlers['led'].send_cmd(LED_RED_PULSE_ALERT_HEX, "Alert (Red pulse)")
+        if 'ono' in self.controller.handlers:
+            self.controller.handlers['ono'].send_rainbow(ALERT_DISPLAY_RAINBOW_SEC)
+
+    def _revert_alert_display_and_led(self):
+        """Revert: display override cleared (1s rainbow then back to price), LED Rainbow speed 5, IR Smooth."""
+        if 'ono' in self.controller.handlers:
+            self.controller.handlers['ono'].send_rainbow(1)  # Brief override, then display returns to price
+        revert_led_and_ir_to_default(self.controller)
+
     def handle_packet(self, cmd, val, mac):
         # 0x21: REPORT_WEIGHT
         if cmd == 0x21:
@@ -43,57 +64,22 @@ class HydrationHandler:
         # 0x50: ALERT_MISSING
         elif cmd == 0x50:
             logger.warning(f"ALERT [{mac}]: Bottle Missing! (Timer Expired)")
-            
-            # Trigger External Actions (IR + LED)
-            if 'ir' in self.controller.handlers:
-                 self.controller.handlers['ir'].send_nec("F7D02F")
-            
-            if 'led' in self.controller.handlers:
-                 self.controller.handlers['led'].send_cmd("02120000803F", "ALERT (Red)")
-        
+            self._trigger_alert_display_and_led()
+
         # 0x51: ALERT_REPLACED
         elif cmd == 0x51:
              logger.info(f"ALERT [{mac}]: Bottle Replaced. Stabilizing...")
+             self._revert_alert_display_and_led()
 
-             # Revert External Actions
-             if 'ir' in self.controller.handlers:
-                 self.controller.handlers['ir'].send_nec("F7F00F")
-
-             if 'led' in self.controller.handlers:
-                 self.controller.handlers['led'].send_cmd("021000000000", "ALERT STOPPED (Off)")
-
-        # 0x52: ALERT_REMINDER (NEW)
+        # 0x52: ALERT_REMINDER
         elif cmd == 0x52:
              logger.warning(f"ALERT [{mac}]: Hydration Reminder! Drink Detected: NO. User is HOME.")
-             
-             # Trigger External Actions (IR + LED)
-             # IR: 0xF7D02F (Alert)
-             if 'ir' in self.controller.handlers:
-                 self.controller.handlers['ir'].send_nec("F7D02F")
-             
-             # LED: Turn Red (RGB 1)
-             if 'led' in self.controller.handlers:
-                 # 02 12 ... 
-                 # Let's just use the send_cmd helper directly if we could, but better to reuse handler logic
-                 # Or manually construct packet. LED Handler has send_cmd(hex_payload)
-                 # Red = 1.0 -> 00 00 80 3F
-                 # Type 2 (LED) Cmd 0x12 (RGB) Data 1.0
-                 self.controller.handlers['led'].send_cmd("02120000803F", "ALERT (Red)")
+             self._trigger_alert_display_and_led()
 
-        # 0x53: ALERT_STOPPED (NEW)
+        # 0x53: ALERT_STOPPED
         elif cmd == 0x53:
              logger.info(f"ALERT [{mac}]: Hydration Alert STOPPED.")
-
-             # Revert External Actions
-             # IR: 0xF7F00F (Normal)
-             if 'ir' in self.controller.handlers:
-                 self.controller.handlers['ir'].send_nec("F7F00F")
-
-             # LED: Turn Off (or Green? User said "revert them")
-             # Let's turn it OFF for now as that's safer than guessing a "normal" color
-             if 'led' in self.controller.handlers:
-                 # Type 2 (LED) Cmd 0x10 (Main) Data 0.0 (Off)
-                 self.controller.handlers['led'].send_cmd("021000000000", "ALERT STOPPED (Off)")
+             self._revert_alert_display_and_led()
 
         # 0x60: DRINK_DETECTED
         elif cmd == 0x60:
