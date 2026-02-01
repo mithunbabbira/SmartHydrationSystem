@@ -23,14 +23,13 @@ class HydrationHandler:
             'daily_total_ml': 0.0,
         }
 
-    def _trigger_alert_display_and_led(self):
+    def _trigger_alert_display_and_led(self, display_text="no bottle"):
         """Alert: display loops rainbow(1s)/text(4s), LED red pulse speed 1, IR flash."""
         if 'ir' in self.controller.handlers:
             self.controller.handlers['ir'].send_nec("F7D02F")
         if 'led' in self.controller.handlers:
             self.controller.handlers['led'].send_cmd(LED_RED_PULSE_ALERT_HEX, "Alert (Red pulse)")
-        # Start looping display animation: rainbow 1s -> "no bottle" 4s -> repeat
-        bottle_alert.start(self.controller)
+        bottle_alert.start(self.controller, text_msg=display_text)
 
     def _revert_alert_display_and_led(self):
         """Revert: stop display alert loop, LED Rainbow speed 5, IR Smooth."""
@@ -59,20 +58,20 @@ class HydrationHandler:
             payload = "0000803F" if is_home else "00000000" # 1.0 or 0.0
             self.controller.send_command(mac, "0141" + payload)
 
-        # 0x50: ALERT_MISSING
+        # 0x50: ALERT_MISSING (bottle missing)
         elif cmd == 0x50:
             logger.warning(f"ALERT [{mac}]: Bottle Missing! (Timer Expired)")
-            self._trigger_alert_display_and_led()
+            self._trigger_alert_display_and_led(display_text="no bottle")
 
         # 0x51: ALERT_REPLACED
         elif cmd == 0x51:
              logger.info(f"ALERT [{mac}]: Bottle Replaced. Stabilizing...")
              self._revert_alert_display_and_led()
 
-        # 0x52: ALERT_REMINDER
+        # 0x52: ALERT_REMINDER (drinking reminder – user home, no drink)
         elif cmd == 0x52:
              logger.warning(f"ALERT [{mac}]: Hydration Reminder! Drink Detected: NO. User is HOME.")
-             self._trigger_alert_display_and_led()
+             self._trigger_alert_display_and_led(display_text="plz drink")
 
         # 0x53: ALERT_STOPPED
         elif cmd == 0x53:

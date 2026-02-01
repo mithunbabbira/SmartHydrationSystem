@@ -21,7 +21,7 @@ This document lists all ESP-NOW slaves, what data they send/receive, and what ca
 | 0x40 REQUEST_PRESENCE | Slave asks if user is home | Pi checks phone, sends 0x41 |
 | 0x50 ALERT_MISSING | Bottle missing (timer expired) | Display loops: rainbow 1s → "no bottle" 4s; LED red pulse speed 1; IR flash |
 | 0x51 ALERT_REPLACED | Bottle replaced | Revert: stop display loop, LED Rainbow speed 5, IR Smooth |
-| 0x52 ALERT_REMINDER | Hydration reminder (user home, no drink) | Display loops: rainbow 1s → "no bottle" 4s; LED red pulse speed 1; IR flash |
+| 0x52 ALERT_REMINDER | Hydration reminder (user home, no drink) | Display loops: rainbow 1s → "plz drink" 4s; LED red pulse speed 1; IR flash |
 | 0x53 ALERT_STOPPED | Alert stopped | Revert: stop display loop, LED Rainbow speed 5, IR Smooth |
 
 ### Commands from Pi → Slave (controlled from dashboard)
