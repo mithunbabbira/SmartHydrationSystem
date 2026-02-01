@@ -31,6 +31,7 @@ private:
   float dailyTotal = 0.0;
   int currentDay = 0;
   bool isSleeping = false;
+  unsigned long drinkConfirmAt = 0;  // When non-zero, waiting to confirm proactive drink (debounce noise)
 
 public:
   void begin(HydrationHW *hardware, SlaveComms *communicator) {
@@ -54,7 +55,7 @@ public:
     switch (currentState) {
 
     // 1. MONITORING: Waiting for interval
-    case STATE_MONITORING:
+    case STATE_MONITORING: {
       // Global Missing Check (Immediate transition)
       if (currentWeight < THRESHOLD_WEIGHT) {
         Serial.println("Logic: Bottle Lifted (Drinking/Refilling)...");
@@ -62,34 +63,57 @@ public:
         return;
       }
 
-      // Interval Check
-      if (now - lastIntervalReset > CHECK_INTERVAL_MS) {
-        if (isSleeping) {
-          return;
+      // Interval not expired: clear any stale confirm and exit
+      if (now - lastIntervalReset <= CHECK_INTERVAL_MS) {
+        drinkConfirmAt = 0;
+        break;
+      }
+
+      // Interval expired
+      if (isSleeping) {
+        return;
+      }
+
+      float delta = lastSavedWeight - currentWeight;
+
+      // Already waiting for confirmation of a possible drink?
+      if (drinkConfirmAt != 0) {
+        if (now < drinkConfirmAt) {
+          return;  // keep waiting
         }
-
-        // Compare Weight
-        float delta = lastSavedWeight - currentWeight;
-
-        if (delta >= DRINK_MIN_ML) {
-          // User drank proactively! Reset timer.
-          Serial.print("Logic: Proactive Drink Detected (");
-          Serial.print(delta);
+        // Time to confirm with a second reading (avoids false drink from single noisy reading)
+        float confirmWeight = hw->getWeight();
+        float delta2 = lastSavedWeight - confirmWeight;
+        drinkConfirmAt = 0;
+        if (delta2 >= DRINK_MIN_ML) {
+          Serial.print("Logic: Proactive Drink Confirmed (");
+          Serial.print(delta2);
           Serial.println("ml). Resetting Timer.");
-
-          processDrink(delta);
+          processDrink(delta2);
           lastIntervalReset = now;
         } else {
-          // No drink -> Check Presence before Reminding
-          Serial.print("Logic: Interval Expired (");
-          Serial.print(now - lastIntervalReset);
-          Serial.println("ms > limit). Checking Presence...");
-
+          Serial.println("Logic: Weight noise - no drink. Checking Presence...");
           comms->send(CMD_REQUEST_PRESENCE, 0);
           enterState(STATE_WAIT_FOR_PRESENCE);
         }
+        return;
       }
+
+      // First time we see delta >= DRINK_MIN_ML at interval expiry: require confirmation
+      if (delta >= DRINK_MIN_ML) {
+        Serial.print("Logic: Possible drink - confirming in ");
+        Serial.print(DRINK_CONFIRM_MS);
+        Serial.println("ms...");
+        drinkConfirmAt = now + DRINK_CONFIRM_MS;
+        return;
+      }
+
+      // No significant drop -> reminder path
+      Serial.println("Logic: Interval Expired. Checking Presence...");
+      comms->send(CMD_REQUEST_PRESENCE, 0);
+      enterState(STATE_WAIT_FOR_PRESENCE);
       break;
+    }
 
     // 2. WAIT FOR PRESENCE (New State)
     case STATE_WAIT_FOR_PRESENCE:
