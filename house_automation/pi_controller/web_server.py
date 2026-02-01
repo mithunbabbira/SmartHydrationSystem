@@ -228,6 +228,27 @@ def aio_cmd():
             
     return jsonify({"error": "Invalid Device or Action"}), 400
 
+
+# --- API: Servo spray sequence ---
+@app.route('/api/servo-spray', methods=['POST'])
+def servo_spray():
+    """Trigger servo + Adafruit IO spray sequence (runs in background)."""
+    from servo_spray import run_sequence
+    data = request.json or {}
+    base_url = data.get('base_url') or data.get('servo_url')
+    run_async = data.get('async', True)
+    if run_async:
+        def _run():
+            try:
+                run_sequence(base_url)
+            except Exception as e:
+                logger.error("Servo spray sequence error: %s", e)
+        threading.Thread(target=_run, daemon=True).start()
+        return jsonify({"status": "started", "message": "Sequence running in background"})
+    result = run_sequence(base_url)
+    return jsonify(result)
+
+
 # --- API: Master serial log (data from master ESP32) ---
 @app.route('/api/master/log', methods=['GET'])
 def master_log():

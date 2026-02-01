@@ -21,6 +21,9 @@ AIO_USERNAME = os.getenv('AIO_USERNAME', 'babbiramithun')
 AIO_KEY = os.getenv('AIO_KEY', 'YOUR_AIO_KEY_HERE')
 AIO_FEED_URL = f"https://io.adafruit.com/api/v2/{AIO_USERNAME}/feeds/command/data"
 
+# Servo controller (for spray sequence)
+SERVO_BASE_URL = os.getenv('SERVO_BASE_URL', 'http://192.168.0.107')
+
 # Light Commands
 LIGHT_CMDS = {
     'neon': {'on': 'SWITCHON3', 'off': 'SWITCHOFF3'},

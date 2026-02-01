@@ -84,6 +84,35 @@ function sendAIO(device, action) {
     apiCall('/api/aio/cmd', { device: device, action: action });
 }
 
+function sendServoSpray() {
+    const btn = document.getElementById('spray-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Spraying...';
+    }
+    fetch('/api/servo-spray', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ async: true })
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) alert(data.error);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-spray-can-sparkles"></i> Trigger Spray';
+            }
+        })
+        .catch(err => {
+            console.error('Spray failed:', err);
+            alert('Spray request failed');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-spray-can-sparkles"></i> Trigger Spray';
+            }
+        });
+}
+
 function masterOn() {
     apiCall('/api/master/cmd', { action: 'on' });
 }

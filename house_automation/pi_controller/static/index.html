@@ -145,6 +145,10 @@
                         <button type="button" onclick="sendAIO('spot', 'on')" class="btn-glass success">ON</button>
                         <button type="button" onclick="sendAIO('spot', 'off')" class="btn-glass danger">OFF</button>
                     </div>
+                    <div class="section-label" style="margin-top: 12px;"><i class="fa-solid fa-spray-can-sparkles highlight"></i> Spray</div>
+                    <button type="button" onclick="sendServoSpray()" class="btn-glass success" id="spray-btn" title="Servo + AIO spray sequence">
+                        <i class="fa-solid fa-spray-can-sparkles"></i> Trigger Spray
+                    </button>
                 </div>
             </div>
 
@@ -258,7 +262,7 @@
             </div>
         </main>
     </div>
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 
 </html>
