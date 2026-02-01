@@ -17,7 +17,7 @@ IR_GREEN = "F7A05F"
 IR_DEFAULT = "F7F00F"  # Smooth / default state
 LED_GREEN_HEX = "0212" + struct.pack("<f", 2.0).hex()  # RGB color ID 2 = green
 LED_RAINBOW_DEFAULT_HEX = "0213" + struct.pack("<I", (37 << 8) | 5).hex()  # Rainbow speed 5
-LED_RED_PULSE_ALERT_HEX = "0213" + struct.pack("<I", (39 << 8) | 1).hex()  # Red pulse speed 1
+LED_RED_PULSE_ALERT_HEX = "0213" + struct.pack("<I", (38 << 8) | 1).hex()  # Red pulse (mode 38) speed 1
 
 _revert_timer = None
 _revert_lock = threading.Lock()
