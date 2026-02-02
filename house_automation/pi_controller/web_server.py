@@ -491,6 +491,28 @@ def _ono_price_loop():
         time.sleep(ONO_PUSH_INTERVAL_SEC)
 
 
+def _hydration_time_push_loop():
+    """Push time to hydration slave every 5s for 60s after start so slave gets time even if its 0x30 never reaches Pi."""
+    import struct
+    time.sleep(2)  # Let serial/controller settle
+    duration_sec = 60
+    interval_sec = 5
+    mac = config.SLAVE_MACS.get('hydration', '00:00:00:00:00:00')
+    if mac == '00:00:00:00:00:00':
+        return
+    start = time.time()
+    while time.time() - start < duration_sec:
+        if controller and getattr(controller, 'serial_conn', None) and controller.serial_conn.is_open:
+            try:
+                unix_time = int(time.time())
+                time_hex = struct.pack('<I', unix_time).hex()
+                controller.send_command(mac, "0131" + time_hex)
+                logger.info("Time push to hydration slave (startup sync)")
+            except Exception as e:
+                logger.debug("Time push failed: %s", e)
+        time.sleep(interval_sec)
+
+
 def start_controller():
     global controller
     port = config.SERIAL_PORT
@@ -502,6 +524,7 @@ def start_controller():
         logger.exception("Controller failed to start: %s", e)
         controller = None
         return
+    threading.Thread(target=_hydration_time_push_loop, daemon=True).start()
     threading.Thread(target=daily_scheduler, daemon=True).start()
     threading.Thread(target=_ono_price_loop, daemon=True).start()
     _write_health_snapshot()  # once at start

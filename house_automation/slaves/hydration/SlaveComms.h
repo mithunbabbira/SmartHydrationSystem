@@ -5,7 +5,7 @@
 #include <esp_now.h>
 
 // --- Configuration ---
-// Master MAC Address
+// Master MAC: must match the Master ESP32 that talks to the Pi (check Serial Monitor on Master for its MAC)
 const uint8_t MASTER_MAC[] = {0xF0, 0x24, 0xF9, 0x0D, 0x90, 0xA4};
 
 // Protocol Commands

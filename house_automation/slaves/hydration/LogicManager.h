@@ -42,6 +42,14 @@ public:
     hw->loadHydrationState(&lastSavedWeight, &dailyTotal, &currentDay);
     lastIntervalReset = millis(); // Start timer
 
+    // Boot without bottle: saved baseline is from a previous session and invalid for
+    // "bottle just placed". Clear it so placing the bottle sets a new baseline only.
+    // You can boot either way (with or without bottle); both work correctly.
+    if (hw->getWeight() < THRESHOLD_WEIGHT) {
+      lastSavedWeight = 0.0f;
+      Serial.println("Logic: Boot without bottle - baseline cleared (set when bottle placed).");
+    }
+
     // Initial Color
     hw->setRgb(COLOR_IDLE);
     Serial.println("Logic: Started. State loaded.");
@@ -122,8 +130,8 @@ public:
         return;
       }
 
-      // Timeout if Pi doesn't reply (10s) -> Default to Away (Snooze)
-      if (now - stateStartTime > 10000) {
+      // Timeout if Pi doesn't reply -> Default to Away (Snooze)
+      if (now - stateStartTime > PRESENCE_TIMEOUT_MS) {
         Serial.println("Logic: Presence Timeout. Defaulting to AWAY (Snooze).");
         enterState(STATE_MONITORING);
         lastIntervalReset = millis(); // Snooze timer
@@ -155,8 +163,8 @@ public:
       }
 
       handleBlink(now, COLOR_ALERT);
-      // Buzz with blink
-      if (now - lastBlinkTime < 250)
+      // Buzz with blink (half period)
+      if (now - lastBlinkTime < (BLINK_INTERVAL_MS / 2))
         hw->setBuzzer(true);
       else
         hw->setBuzzer(false);
@@ -182,8 +190,9 @@ public:
 
       // If gone too long -> Missing Alert
       if (now - stateStartTime > MISSING_TIMEOUT_MS) {
-        Serial.println("Logic: Bottle Missing for too long (>10s) -> "
-                       "triggering MISSING Alert.");
+        Serial.print("Logic: Bottle Missing for too long (");
+        Serial.print(MISSING_TIMEOUT_MS / 1000);
+        Serial.println("s) -> triggering MISSING Alert.");
         enterState(STATE_MISSING_ALERT);
         comms->send(CMD_ALERT_MISSING, 0);
       }
@@ -199,7 +208,7 @@ public:
       }
 
       // Custom Alert Pattern for Missing (Red Blink)
-      if (now - lastBlinkTime > 500) {
+      if (now - lastBlinkTime > BLINK_INTERVAL_MS) {
         lastBlinkTime = now;
         isBlinkOn = !isBlinkOn;
         hw->setLed(isBlinkOn);
@@ -254,7 +263,7 @@ public:
   }
 
   void handleBlink(unsigned long now, int color) {
-    if (now - lastBlinkTime > 500) {
+    if (now - lastBlinkTime > BLINK_INTERVAL_MS) {
       lastBlinkTime = now;
       isBlinkOn = !isBlinkOn;
       hw->setLed(isBlinkOn);
@@ -264,6 +273,15 @@ public:
   }
 
   void evaluateWeightChange(float currentWeight) {
+    // No baseline yet (e.g. boot without bottle, then bottle placed): set baseline only
+    if (lastSavedWeight <= 0.0f) {
+      lastSavedWeight = currentWeight;
+      lastIntervalReset = millis();
+      hw->saveHydrationState(lastSavedWeight, dailyTotal, currentDay);
+      Serial.println("RESULT: Baseline set (bottle placed). No drink/refill.");
+      return;
+    }
+
     float diff = lastSavedWeight - currentWeight;
 
     // Drank?

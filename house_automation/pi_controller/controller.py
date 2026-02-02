@@ -143,8 +143,7 @@ class SerialController:
         return False
 
     def process_incoming_data(self, line):
-        # ... (Heartbeat check) ...
-
+        # Only process RX lines from Master (ignore HEARTBEAT, OK:, ERR:); match RX anywhere in line in case of leading garbage
         match = re.search(r'RX:([0-9A-Fa-f:]+):([0-9A-Fa-f\s]+)', line)
         if match:
             mac = match.group(1)

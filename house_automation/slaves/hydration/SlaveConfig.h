@@ -1,15 +1,19 @@
 #ifndef SLAVE_CONFIG_H
 #define SLAVE_CONFIG_H
 
-// --- Timing Configuration ---m
-// #define MISSING_TIMEOUT_MS 180000  //
- #define MISSING_TIMEOUT_MS 10000 
+// --- Timing Configuration ---
+#define MISSING_TIMEOUT_MS 180000  // 3 min: bottle off before "missing" alert
+// #define MISSING_TIMEOUT_MS 10000  // 10s: use for testing
+#define TIME_SYNC_TIMEOUT_MS 60000   // 60s: if Pi doesn't reply, proceed without time (no daily reset by day)
+#define TIME_SYNC_REQUEST_MS 5000     // Request time every 5s while waiting
 #define BUZZER_START_DELAY_MS 5000 // 5s:  Delay before buzzer joins LED alert
 #define STABILIZATION_MS 2000      // 2s:  Wait time after bottle replaced
-// #define CHECK_INTERVAL_MS 1800000  // 30m: Interval between hydration checks
-#define CHECK_INTERVAL_MS 30000
+#define CHECK_INTERVAL_MS 1800000  // 30m: Interval between hydration checks
+// #define CHECK_INTERVAL_MS 20000
 #define LED_ALERT_DURATION 10000     // 10s: Duration of Pre-Alert blink
 #define AWAY_CHECK_INTERVAL_MS 60000 // 1m:  Check presence during alert
+#define PRESENCE_TIMEOUT_MS 10000    // 10s: Pi no reply -> treat as away (snooze)
+#define BLINK_INTERVAL_MS 500        // LED/RGB blink period
 
 // --- Sleep Schedule ---
 #define SLEEP_START_HOUR 23 // 11 PM
