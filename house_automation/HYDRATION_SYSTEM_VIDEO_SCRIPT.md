@@ -8,7 +8,7 @@ Use this text for your voice-over when recording the hydration system demo video
 
 *[Show the hydration setup]*
 
-"This is my hydration system. At the heart of it is a weighing unit that continuously measures the weight of the water bottle. You'll also notice two sets of lights: one below the table, controlled via IR, and another behind the pegboard, a Bluetooth LED strip. I won't go into the communication details—just know both respond to the system."
+"This is my hydration system, which I designed and 3D printed. At the heart of it is a weighing unit that continuously measures the weight of the water bottle. You'll also notice two sets of lights: one below the table, and another behind the pegboard, a Bluetooth LED strip. "
 
 ---
 
@@ -16,7 +16,7 @@ Use this text for your voice-over when recording the hydration system demo video
 
 *[Explain the reminder cycle]*
 
-"Every 30 minutes, the system runs a check. First, it checks if my phone is present at home. If I'm home, it then checks whether the water level has dropped by at least 30 milliliters. If not—meaning I haven't had a drink—the system triggers a reminder."
+"Every 30 minutes, the system runs a check. First, it checks if my phone is present at home. If I'm home, it then checks whether the water level has dropped by at least 100 milliliters. If not the system triggers a reminder."
 
 ---
 
@@ -24,7 +24,7 @@ Use this text for your voice-over when recording the hydration system demo video
 
 *[Show lights flashing, then buzzer]*
 
-"When the reminder starts, the lights below the table begin flashing, and the lights behind the pegboard flash red. After 5 seconds, the buzzer joins in to get my attention."
+"When the reminder starts, the lights below the table begin flashing, and the lights behind the pegboard flash red. After 5 seconds, the buzzer joins in and also ..to get my attention  "
 
 ---
 
@@ -32,7 +32,7 @@ Use this text for your voice-over when recording the hydration system demo video
 
 *[Demonstrate picking up the bottle]*
 
-"When the buzzer is going off, if I pick up the bottle, the sound stops instantly. But here's the clever part: if I try to fool the system by just picking up the bottle and putting it back without drinking, the system notices. No weight change means no drink—and it will alert me again."
+" if I pick up the bottle, the sound stops instantly. But if I try to fool the system by just picking up the bottle and putting it back without drinking, the system notices. No weight change means no drink—and it will alert me again."
 
 ---
 
@@ -48,7 +48,7 @@ Use this text for your voice-over when recording the hydration system demo video
 
 *[Show the dashboard]*
 
-"I've also built a dashboard to control all the IoT devices in my house—lights, displays, sensors, and more—all from one place."
+"I've also built a dashboard to control all the IoT devices in my all from one place."
 
 ---
 
@@ -58,7 +58,7 @@ Use this text for your voice-over when recording the hydration system demo video
 
 ---
 
-"This is my hydration system. At the heart of it is a weighing unit that continuously measures the weight of the water bottle. You'll also notice two sets of lights: one below the table, controlled via IR, and another behind the pegboard, a Bluetooth LED strip. I won't go into the communication details—just know both respond to the system.
+"This is my hydration system, which I designed and 3D printed. At the heart of it is a weighing unit that continuously measures the weight of the water bottle. You'll also notice two sets of lights: one below the table, controlled via IR, and another behind the pegboard, a Bluetooth LED strip. I won't go into the communication details—just know both respond to the system.
 
 Every 30 minutes, the system runs a check. First, it checks if my phone is present at home. If I'm home, it then checks whether the water level has dropped by at least 30 milliliters. If not—meaning I haven't had a drink—the system triggers a reminder.
 

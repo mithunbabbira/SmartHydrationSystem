@@ -7,6 +7,10 @@
 #include <Arduino.h>
 #include <Preferences.h>
 
+// NVM (Preferences namespace "hydration"):
+// - tare_offset (long): scale zero offset. Load at begin(); save on tare() or first tare in begin().
+// - last_weight, daily_total, last_day: hydration state. Load in StateMachine::begin(); save in
+//   evaluateWeightChange() (after bottle return) and in checkDay() (daily reset).
 class HydrationHW {
   HX711 scale;
   Preferences prefs;
