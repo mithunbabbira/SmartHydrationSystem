@@ -32,7 +32,7 @@
 // If weight < THRESHOLD_WEIGHT, bottle is considered missing.
 #define THRESHOLD_WEIGHT           80.0f
 // After this delay we start the \"no bottle\" alert (flash + Pi signal)
-#define MISSING_ALERT_DELAY_MS   10000    // ms before triggering missing bottle alert
+#define MISSING_ALERT_DELAY_MS   180000   // 3 minutes before triggering missing bottle alert
 // After alert is active, buzzer joins after this extra delay
 #define MISSING_BUZZER_DELAY_MS  5000    // ms after alert start before buzzer joins
 #define BLINK_INTERVAL_MS         500    // LED blink period for missing alert
@@ -56,13 +56,11 @@
 
 // ============== DRINKING LOGIC ==============
 // How often (during daytime) we evaluate drink/refill vs last baseline
-#define DRINK_CHECK_INTERVAL_MS   20000   // e.g. 10 minutes
+#define DRINK_CHECK_INTERVAL_MS   1800000  // 30 minutes
 // Amount decrease to consider as \"user drank\"
 #define DRINK_MIN_DELTA           50.0f
 // Amount increase to consider as \"bottle refilled\"
 #define REFILL_MIN_DELTA         100.0f
-// Small noise band where we treat as \"no significant change\"
-#define DRINK_NOISE_THRESHOLD     20.0f
 // Drinking reminder: first just color, after this delay buzzer joins
 #define DRINK_ALERT_BUZZER_DELAY_MS  5000
 // How long (ms) buzzer stays active after it joins the drinking alert

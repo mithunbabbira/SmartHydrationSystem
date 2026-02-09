@@ -1,12 +1,14 @@
 /*
- * Hydration Slave v3
+ * Hydration Slave v3 - Clean rewrite
  *
- * 1. Boot → rainbow LED starts.
- * 2. Request time from Pi over ESP-NOW until we receive it (or timeout).
- * 3. Once time is synced: if NOT sleep time → print current weight to Serial periodically.
- * 4. Same ESP-NOW protocol as before (Pi/master unchanged).
+ * Flow:
+ *   Boot -> Rainbow until time sync from Pi
+ *   After sync: day/sleep color, weight sampling, missing bottle alert,
+ *               drinking interval check with presence gate, stabilization
+ *               after bottle return with immediate evaluation.
  *
- * See ALGORITHM.md for the flow and config.
+ * Key rule: the visual section at the bottom ALWAYS runs. No early returns
+ *           after time sync so the LED/buzzer/RGB are never left in a stale state.
  */
 
 #include "Config.h"
@@ -15,164 +17,286 @@
 #include "TimeSync.h"
 #include <math.h>
 
+// ==================== MODULES ====================
 HydrationHW hw;
 Comms comms;
 TimeSync timeSync;
 
-// Simple missing-bottle state (no full state machine yet)
-static bool bottleMissing = false;
-static unsigned long missingSinceMs = 0;
-static bool missingAlertActive = false;
-static unsigned long alertStartMs = 0;
-static unsigned long lastBlinkMs = 0;
-static bool blinkOn = false;
+// ==================== STATE ====================
+// --- Missing bottle ---
+static bool bottleMissing        = false;
+static unsigned long missingStartMs   = 0;
+static bool missingAlertActive   = false;
+static unsigned long missingAlertMs   = 0;
+static unsigned long missingBlinkMs   = 0;
+static bool missingBlinkOn       = false;
 
-// Drinking logic (baseline + reminder)
-static float baselineWeight = 0.0f;
-static bool baselineValid = false;
-static unsigned long lastDrinkCheckMs = 0;
-static bool drinkAlertActive = false;
-static unsigned long drinkAlertStartMs = 0;
-
-// Presence from Pi (HOME / AWAY) for drinking alerts
-static bool isHome = true;
-static bool waitingPresenceForDrink = false;
-
-// Drinking alert blink state
-static unsigned long drinkBlinkMs = 0;
-static bool drinkBlinkOn = false;
-
-// Stabilization after bottle placed back
-static bool stabilizingAfterReturn = false;
+// --- Stabilization (after bottle return) ---
+static bool stabilizing          = false;
 static unsigned long stabilizeStartMs = 0;
 
-// Daily total tracking
-static float dailyTotalMl = 0.0f;
-static int currentDayIndex = 0;
-static bool dayInitialized = false;
+// --- Drinking baseline & interval ---
+static float baselineWeight      = 0.0f;
+static bool  baselineValid       = false;
+static unsigned long lastDrinkCheckMs = 0;
+
+// --- Drinking alert ---
+static bool drinkAlertActive     = false;
+static unsigned long drinkAlertStartMs = 0;
+static unsigned long drinkBlinkMs = 0;
+static bool drinkBlinkOn         = false;
+
+// --- Presence ---
+static bool isHome               = true;
+static bool waitingPresence      = false;
+
+// --- Daily totals ---
+static float dailyTotalMl        = 0.0f;
+static int   currentDayIndex     = 0;
+static bool  dayInitialized      = false;
+
+// ==================== HELPERS ====================
+
+void LOG(const char *msg) {
+#if HYDRATION_LOG
+  Serial.print("["); Serial.print(millis()); Serial.print("] ");
+  Serial.println(msg);
+#endif
+}
+
+void LOG2(const char *msg, float val) {
+#if HYDRATION_LOG
+  Serial.print("["); Serial.print(millis()); Serial.print("] ");
+  Serial.print(msg); Serial.println(val);
+#endif
+}
+
+void LOG2S(const char *msg, const char *val) {
+#if HYDRATION_LOG
+  Serial.print("["); Serial.print(millis()); Serial.print("] ");
+  Serial.print(msg); Serial.println(val);
+#endif
+}
+
+// --- Start drinking alert (called when presence confirmed HOME) ---
+void startDrinkAlert() {
+  if (drinkAlertActive) return;
+  drinkAlertActive   = true;
+  drinkAlertStartMs  = millis();
+  drinkBlinkMs       = millis();
+  drinkBlinkOn       = false;
+  comms.send(CMD_ALERT_REMINDER, 0);
+  LOG("DRINK ALERT -> STARTED (user HOME).");
+}
+
+// --- Stop drinking alert ---
+void stopDrinkAlert() {
+  if (!drinkAlertActive) return;
+  drinkAlertActive = false;
+  drinkBlinkMs     = 0;
+  drinkBlinkOn     = false;
+  hw.setBuzzer(false);
+  hw.setLed(false);
+  comms.send(CMD_ALERT_STOPPED, 0);
+  LOG("DRINK ALERT -> STOPPED.");
+}
+
+// --- Record a confirmed drink ---
+void recordDrink(float amount, float newWeight) {
+  LOG2("RESULT: User drank ", amount);
+  LOG2(" ml. New baseline: ", newWeight);
+  dailyTotalMl += amount;
+  baselineWeight = newWeight;
+  hw.saveBaseline(baselineWeight);
+  hw.saveTotals(dailyTotalMl, currentDayIndex);
+  comms.sendFloat(CMD_DRINK_DETECTED, amount);
+  comms.sendFloat(CMD_DAILY_TOTAL, dailyTotalMl);
+  LOG2("Daily total now: ", dailyTotalMl);
+  lastDrinkCheckMs = millis();  // reset interval timer
+  stopDrinkAlert();
+}
+
+// --- Record a confirmed refill ---
+void recordRefill(float amount, float newWeight) {
+  LOG2("RESULT: Bottle refilled +", amount);
+  LOG2(" ml. New baseline: ", newWeight);
+  baselineWeight = newWeight;
+  hw.saveBaseline(baselineWeight);
+  lastDrinkCheckMs = millis();  // reset interval timer
+  stopDrinkAlert();
+}
+
+// --- Evaluate weight vs baseline (called after stabilization OR at interval) ---
+//     Returns: true if drink or refill was detected (interval reset already done)
+//
+//     Logic matches old LogicManager.h: anything that is NOT a confirmed drink
+//     or confirmed refill triggers a presence check → drinking reminder.
+//     Baseline is preserved on "no change" so small sips accumulate until
+//     they cross DRINK_MIN_DELTA (just like old code line 314-321).
+bool evaluateWeight(float currentWeight) {
+  if (!baselineValid) {
+    // First time: set baseline, request presence for first alert
+    baselineWeight = currentWeight;
+    baselineValid  = true;
+    hw.saveBaseline(baselineWeight);
+    lastDrinkCheckMs = millis();
+    LOG2("First baseline set: ", baselineWeight);
+    if (!drinkAlertActive && !waitingPresence) {
+      waitingPresence = true;
+      comms.send(CMD_REQUEST_PRESENCE, 0);
+      LOG("Requesting presence for first drinking alert.");
+    }
+    return false;
+  }
+
+  float diff = baselineWeight - currentWeight;  // +ve = drank, -ve = refill
+
+  LOG2("Evaluate: baseline=", baselineWeight);
+  LOG2("          current =", currentWeight);
+  LOG2("          diff    =", diff);
+
+  // --- Confirmed drink ---
+  if (diff >= DRINK_MIN_DELTA) {
+    recordDrink(diff, currentWeight);
+    return true;
+  }
+  // --- Confirmed refill ---
+  if (diff <= -REFILL_MIN_DELTA) {
+    recordRefill(-diff, currentWeight);
+    return true;
+  }
+
+  // --- Not a confirmed drink or refill (matches old LogicManager line 314-321) ---
+  // Baseline preserved: small sips accumulate until DRINK_MIN_DELTA crossed.
+  // Request presence for drinking reminder (no mercy).
+  LOG2("No confirmed drink/refill (diff=", diff);
+  LOG(" ). Baseline preserved. Requesting presence for reminder.");
+  lastDrinkCheckMs = millis();  // CRITICAL: prevent tight re-evaluation loop
+  if (!drinkAlertActive && !waitingPresence) {
+    waitingPresence = true;
+    comms.send(CMD_REQUEST_PRESENCE, 0);
+    LOG("Sent CMD_REQUEST_PRESENCE to Pi.");
+  }
+  return false;
+}
+
+// ==================== PACKET HANDLER ====================
 
 void processIncomingPackets() {
   if (!packetReceived) return;
   packetReceived = false;
 
 #if HYDRATION_LOG
-  Serial.print("[");
-  Serial.print(millis());
-  Serial.print("] CMD 0x");
-  Serial.print(incomingPacket.command, HEX);
-  Serial.print(" data ");
-  Serial.println(incomingPacket.data);
+  Serial.print("["); Serial.print(millis());
+  Serial.print("] CMD 0x"); Serial.print(incomingPacket.command, HEX);
+  Serial.print(" data "); Serial.println(incomingPacket.data);
 #endif
 
   switch (incomingPacket.command) {
-  case CMD_REPORT_TIME: {
-    uint32_t timestamp = incomingPacket.data;
-    timeSync.setTimeFromPi(timestamp);
+  case CMD_REPORT_TIME:
+    timeSync.setTimeFromPi(incomingPacket.data);
     break;
-  }
-  case CMD_GET_WEIGHT: {
-    float w = hw.getWeight();
-    comms.sendFloat(CMD_REPORT_WEIGHT, w);
+
+  case CMD_GET_WEIGHT:
+    comms.sendFloat(CMD_REPORT_WEIGHT, hw.getWeight());
     break;
-  }
+
   case CMD_TARE:
     hw.tare();
     comms.sendFloat(CMD_REPORT_WEIGHT, 0.0f);
+    LOG("TARE done.");
     break;
+
   case CMD_SET_LED:
     hw.setLed(incomingPacket.data > 0);
     break;
+
   case CMD_SET_BUZZER:
     hw.setBuzzer(incomingPacket.data > 0);
     break;
+
+  case CMD_REQUEST_DAILY_TOTAL:
+    comms.sendFloat(CMD_DAILY_TOTAL, dailyTotalMl);
+    break;
+
   case CMD_REPORT_PRESENCE: {
     bool home = (incomingPacket.data != 0);
     isHome = home;
-#if HYDRATION_LOG
-    Serial.print("[");
-    Serial.print(millis());
-    Serial.print("] PRESENCE ");
-    Serial.println(isHome ? "HOME" : "AWAY");
-#endif
-    if (waitingPresenceForDrink) {
-      waitingPresenceForDrink = false;
-      if (isHome && !drinkAlertActive) {
-        drinkAlertActive = true;
-        drinkAlertStartMs = millis();
-        comms.send(CMD_ALERT_REMINDER, 0);
+    LOG2S("PRESENCE: ", isHome ? "HOME" : "AWAY");
+
+    if (waitingPresence) {
+      waitingPresence = false;
+      if (isHome) {
+        startDrinkAlert();
       } else {
-        // User is away -> snooze (no alert). Next interval will re-check.
+        LOG("User AWAY -> skipping drinking alert (will retry next interval).");
       }
     }
     break;
   }
+
   default:
     break;
   }
 }
 
+// ==================== SETUP ====================
+
 void setup() {
   Serial.begin(115200);
-#if HYDRATION_LOG
-  Serial.println("[v3] Booting...");
-#endif
+  LOG("v3 Booting...");
 
   comms.begin();
   delay(100);
   hw.begin();
   timeSync.begin();
 
-  // Load last baseline weight from NVM, if available
+  // Load baseline from NVM
   if (hw.loadBaseline(&baselineWeight)) {
     baselineValid = true;
-#if HYDRATION_LOG
-    Serial.print("[v3] Loaded baseline from NVM: ");
-    Serial.println(baselineWeight);
-#endif
+    LOG2("Loaded baseline from NVM: ", baselineWeight);
   } else {
     baselineValid = false;
-#if HYDRATION_LOG
-    Serial.println("[v3] No baseline in NVM - will trigger first drinking alert when bottle present.");
-#endif
+    LOG("No baseline in NVM. Will set on first bottle detection.");
   }
 
   // Load daily total from NVM
   hw.loadTotals(&dailyTotalMl, &currentDayIndex);
-#if HYDRATION_LOG
-  Serial.print("[v3] Loaded daily total from NVM: ");
-  Serial.print(dailyTotalMl);
-  Serial.print(" ml, day index ");
-  Serial.println(currentDayIndex);
-#endif
+  LOG2("Loaded daily total: ", dailyTotalMl);
 
-#if HYDRATION_LOG
-  Serial.println("[v3] Rainbow on. Requesting time from Pi...");
-#endif
+  LOG("Rainbow on. Waiting for time sync from Pi...");
 }
 
+// ==================== MAIN LOOP ====================
+
 void loop() {
+  // --- Always: process packets and time sync ---
   processIncomingPackets();
   timeSync.tick(comms);
 
+  // --- Before time sync: rainbow and nothing else ---
   if (!timeSync.isSynced()) {
     hw.animateRainbow(30);
-    return;
+    return;  // only early return in the whole loop
   }
 
-  static bool rainbowStopped = false;
-  if (!rainbowStopped) {
-    rainbowStopped = true;
+  // --- One-time: stop rainbow after sync ---
+  static bool rainbowDone = false;
+  if (!rainbowDone) {
+    rainbowDone = true;
     hw.setRgb(0, 0, 0);
+    hw.setLed(false);
+    hw.setBuzzer(false);
+    LOG("Time synced. Rainbow off.");
   }
 
-  // Time synced: check sleep window (Config.h: SLEEP_START_HOUR, SLEEP_END_HOUR)
+  // --- Compute time state ---
   int hour = timeSync.getHour();
-  bool isSleepTime = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
-
+  bool isSleep = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
   unsigned long now = millis();
 
-  // --- Day tracking for daily total ---
-  if (timeSync.isSynced()) {
+  // --- Day tracking (reset daily total at midnight) ---
+  {
     int day = (int)timeSync.getDay();
     if (!dayInitialized) {
       dayInitialized = true;
@@ -181,230 +305,187 @@ void loop() {
         dailyTotalMl = 0.0f;
         hw.saveTotals(dailyTotalMl, currentDayIndex);
         comms.sendFloat(CMD_DAILY_TOTAL, dailyTotalMl);
-#if HYDRATION_LOG
-        Serial.print("[v3] New day detected (init) -> reset daily total to ");
-        Serial.println(dailyTotalMl);
-#endif
+        LOG("New day -> daily total reset.");
       }
     } else if (day != currentDayIndex) {
       currentDayIndex = day;
       dailyTotalMl = 0.0f;
       hw.saveTotals(dailyTotalMl, currentDayIndex);
       comms.sendFloat(CMD_DAILY_TOTAL, dailyTotalMl);
-#if HYDRATION_LOG
-      Serial.print("[v3] New day detected -> reset daily total to ");
-      Serial.println(dailyTotalMl);
-#endif
+      LOG("New day -> daily total reset.");
     }
   }
 
-  // --- Bottle present / missing detection + reporting ---
+  // ====================================================
+  // SECTION 1: Sample weight, send to Pi, print to Serial
+  // ====================================================
   static unsigned long lastSampleMs = 0;
   if (now - lastSampleMs >= WEIGHT_PRINT_INTERVAL_MS) {
     lastSampleMs = now;
-
     float w = hw.getWeight();
-
-    // Always send weight to Pi for dashboard
     comms.sendFloat(CMD_REPORT_WEIGHT, w);
-
-    // Detect missing / placed-back transitions
-    if (w < THRESHOLD_WEIGHT) {
-      if (!bottleMissing) {
-        bottleMissing = true;
-        missingSinceMs = now;
-        missingAlertActive = false;
-        lastBlinkMs = 0;
-        blinkOn = false;
-        hw.setBuzzer(false);
-        hw.setLed(false);  // stop white light immediately when bottle removed
-
-        // When bottle is lifted, stop any active drinking alert
-        if (drinkAlertActive) {
-          drinkAlertActive = false;
-          comms.send(CMD_ALERT_STOPPED, 0);
-        }
-      }
-    } else {
-      if (bottleMissing) {
-        bottleMissing = false;
-        hw.setBuzzer(false);
-        missingAlertActive = false;
-        // Notify Pi: bottle placed back
-        comms.send(CMD_ALERT_REPLACED, 0);
-        // We will evaluate drink/refill vs baseline later (on interval); no immediate change here
-        stabilizingAfterReturn = true;
-        stabilizeStartMs = now;
-#if HYDRATION_LOG
-        Serial.println("[v3] Bottle returned - starting stabilization window.");
-#endif
-      }
-    }
-
-    // Only print weight to Serial when not in sleep window
-    if (!isSleepTime) {
-      Serial.print("[");
-      Serial.print(now);
-      Serial.print("] weight ");
-      Serial.println(w);
+    if (!isSleep) {
+      Serial.print("["); Serial.print(now);
+      Serial.print("] weight "); Serial.println(w);
     }
   }
 
-  // --- Drinking logic (daytime only, bottle present, not missing) ---
-  if (!isSleepTime && !bottleMissing) {
-    // Wait for stabilization after bottle returned
-    if (stabilizingAfterReturn) {
-      if (now - stabilizeStartMs < STABILIZATION_MS) {
-#if HYDRATION_LOG
-        Serial.println("[v3] Stabilizing after return... waiting before drink/refill evaluation.");
-#endif
-        return;
-      } else {
-        stabilizingAfterReturn = false;
-#if HYDRATION_LOG
-        Serial.println("[v3] Stabilization complete - evaluating drink/refill vs baseline.");
-#endif
+  // ====================================================
+  // SECTION 2: Bottle missing / present transitions
+  // ====================================================
+  float currentW = hw.getWeight();
+
+  if (currentW < THRESHOLD_WEIGHT) {
+    // --- Bottle is OFF the scale ---
+    if (!bottleMissing) {
+      bottleMissing      = true;
+      missingStartMs     = now;
+      missingAlertActive = false;
+      missingBlinkMs     = 0;
+      missingBlinkOn     = false;
+      stabilizing        = false;
+      LOG("Bottle LIFTED.");
+
+      // Stop any active drinking alert immediately
+      if (drinkAlertActive) {
+        stopDrinkAlert();
       }
     }
+  } else {
+    // --- Bottle is ON the scale ---
+    if (bottleMissing) {
+      bottleMissing      = false;
+      missingAlertActive = false;
+      stabilizing        = true;
+      stabilizeStartMs   = now;
+      comms.send(CMD_ALERT_REPLACED, 0);
+      LOG("Bottle RETURNED. Stabilizing...");
+    }
+  }
 
-    float wCurrent = hw.getWeight(); // fresh read for decision
+  // ====================================================
+  // SECTION 3: Stabilization (wait, then evaluate immediately)
+  // ====================================================
+  // Note: we do NOT return here. The visual section below still runs.
+  if (stabilizing) {
+    if (now - stabilizeStartMs >= STABILIZATION_MS) {
+      stabilizing = false;
+      float stableW = hw.getWeight();
+      LOG2("Stabilized at: ", stableW);
+      LOG("Evaluating drink/refill vs baseline...");
+      evaluateWeight(stableW);
+      // After evaluation, lastDrinkCheckMs is reset if drink/refill detected.
+      // If no change, lastDrinkCheckMs is NOT reset, so the interval check
+      // will fire again soon (matching old v1 behaviour: no mercy).
+    }
+    // While stabilizing, skip interval check but DO run visuals below.
+  }
 
-    // First run: no baseline stored yet -> set baseline and trigger drinking alert
+  // ====================================================
+  // SECTION 4: Interval drinking logic (daytime, bottle present, not stabilizing)
+  // ====================================================
+  // Guards match old LogicManager state machine: evaluation only runs in
+  // "MONITORING" equivalent (not during alert, not waiting for presence reply).
+  else if (!isSleep && !bottleMissing && !drinkAlertActive && !waitingPresence) {
+    float wNow = hw.getWeight();
+
     if (!baselineValid) {
-      baselineWeight = wCurrent;
-      baselineValid = true;
-      hw.saveBaseline(baselineWeight);
-      // Before starting alert, check presence with Pi
-      waitingPresenceForDrink = true;
-#if HYDRATION_LOG
-      Serial.println("[v3] First baseline set - requesting presence before drinking alert.");
-#endif
-      comms.send(CMD_REQUEST_PRESENCE, 0);
+      // First time ever: set baseline and request presence for first alert
+      evaluateWeight(wNow);
     } else if (now - lastDrinkCheckMs >= DRINK_CHECK_INTERVAL_MS) {
-      lastDrinkCheckMs = now;
-      float diff = baselineWeight - wCurrent; // +ve = user drank, -ve = refill
-      float absDiff = fabs(diff);
-
-      if (diff >= DRINK_MIN_DELTA) {
-        // User drank
-        comms.sendFloat(CMD_DRINK_DETECTED, diff);
-        dailyTotalMl += diff;
-        hw.saveTotals(dailyTotalMl, currentDayIndex);
-        comms.sendFloat(CMD_DAILY_TOTAL, dailyTotalMl);
-#if HYDRATION_LOG
-        Serial.print("[v3] User drank ");
-        Serial.print(diff);
-        Serial.print(" ml. Daily total now ");
-        Serial.println(dailyTotalMl);
-#endif
-        baselineWeight = wCurrent;
-        hw.saveBaseline(baselineWeight);
-        drinkAlertActive = false;
-        drinkBlinkMs = 0;
-        drinkBlinkOn = false;
-        comms.send(CMD_ALERT_STOPPED, 0);
-      } else if (diff <= -REFILL_MIN_DELTA) {
-        // Bottle refilled
-        // Optional: define a REFILL command; for now we just log via Serial and update baseline
-#if HYDRATION_LOG
-        Serial.print("[v3] Bottle refilled by ");
-        Serial.print(-diff);
-        Serial.println(" ml - updating baseline.");
-#endif
-        baselineWeight = wCurrent;
-        hw.saveBaseline(baselineWeight);
-        drinkAlertActive = false;
-        drinkBlinkMs = 0;
-        drinkBlinkOn = false;
-        comms.send(CMD_ALERT_STOPPED, 0);
-      } else if (absDiff <= DRINK_NOISE_THRESHOLD) {
-        // No significant change -> request presence; only remind if user is HOME
-        if (!drinkAlertActive && !waitingPresenceForDrink) {
-          waitingPresenceForDrink = true;
-#if HYDRATION_LOG
-          Serial.println("[v3] No significant drink detected - requesting presence for reminder.");
-#endif
-          comms.send(CMD_REQUEST_PRESENCE, 0);
-        }
-      }
-      // If small but not inside noise band, we keep baseline and do nothing (micro-sips)
+      LOG("Interval expired. Evaluating...");
+      evaluateWeight(wNow);
     }
   }
 
-  // --- Visuals & buzzer based on state ---
+  // ====================================================
+  // SECTION 5: VISUALS (always runs, never skipped)
+  // ====================================================
+  // Priority: missing alert > stabilizing > drinking alert > sleep > day
+
   if (bottleMissing) {
-    // Wait for configured delay before starting the \"no bottle\" alert
+    // ----- Missing bottle path -----
     if (!missingAlertActive) {
-      if (now - missingSinceMs >= MISSING_ALERT_DELAY_MS) {
+      if (now - missingStartMs >= MISSING_ALERT_DELAY_MS) {
         missingAlertActive = true;
-        alertStartMs = now;
-        lastBlinkMs = 0;
-        blinkOn = false;
-        // Now trigger the missing bottle alert to Pi
+        missingAlertMs     = now;
+        missingBlinkMs     = 0;
+        missingBlinkOn     = false;
         comms.send(CMD_ALERT_MISSING, 0);
+        LOG("MISSING ALERT -> STARTED (sending to Pi).");
       } else {
-        // Before alert starts, just show normal day/sleep colour and no buzzer
+        // Before alert delay: show day/sleep color, buzzer off
         hw.setBuzzer(false);
-        if (isSleepTime) {
+        hw.setLed(false);
+        if (isSleep) {
           hw.setRgb(COLOR_SLEEP_R, COLOR_SLEEP_G, COLOR_SLEEP_B);
         } else {
           hw.setRgb(COLOR_DAY_R, COLOR_DAY_G, COLOR_DAY_B);
         }
-        return;
       }
     }
 
-    // Alert is active: flash missing colour
-    if (now - lastBlinkMs >= BLINK_INTERVAL_MS) {
-      lastBlinkMs = now;
-      blinkOn = !blinkOn;
-      if (blinkOn) {
+    if (missingAlertActive) {
+      // Flash red
+      if (now - missingBlinkMs >= BLINK_INTERVAL_MS) {
+        missingBlinkMs = now;
+        missingBlinkOn = !missingBlinkOn;
+      }
+      if (missingBlinkOn) {
         hw.setRgb(COLOR_MISSING_R, COLOR_MISSING_G, COLOR_MISSING_B);
+        hw.setLed(true);
       } else {
         hw.setRgb(0, 0, 0);
+        hw.setLed(false);
+      }
+      // Buzzer joins after extra delay
+      if (now - missingAlertMs >= MISSING_BUZZER_DELAY_MS) {
+        hw.setBuzzer(missingBlinkOn);
+      } else {
+        hw.setBuzzer(false);
       }
     }
 
-    // After additional delay from alert start, join with buzzer
-    if (now - alertStartMs >= MISSING_BUZZER_DELAY_MS) {
-      hw.setBuzzer(blinkOn);
+  } else if (stabilizing) {
+    // ----- Stabilizing: show day/sleep color, everything else off -----
+    hw.setBuzzer(false);
+    hw.setLed(false);
+    if (isSleep) {
+      hw.setRgb(COLOR_SLEEP_R, COLOR_SLEEP_G, COLOR_SLEEP_B);
+    } else {
+      hw.setRgb(COLOR_DAY_R, COLOR_DAY_G, COLOR_DAY_B);
+    }
+
+  } else if (drinkAlertActive && !isSleep) {
+    // ----- Drinking alert: cyan + white blink, buzzer joins after delay -----
+    if (now - drinkBlinkMs >= BLINK_INTERVAL_MS) {
+      drinkBlinkMs = now;
+      drinkBlinkOn = !drinkBlinkOn;
+    }
+    if (drinkBlinkOn) {
+      hw.setRgb(COLOR_DRINK_ALERT_R, COLOR_DRINK_ALERT_G, COLOR_DRINK_ALERT_B);
+      hw.setLed(true);
+    } else {
+      hw.setRgb(0, 0, 0);
+      hw.setLed(false);
+    }
+
+    unsigned long since = now - drinkAlertStartMs;
+    if (since >= DRINK_ALERT_BUZZER_DELAY_MS &&
+        since <  DRINK_ALERT_BUZZER_DELAY_MS + DRINK_ALERT_BUZZER_WINDOW_MS) {
+      hw.setBuzzer(drinkBlinkOn);  // buzzer follows blink during window
     } else {
       hw.setBuzzer(false);
     }
+
   } else {
-    // No missing bottle: buzzer off, color by sleep/day time
+    // ----- Normal: day or sleep color -----
     hw.setBuzzer(false);
-    if (isSleepTime) {
+    hw.setLed(false);
+    if (isSleep) {
       hw.setRgb(COLOR_SLEEP_R, COLOR_SLEEP_G, COLOR_SLEEP_B);
     } else {
-      // Daytime: if a drinking alert is active, show its colour and after some time add buzzer
-      if (drinkAlertActive) {
-        // Drinking alert: cyan + white LED; buzzer joins for a limited window
-        if (now - drinkBlinkMs >= BLINK_INTERVAL_MS) {
-          drinkBlinkMs = now;
-          drinkBlinkOn = !drinkBlinkOn;
-        }
-
-        if (drinkBlinkOn) {
-          hw.setRgb(COLOR_DRINK_ALERT_R, COLOR_DRINK_ALERT_G, COLOR_DRINK_ALERT_B);
-          hw.setLed(true);
-        } else {
-          hw.setRgb(0, 0, 0);
-          hw.setLed(false);
-        }
-
-        unsigned long sinceStart = now - drinkAlertStartMs;
-        if (sinceStart >= DRINK_ALERT_BUZZER_DELAY_MS &&
-            sinceStart <  DRINK_ALERT_BUZZER_DELAY_MS + DRINK_ALERT_BUZZER_WINDOW_MS &&
-            drinkBlinkOn) {
-          hw.setBuzzer(true);   // buzzer follows the blink, for 10s window
-        } else {
-          hw.setBuzzer(false);
-        }
-      } else {
-        hw.setRgb(COLOR_DAY_R, COLOR_DAY_G, COLOR_DAY_B);
-        hw.setLed(false);
-      }
+      hw.setRgb(COLOR_DAY_R, COLOR_DAY_G, COLOR_DAY_B);
     }
   }
 }
