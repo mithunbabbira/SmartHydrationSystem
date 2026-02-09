@@ -1,31 +1,32 @@
-#ifndef HYDRATION_V2_COMMS_H
-#define HYDRATION_V2_COMMS_H
+#ifndef HYDRATION_V3_COMMS_H
+#define HYDRATION_V3_COMMS_H
 
 #include "Config.h"
-#include "Log.h"
 #include <WiFi.h>
 #include <esp_now.h>
 
 static const uint8_t MASTER_MAC[] = MASTER_MAC_BYTES;
 
+// Commands (same as v2 for Pi compatibility)
 enum CmdType {
-  CMD_SET_LED = 0x10,
-  CMD_SET_BUZZER = 0x11,
-  CMD_SET_RGB = 0x12,
-  CMD_GET_WEIGHT = 0x20,
-  CMD_REPORT_WEIGHT = 0x21,
-  CMD_TARE = 0x22,
-  CMD_REQUEST_DAILY_TOTAL = 0x23,
-  CMD_REQUEST_TIME = 0x30,
-  CMD_REPORT_TIME = 0x31,
+  CMD_SET_LED         = 0x10,
+  CMD_SET_BUZZER      = 0x11,
+  CMD_SET_RGB         = 0x12,
+  CMD_GET_WEIGHT      = 0x20,
+  CMD_REPORT_WEIGHT   = 0x21,
+  CMD_TARE            = 0x22,
+  CMD_REQUEST_TIME    = 0x30,
+  CMD_REPORT_TIME     = 0x31,
   CMD_REQUEST_PRESENCE = 0x40,
   CMD_REPORT_PRESENCE = 0x41,
-  CMD_ALERT_MISSING = 0x50,
-  CMD_ALERT_REPLACED = 0x51,
-  CMD_ALERT_REMINDER = 0x52,
-  CMD_ALERT_STOPPED = 0x53,
-  CMD_DRINK_DETECTED = 0x60,
-  CMD_DAILY_TOTAL = 0x61
+  // Alerts / hydration (for future use)
+  CMD_ALERT_MISSING   = 0x50,
+  CMD_ALERT_REPLACED  = 0x51,
+  CMD_ALERT_REMINDER  = 0x52,
+  CMD_ALERT_STOPPED   = 0x53,
+  CMD_DRINK_DETECTED  = 0x60,
+  CMD_DAILY_TOTAL     = 0x61,
+  CMD_REQUEST_DAILY_TOTAL = 0x23,
 };
 
 typedef struct __attribute__((packed)) {
@@ -37,9 +38,8 @@ typedef struct __attribute__((packed)) {
 ControlPacket incomingPacket;
 volatile bool packetReceived = false;
 
-void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {}
-
-void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+static void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {}
+static void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
   if (len == sizeof(ControlPacket)) {
     memcpy(&incomingPacket, data, sizeof(ControlPacket));
     packetReceived = true;
@@ -51,7 +51,9 @@ public:
   void begin() {
     WiFi.mode(WIFI_STA);
     if (esp_now_init() != ESP_OK) {
-      LOG_WARN("ESP-NOW Init Failed");
+#if HYDRATION_LOG
+      Serial.println("[Comms] ESP-NOW init failed");
+#endif
       return;
     }
     esp_now_register_send_cb(OnDataSent);
@@ -61,7 +63,9 @@ public:
     peerInfo.channel = 0;
     peerInfo.encrypt = false;
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-      LOG_WARN("Failed to add Master peer");
+#if HYDRATION_LOG
+      Serial.println("[Comms] Failed to add master peer");
+#endif
     }
   }
 
