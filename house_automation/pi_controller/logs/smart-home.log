@@ -1,0 +1,1900 @@
+2026-02-16 00:16:31 - root - INFO - Logging to /home/mithun/projects/water_bottle/SmartHydrationSystem/house_automation/pi_controller/logs/smart-home.log (rotating, max 4 MB total; old logs auto-deleted)
+2026-02-16 00:16:31 - PiController - INFO - Connected to /dev/serial0 at 115200 baud.
+2026-02-16 00:16:31 - PiController - INFO - Watchdog started.
+2026-02-16 00:16:31 - PiController - INFO - Reader thread started.
+2026-02-16 00:16:31 - PiController - INFO - Controller started in HEADLESS mode.
+2026-02-16 00:16:31 - WebServer - INFO - Controller Background Thread Started
+2026-02-16 00:16:31 - WebServer - INFO - Daily Scheduler Started
+2026-02-16 00:16:31 - WebServer - INFO - ONO price fetcher started (fetch 60s, push 15s)
+2026-02-16 00:16:31 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.109:5000
+2026-02-16 00:16:31 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-02-16 00:16:31 - PiController - INFO - HYDRATION WEIGHT: 836.09 g
+2026-02-16 00:16:32 - PiController - INFO - HYDRATION WEIGHT: 836.10 g
+2026-02-16 00:16:33 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013189149269
+2026-02-16 00:16:33 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:16:33 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:16:34 - PiController - INFO - HYDRATION WEIGHT: 836.05 g
+2026-02-16 00:16:35 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:16:35 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:35] "GET / HTTP/1.1" 200 -
+2026-02-16 00:16:35 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:35] "GET /style.css?v=10 HTTP/1.1" 200 -
+2026-02-16 00:16:36 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:36] "GET /app.js?v=4 HTTP/1.1" 200 -
+2026-02-16 00:16:36 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:36] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:36 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:36] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:36 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:16:36 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:36] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:36 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:16:36 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:36] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-02-16 00:16:36 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:16:36 - PiController - INFO - HYDRATION WEIGHT: 836.22 g
+2026-02-16 00:16:36 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:16:36 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370290b983ca0499540
+2026-02-16 00:16:36 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370290b983ca0499540
+2026-02-16 00:16:36 - PiController - INFO - Sent ONO Price $0.0186 24h +4.67% to 2 display(s)
+2026-02-16 00:16:37 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:37] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:37 - PiController - INFO - HYDRATION WEIGHT: 836.12 g
+2026-02-16 00:16:38 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:16:38 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:38] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:38 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:38] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:38 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:16:38 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01318e149269
+2026-02-16 00:16:38 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:16:38 - PiController - INFO - HYDRATION WEIGHT: 835.97 g
+2026-02-16 00:16:39 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:39 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:39] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:39 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:39 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:39 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:16:39 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:39] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:16:39 - PiController - INFO - HYDRATION WEIGHT: 836.38 g
+2026-02-16 00:16:40 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:40] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:40 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:40] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:40 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:16:40 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:16:40 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:40] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:40 - PiController - INFO - HYDRATION WEIGHT: 836.30 g
+2026-02-16 00:16:40 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:16:40 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:16:40 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:40] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:41 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:16:41 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:16:41 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:41] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:41 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:16:41 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:16:41 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:41] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:41 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:16:41 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:16:41 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:41] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:41 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:16:41 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:16:41 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:41] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:41 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:16:41 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:16:41 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:16:41 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:41] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:41 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:16:41 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:16:41 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:41] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:42 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:42] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:42 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:42] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:42 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:16:43 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013193149269
+2026-02-16 00:16:43 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:16:43 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:43] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:43 - PiController - INFO - HYDRATION WEIGHT: 836.08 g
+2026-02-16 00:16:44 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:44] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:44 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:16:45 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:45] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:45 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:16:46 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:46] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:46 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:46] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:46 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:16:47 - PiController - INFO - HYDRATION WEIGHT: 836.07 g
+2026-02-16 00:16:48 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:48] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:48 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:48] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:48 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013198149269
+2026-02-16 00:16:48 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:16:48 - PiController - INFO - HYDRATION WEIGHT: 836.07 g
+2026-02-16 00:16:48 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:16:49 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:49] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:16:49 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:49] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:16:49 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:16:49 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:49] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:16:49 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:49] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:49 - PiController - INFO - HYDRATION WEIGHT: 836.32 g
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:16:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:16:49 - PiController - INFO - Sent IR NEC: 0x00F7A05F (Burst x3)
+2026-02-16 00:16:49 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:49] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:16:50 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:16:50 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:50] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:50 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:16:50 - PiController - INFO - Sent IR NEC: 0x00F7A05F (Burst x3)
+2026-02-16 00:16:50 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:50] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:16:50 - PiController - INFO - HYDRATION WEIGHT: 836.00 g
+2026-02-16 00:16:51 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:51] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:51 - PiController - INFO - HYDRATION WEIGHT: 836.35 g
+2026-02-16 00:16:51 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370290b983ca0499540
+2026-02-16 00:16:51 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370290b983ca0499540
+2026-02-16 00:16:51 - PiController - INFO - Sent ONO Price $0.0186 24h +4.67% to 2 display(s)
+2026-02-16 00:16:52 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:52] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:52 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:52] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:52 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:16:52 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:16:52 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:52 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:52 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:52 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:53 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:16:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:16:53 - PiController - INFO - Sent LED OFF
+2026-02-16 00:16:53 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:53] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:53 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01319d149269
+2026-02-16 00:16:53 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:16:53 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:53 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:53 - PiController - INFO - HYDRATION WEIGHT: 836.17 g
+2026-02-16 00:16:54 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:54] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:54 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:54] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:54 - PiController - INFO - HYDRATION WEIGHT: 836.11 g
+2026-02-16 00:16:54 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:16:54 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:54 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:16:55 - PiController - INFO - Sent LED OFF
+2026-02-16 00:16:55 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:55] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:55 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:16:55 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:55 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:55] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:55 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:16:55 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:55 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:16:55 - PiController - INFO - Sent LED OFF
+2026-02-16 00:16:55 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:55] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:55 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:55 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:55 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:16:55 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:16:55 - PiController - INFO - Sent LED OFF
+2026-02-16 00:16:55 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:55] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:56 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:56] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:56 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:56 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:56 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:56 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:56 - PiController - INFO - HYDRATION WEIGHT: 835.94 g
+2026-02-16 00:16:57 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:57] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:57 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:16:58 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:58] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:16:58 - WebServer - INFO - MASTER CONTROL: Turning ALL ON
+2026-02-16 00:16:58 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:58 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03313fc0f700
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03313fc0f700
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03313fc0f700
+2026-02-16 00:16:58 - PiController - INFO - Sent IR NEC: 0x00F7C03F (Burst x3)
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02100000803F
+2026-02-16 00:16:58 - PiController - INFO - Sent LED ON
+2026-02-16 00:16:58 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:58] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:58 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 0131a2149269
+2026-02-16 00:16:58 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:16:58 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:58] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:16:58 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:16:58 - WebServer - INFO - MASTER CONTROL: Turning ALL ON
+2026-02-16 00:16:58 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:58 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03313fc0f700
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03313fc0f700
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03313fc0f700
+2026-02-16 00:16:58 - PiController - INFO - Sent IR NEC: 0x00F7C03F (Burst x3)
+2026-02-16 00:16:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02100000803F
+2026-02-16 00:16:58 - PiController - INFO - Sent LED ON
+2026-02-16 00:16:58 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:58] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:58 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:58 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:59 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:16:59 - PiController - INFO - Sent LED OFF
+2026-02-16 00:16:59 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:59] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:59 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:16:59 - PiController - INFO - Sent LED OFF
+2026-02-16 00:16:59 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:59] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:59 - PiController - INFO - HYDRATION WEIGHT: 835.98 g
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:16:59 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:16:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:16:59 - PiController - INFO - Sent LED OFF
+2026-02-16 00:16:59 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:16:59] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:16:59 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:00 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:00] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:17:00 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:00] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:00 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:00 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:00 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:00 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:00 - PiController - INFO - HYDRATION WEIGHT: 835.79 g
+2026-02-16 00:17:01 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:01] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:01 - PiController - INFO - HYDRATION WEIGHT: 836.29 g
+2026-02-16 00:17:02 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:02] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:17:02 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:02] "[36mGET / HTTP/1.1[0m" 304 -
+2026-02-16 00:17:02 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:02] "[36mGET /style.css?v=10 HTTP/1.1[0m" 304 -
+2026-02-16 00:17:02 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:02] "[36mGET /app.js?v=4 HTTP/1.1[0m" 304 -
+2026-02-16 00:17:02 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:17:02 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:02] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:17:02 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:02] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:02 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:02] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:17:02 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:17:02 - PiController - INFO - HYDRATION WEIGHT: 836.06 g
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "[36mGET / HTTP/1.1[0m" 304 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "[36mGET /style.css?v=10 HTTP/1.1[0m" 304 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "[36mGET /app.js?v=4 HTTP/1.1[0m" 304 -
+2026-02-16 00:17:03 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:17:03 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:17:03 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 0131a7149269
+2026-02-16 00:17:03 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:17:03 - PiController - INFO - HYDRATION WEIGHT: 835.84 g
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "[36mGET / HTTP/1.1[0m" 304 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "[36mGET /style.css?v=10 HTTP/1.1[0m" 304 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "[36mGET /app.js?v=4 HTTP/1.1[0m" 304 -
+2026-02-16 00:17:03 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:03 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:03] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:17:03 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:17:04 - PiController - INFO - HYDRATION WEIGHT: 836.11 g
+2026-02-16 00:17:05 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:05] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:05 - PiController - INFO - HYDRATION WEIGHT: 836.09 g
+2026-02-16 00:17:05 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:05] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:17:05 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:17:05 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:05] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:17:05 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:17:06 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:17:06 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:06] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:06 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370290b983ca0499540
+2026-02-16 00:17:06 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370290b983ca0499540
+2026-02-16 00:17:06 - PiController - INFO - Sent ONO Price $0.0186 24h +4.67% to 2 display(s)
+2026-02-16 00:17:07 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:17:07 - PiController - INFO - Sent LED OFF
+2026-02-16 00:17:07 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:07] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:17:07 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - HYDRATION WEIGHT: 836.06 g
+2026-02-16 00:17:07 - WebServer - INFO - MASTER CONTROL: Turning ALL OFF
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:17:07 - PiController - INFO - Sent LED OFF
+2026-02-16 00:17:07 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:07] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331bf40f700
+2026-02-16 00:17:07 - PiController - INFO - Sent IR NEC: 0x00F740BF (Burst x3)
+2026-02-16 00:17:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021000000000
+2026-02-16 00:17:07 - PiController - INFO - Sent LED OFF
+2026-02-16 00:17:07 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:07] "POST /api/master/cmd HTTP/1.1" 200 -
+2026-02-16 00:17:07 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:07] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:07 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:08 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:08 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:08 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:08 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:08 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:08] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:17:08 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:08 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 0131ac149269
+2026-02-16 00:17:08 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:17:08 - PiController - INFO - HYDRATION WEIGHT: 836.35 g
+2026-02-16 00:17:08 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:09 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:09 - WebServer - ERROR - AIO Fail: {"error":"request failed - invalid API key provided"}
+2026-02-16 00:17:09 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:09] "[35m[1mPOST /api/aio/cmd HTTP/1.1[0m" 502 -
+2026-02-16 00:17:09 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:09 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): io.adafruit.com:443
+2026-02-16 00:17:09 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:09 - WebServer - ERROR - AIO Fail: {"error":"request failed - invalid API key provided"}
+2026-02-16 00:17:09 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:09] "[35m[1mPOST /api/aio/cmd HTTP/1.1[0m" 502 -
+2026-02-16 00:17:09 - PiController - INFO - HYDRATION WEIGHT: 836.00 g
+2026-02-16 00:17:09 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:09 - WebServer - ERROR - AIO Fail: {"error":"request failed - invalid API key provided"}
+2026-02-16 00:17:09 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:09] "[35m[1mPOST /api/aio/cmd HTTP/1.1[0m" 502 -
+2026-02-16 00:17:09 - urllib3.connectionpool - DEBUG - https://io.adafruit.com:443 "POST /api/v2/babbiramithun/feeds/command/data HTTP/1.1" 401 53
+2026-02-16 00:17:09 - WebServer - ERROR - AIO Fail: {"error":"request failed - invalid API key provided"}
+2026-02-16 00:17:10 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:17:10] "[35m[1mPOST /api/aio/cmd HTTP/1.1[0m" 502 -
+2026-02-16 00:17:10 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:17:11 - PiController - INFO - HYDRATION WEIGHT: 836.07 g
+2026-02-16 00:17:12 - PiController - INFO - HYDRATION WEIGHT: 836.18 g
+2026-02-16 00:17:13 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 0131b1149269
+2026-02-16 00:17:13 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:17:13 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:17:14 - PiController - INFO - HYDRATION WEIGHT: 836.23 g
+2026-02-16 00:17:15 - PiController - INFO - HYDRATION WEIGHT: 836.19 g
+2026-02-16 00:17:16 - PiController - INFO - HYDRATION WEIGHT: 836.16 g
+2026-02-16 00:19:20 - root - INFO - Logging to /home/mithun/projects/water_bottle/SmartHydrationSystem/house_automation/pi_controller/logs/smart-home.log (rotating, max 4 MB total; old logs auto-deleted)
+2026-02-16 00:19:20 - PiController - INFO - Connected to /dev/serial0 at 115200 baud.
+2026-02-16 00:19:20 - PiController - INFO - Watchdog started.
+2026-02-16 00:19:20 - PiController - INFO - Reader thread started.
+2026-02-16 00:19:20 - PiController - INFO - Controller started in HEADLESS mode.
+2026-02-16 00:19:20 - WebServer - INFO - Controller Background Thread Started
+2026-02-16 00:19:20 - WebServer - INFO - Daily Scheduler Started
+2026-02-16 00:19:20 - WebServer - INFO - ONO price fetcher started (fetch 60s, push 15s)
+2026-02-16 00:19:20 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.109:5000
+2026-02-16 00:19:20 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-02-16 00:19:21 - PiController - INFO - HYDRATION WEIGHT: 836.12 g
+2026-02-16 00:19:22 - PiController - INFO - HYDRATION WEIGHT: 836.17 g
+2026-02-16 00:19:22 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013132159269
+2026-02-16 00:19:22 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:23 - PiController - INFO - HYDRATION WEIGHT: 836.06 g
+2026-02-16 00:19:24 - PiController - INFO - HYDRATION WEIGHT: 836.09 g
+2026-02-16 00:19:25 - PiController - INFO - HYDRATION WEIGHT: 836.37 g
+2026-02-16 00:19:25 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:19:26 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:19:26 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:19:26 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:19:26 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:19:26 - PiController - INFO - HYDRATION WEIGHT: 836.07 g
+2026-02-16 00:19:27 - PiController - INFO - HYDRATION WEIGHT: 836.12 g
+2026-02-16 00:19:27 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013137159269
+2026-02-16 00:19:27 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:28 - PiController - INFO - HYDRATION WEIGHT: 836.26 g
+2026-02-16 00:19:29 - PiController - INFO - HYDRATION WEIGHT: 836.30 g
+2026-02-16 00:19:30 - PiController - INFO - HYDRATION WEIGHT: 836.17 g
+2026-02-16 00:19:31 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:19:32 - PiController - INFO - HYDRATION WEIGHT: 835.95 g
+2026-02-16 00:19:32 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01313c159269
+2026-02-16 00:19:32 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:33 - PiController - INFO - HYDRATION WEIGHT: 836.08 g
+2026-02-16 00:19:34 - PiController - INFO - HYDRATION WEIGHT: 835.94 g
+2026-02-16 00:19:35 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:19:36 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:19:37 - PiController - INFO - HYDRATION WEIGHT: 836.19 g
+2026-02-16 00:19:37 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013141159269
+2026-02-16 00:19:37 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:38 - PiController - INFO - HYDRATION WEIGHT: 836.07 g
+2026-02-16 00:19:39 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:19:40 - PiController - INFO - HYDRATION WEIGHT: 836.02 g
+2026-02-16 00:19:41 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:19:41 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:19:41 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:19:41 - PiController - INFO - HYDRATION WEIGHT: 836.36 g
+2026-02-16 00:19:42 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:19:42 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013146159269
+2026-02-16 00:19:42 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:43 - PiController - INFO - HYDRATION WEIGHT: 836.33 g
+2026-02-16 00:19:44 - PiController - INFO - HYDRATION WEIGHT: 836.07 g
+2026-02-16 00:19:45 - PiController - INFO - HYDRATION WEIGHT: 836.11 g
+2026-02-16 00:19:46 - PiController - INFO - HYDRATION WEIGHT: 836.18 g
+2026-02-16 00:19:47 - PiController - INFO - HYDRATION WEIGHT: 836.11 g
+2026-02-16 00:19:47 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01314b159269
+2026-02-16 00:19:47 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:48 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:19:49 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:19:50 - PiController - INFO - HYDRATION WEIGHT: 836.26 g
+2026-02-16 00:19:51 - PiController - INFO - HYDRATION WEIGHT: 836.38 g
+2026-02-16 00:19:52 - PiController - INFO - HYDRATION WEIGHT: 836.28 g
+2026-02-16 00:19:52 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013150159269
+2026-02-16 00:19:52 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:53 - PiController - INFO - HYDRATION WEIGHT: 836.12 g
+2026-02-16 00:19:54 - PiController - INFO - HYDRATION WEIGHT: 836.05 g
+2026-02-16 00:19:55 - PiController - INFO - HYDRATION WEIGHT: 836.18 g
+2026-02-16 00:19:56 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:19:56 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:19:56 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:19:56 - PiController - INFO - HYDRATION WEIGHT: 836.01 g
+2026-02-16 00:19:57 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:19:57 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013155159269
+2026-02-16 00:19:57 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:19:58 - PiController - INFO - HYDRATION WEIGHT: 836.29 g
+2026-02-16 00:19:59 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:20:00 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:20:01 - PiController - INFO - HYDRATION WEIGHT: 836.22 g
+2026-02-16 00:20:02 - PiController - INFO - HYDRATION WEIGHT: 836.39 g
+2026-02-16 00:20:02 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01315a159269
+2026-02-16 00:20:02 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:20:03 - PiController - INFO - HYDRATION WEIGHT: 836.00 g
+2026-02-16 00:20:04 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:20:05 - PiController - INFO - HYDRATION WEIGHT: 836.07 g
+2026-02-16 00:20:06 - PiController - INFO - HYDRATION WEIGHT: 836.21 g
+2026-02-16 00:20:07 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:20:07 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01315f159269
+2026-02-16 00:20:07 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:20:08 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:20:09 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:20:10 - PiController - INFO - HYDRATION WEIGHT: 836.18 g
+2026-02-16 00:20:11 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:20:11 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:20:11 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:20:11 - PiController - INFO - HYDRATION WEIGHT: 836.17 g
+2026-02-16 00:20:12 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:20:12 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013164159269
+2026-02-16 00:20:12 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:20:13 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:20:14 - PiController - INFO - HYDRATION WEIGHT: 836.06 g
+2026-02-16 00:20:15 - PiController - INFO - HYDRATION WEIGHT: 836.29 g
+2026-02-16 00:20:16 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:20:17 - PiController - INFO - HYDRATION WEIGHT: 836.31 g
+2026-02-16 00:20:17 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013169159269
+2026-02-16 00:20:17 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:20:18 - PiController - INFO - HYDRATION WEIGHT: 836.31 g
+2026-02-16 00:20:19 - PiController - INFO - HYDRATION WEIGHT: 836.04 g
+2026-02-16 00:20:20 - PiController - INFO - HYDRATION WEIGHT: 836.01 g
+2026-02-16 00:20:21 - PiController - INFO - HYDRATION WEIGHT: 836.16 g
+2026-02-16 00:20:22 - PiController - INFO - HYDRATION WEIGHT: 836.37 g
+2026-02-16 00:20:23 - PiController - INFO - HYDRATION WEIGHT: 836.06 g
+2026-02-16 00:20:24 - PiController - INFO - HYDRATION WEIGHT: 836.00 g
+2026-02-16 00:20:25 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:20:26 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:20:26 - PiController - INFO - HYDRATION WEIGHT: 836.12 g
+2026-02-16 00:20:26 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:20:26 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:20:26 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:20:26 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:20:27 - PiController - INFO - HYDRATION WEIGHT: 836.31 g
+2026-02-16 00:20:28 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:20:29 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:20:30 - PiController - INFO - HYDRATION WEIGHT: 836.10 g
+2026-02-16 00:20:31 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:20:32 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:20:33 - PiController - INFO - HYDRATION WEIGHT: 836.01 g
+2026-02-16 00:20:34 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:20:35 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:20:36 - PiController - INFO - HYDRATION WEIGHT: 836.17 g
+2026-02-16 00:20:37 - PiController - INFO - HYDRATION WEIGHT: 836.36 g
+2026-02-16 00:20:38 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:20:39 - PiController - INFO - HYDRATION WEIGHT: 836.02 g
+2026-02-16 00:20:40 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:20:41 - PiController - INFO - HYDRATION WEIGHT: 836.35 g
+2026-02-16 00:20:41 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:20:41 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:20:41 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:20:42 - PiController - INFO - HYDRATION WEIGHT: 836.23 g
+2026-02-16 00:20:43 - PiController - INFO - HYDRATION WEIGHT: 836.14 g
+2026-02-16 00:20:44 - PiController - INFO - HYDRATION WEIGHT: 836.09 g
+2026-02-16 00:20:45 - PiController - INFO - HYDRATION WEIGHT: 836.23 g
+2026-02-16 00:20:46 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:20:47 - PiController - INFO - HYDRATION WEIGHT: 836.40 g
+2026-02-16 00:20:48 - PiController - INFO - HYDRATION WEIGHT: 836.26 g
+2026-02-16 00:20:49 - PiController - INFO - HYDRATION WEIGHT: 836.44 g
+2026-02-16 00:20:50 - PiController - INFO - HYDRATION WEIGHT: 836.21 g
+2026-02-16 00:20:51 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:20:52 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:20:53 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:20:54 - PiController - INFO - HYDRATION WEIGHT: 835.98 g
+2026-02-16 00:20:55 - PiController - INFO - HYDRATION WEIGHT: 836.10 g
+2026-02-16 00:20:56 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:20:56 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:20:56 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:20:56 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:20:57 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:20:58 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:20:59 - PiController - INFO - HYDRATION WEIGHT: 836.23 g
+2026-02-16 00:21:00 - PiController - INFO - HYDRATION WEIGHT: 835.91 g
+2026-02-16 00:21:01 - PiController - INFO - HYDRATION WEIGHT: 836.31 g
+2026-02-16 00:21:02 - PiController - INFO - HYDRATION WEIGHT: 836.21 g
+2026-02-16 00:21:03 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:21:04 - PiController - INFO - HYDRATION WEIGHT: 836.33 g
+2026-02-16 00:21:05 - PiController - INFO - HYDRATION WEIGHT: 836.29 g
+2026-02-16 00:21:06 - PiController - INFO - HYDRATION WEIGHT: 836.08 g
+2026-02-16 00:21:07 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:21:08 - PiController - INFO - HYDRATION WEIGHT: 836.42 g
+2026-02-16 00:21:09 - PiController - INFO - HYDRATION WEIGHT: 836.27 g
+2026-02-16 00:21:10 - PiController - INFO - HYDRATION WEIGHT: 836.16 g
+2026-02-16 00:21:11 - PiController - INFO - HYDRATION WEIGHT: 836.18 g
+2026-02-16 00:21:11 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03707203983c429f9440
+2026-02-16 00:21:11 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03707203983c429f9440
+2026-02-16 00:21:11 - PiController - INFO - Sent ONO Price $0.0186 24h +4.64% to 2 display(s)
+2026-02-16 00:21:12 - PiController - INFO - HYDRATION WEIGHT: 836.18 g
+2026-02-16 00:21:13 - PiController - INFO - HYDRATION WEIGHT: 835.94 g
+2026-02-16 00:21:14 - PiController - INFO - HYDRATION WEIGHT: 836.19 g
+2026-02-16 00:21:15 - PiController - INFO - HYDRATION WEIGHT: 836.12 g
+2026-02-16 00:21:16 - PiController - INFO - HYDRATION WEIGHT: 836.11 g
+2026-02-16 00:21:17 - PiController - INFO - HYDRATION WEIGHT: 836.23 g
+2026-02-16 00:21:18 - PiController - INFO - HYDRATION WEIGHT: 836.45 g
+2026-02-16 00:21:19 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:21:20 - PiController - INFO - HYDRATION WEIGHT: 836.39 g
+2026-02-16 00:21:21 - PiController - INFO - HYDRATION WEIGHT: 836.21 g
+2026-02-16 00:21:22 - PiController - INFO - HYDRATION WEIGHT: 836.34 g
+2026-02-16 00:21:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:22] "GET / HTTP/1.1" 200 -
+2026-02-16 00:21:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:22] "[36mGET /style.css?v=10 HTTP/1.1[0m" 304 -
+2026-02-16 00:21:23 - PiController - INFO - HYDRATION WEIGHT: 836.13 g
+2026-02-16 00:21:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:23] "[36mGET /app.js?v=4 HTTP/1.1[0m" 304 -
+2026-02-16 00:21:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:23] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:23 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:21:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:23] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:23] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:23 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:21:24 - PiController - INFO - HYDRATION WEIGHT: 836.23 g
+2026-02-16 00:21:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:25] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:25 - PiController - INFO - HYDRATION WEIGHT: 836.24 g
+2026-02-16 00:21:25 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:21:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:25] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:25] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:25 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:21:26 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:21:26 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:21:26 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:26] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:26 - PiController - INFO - HYDRATION WEIGHT: 836.20 g
+2026-02-16 00:21:26 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:21:26 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:26] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:27 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:21:27 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:21:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:27] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:27 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:21:27 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:21:27 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:21:27 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:21:27 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:21:27 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:21:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:27] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:27 - PiController - INFO - HYDRATION WEIGHT: 836.26 g
+2026-02-16 00:21:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:27] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:28 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:21:28 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:21:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:28] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:28 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:21:28 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:21:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:28] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:28 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:21:28 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:21:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:28] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:28 - PiController - INFO - HYDRATION WEIGHT: 835.91 g
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:29 - PiController - INFO - HYDRATION WEIGHT: 836.28 g
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:29 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:21:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:29] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:29] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:29] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:29 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:21:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:29] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:29 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:30 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:21:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:30] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - Sent IR NEC: 0x00F7A05F (Burst x3)
+2026-02-16 00:21:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:30] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - Sent IR NEC: 0x00F7A05F (Burst x3)
+2026-02-16 00:21:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:30] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - HYDRATION WEIGHT: 836.17 g
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:21:30 - PiController - INFO - Sent IR NEC: 0x00F7A05F (Burst x3)
+2026-02-16 00:21:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:30] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:30 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - Sent IR NEC: 0x00F708F7 (Burst x3)
+2026-02-16 00:21:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:31] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - Sent IR NEC: 0x00F708F7 (Burst x3)
+2026-02-16 00:21:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:31] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331f708f700
+2026-02-16 00:21:31 - PiController - INFO - Sent IR NEC: 0x00F708F7 (Burst x3)
+2026-02-16 00:21:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:31] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:31 - PiController - INFO - HYDRATION WEIGHT: 836.00 g
+2026-02-16 00:21:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:31] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:31 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:31 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:21:31 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:21:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:31] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:31] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:32] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:32 - PiController - INFO - HYDRATION WEIGHT: 836.12 g
+2026-02-16 00:21:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:32] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:33 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012200000000
+2026-02-16 00:21:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:33] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:33] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:34 - PiController - INFO - HYDRATION WEIGHT: 0.00 g
+2026-02-16 00:21:34 - PiController - INFO - HYDRATION WEIGHT: 836.39 g
+2026-02-16 00:21:34 - PiController - INFO - ALERT [F0:24:F9:0C:DE:54]: Hydration Alert STOPPED.
+2026-02-16 00:21:34 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021305250000
+2026-02-16 00:21:34 - PiController - INFO - Sent LED Default (Rainbow)
+2026-02-16 00:21:34 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:34] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:34 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:34 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:34 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:21:34 - PiController - INFO - Reverted LED and IR to default
+2026-02-16 00:21:35 - PiController - INFO - HYDRATION WEIGHT: -0.05 g
+2026-02-16 00:21:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:35] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:35] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:36 - PiController - INFO - HYDRATION WEIGHT: -0.13 g
+2026-02-16 00:21:37 - PiController - INFO - HYDRATION WEIGHT: -0.19 g
+2026-02-16 00:21:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:37] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:37] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:38 - PiController - INFO - HYDRATION WEIGHT: 0.01 g
+2026-02-16 00:21:38 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:38] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:39 - PiController - INFO - HYDRATION WEIGHT: 0.12 g
+2026-02-16 00:21:39 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:39] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:40 - PiController - INFO - HYDRATION WEIGHT: -711.76 g
+2026-02-16 00:21:40 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:40] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:41 - PiController - INFO - HYDRATION WEIGHT: -836.16 g
+2026-02-16 00:21:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:41] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:41] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:42 - PiController - INFO - HYDRATION WEIGHT: -836.20 g
+2026-02-16 00:21:42 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:21:42 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:21:42 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:21:42 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012200000000
+2026-02-16 00:21:42 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:42] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:43] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:43 - PiController - INFO - HYDRATION WEIGHT: 0.00 g
+2026-02-16 00:21:43 - PiController - INFO - HYDRATION WEIGHT: -835.98 g
+2026-02-16 00:21:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:43] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:44 - PiController - INFO - HYDRATION WEIGHT: 0.01 g
+2026-02-16 00:21:44 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:44] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:45 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012200000000
+2026-02-16 00:21:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:45] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:45] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:46 - PiController - INFO - HYDRATION WEIGHT: 0.00 g
+2026-02-16 00:21:46 - PiController - INFO - HYDRATION WEIGHT: 0.11 g
+2026-02-16 00:21:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:46] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:46 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012200000000
+2026-02-16 00:21:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:46] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:46 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012200000000
+2026-02-16 00:21:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:46] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:21:47 - PiController - INFO - HYDRATION WEIGHT: 0.00 g
+2026-02-16 00:21:47 - PiController - INFO - HYDRATION WEIGHT: -0.01 g
+2026-02-16 00:21:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:47] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:47] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:48 - PiController - INFO - HYDRATION WEIGHT: 0.00 g
+2026-02-16 00:21:48 - PiController - INFO - HYDRATION WEIGHT: -0.01 g
+2026-02-16 00:21:49 - PiController - INFO - ALERT [F0:24:F9:0C:DE:54]: Bottle Replaced. Stabilizing...
+2026-02-16 00:21:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021305250000
+2026-02-16 00:21:49 - PiController - INFO - Sent LED Default (Rainbow)
+2026-02-16 00:21:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:49] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:49 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:21:49 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:21:49 - PiController - INFO - Reverted LED and IR to default
+2026-02-16 00:21:49 - PiController - INFO - HYDRATION WEIGHT: 671.29 g
+2026-02-16 00:21:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:49] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:50 - PiController - INFO - HYDRATION WEIGHT: 835.73 g
+2026-02-16 00:21:50 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:50] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:51 - PiController - INFO - [F0:24:F9:0C:DE:54] Requested Presence Check.
+2026-02-16 00:21:51 - PiController - INFO - Checking presence for 48:EF:1C:49:6A:E7...
+2026-02-16 00:21:52 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:52] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:53] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:53 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:21:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:53] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:53] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:53] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:53 - PiController - INFO - Presence Confirmed via l2ping.
+2026-02-16 00:21:53 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01410000803F
+2026-02-16 00:21:53 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:21:53 - PiController - INFO - HYDRATION WEIGHT: 835.98 g
+2026-02-16 00:21:53 - PiController - INFO - HYDRATION WEIGHT: 835.95 g
+2026-02-16 00:21:53 - PiController - WARNING - ALERT [F0:24:F9:0C:DE:54]: Hydration Reminder! Drink Detected: NO. User is HOME.
+2026-02-16 00:21:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03312fd0f700
+2026-02-16 00:21:53 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:21:53 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:21:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:53] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:21:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03312fd0f700
+2026-02-16 00:21:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03312fd0f700
+2026-02-16 00:21:54 - PiController - INFO - Sent IR NEC: 0x00F7D02F (Burst x3)
+2026-02-16 00:21:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021301260000
+2026-02-16 00:21:54 - PiController - INFO - Sent LED Alert (Red pulse)
+2026-02-16 00:21:54 - PiController - INFO - Alert display started: plz drink
+2026-02-16 00:21:54 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:21:54 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:21:54 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:21:54 - PiController - INFO - HYDRATION WEIGHT: 835.84 g
+2026-02-16 00:21:55 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:21:55 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:21:55 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:21:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:55] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:55 - PiController - INFO - HYDRATION WEIGHT: 835.98 g
+2026-02-16 00:21:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:55] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:56 - PiController - INFO - HYDRATION WEIGHT: 835.86 g
+2026-02-16 00:21:56 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:56] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:57 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:21:57 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:21:57 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:21:57 - PiController - INFO - HYDRATION WEIGHT: 836.23 g
+2026-02-16 00:21:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:57] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:58] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:21:58 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:21:59 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:21:59 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:21:59 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:21:59 - PiController - INFO - HYDRATION WEIGHT: 835.80 g
+2026-02-16 00:21:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:59] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:21:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:21:59] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:00 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:00 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:00 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:00 - PiController - INFO - HYDRATION WEIGHT: 836.01 g
+2026-02-16 00:22:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:01] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:01 - PiController - INFO - HYDRATION WEIGHT: 836.25 g
+2026-02-16 00:22:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:01] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:02 - PiController - INFO - HYDRATION WEIGHT: 836.33 g
+2026-02-16 00:22:02 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:02] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:03 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:22:03 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:03] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:04 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:04 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:04 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:04] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:04 - PiController - INFO - HYDRATION WEIGHT: 836.31 g
+2026-02-16 00:22:05 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:05 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:05 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:05 - PiController - INFO - HYDRATION WEIGHT: 836.28 g
+2026-02-16 00:22:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:05] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:05] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:06 - PiController - INFO - HYDRATION WEIGHT: 836.33 g
+2026-02-16 00:22:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:07] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:07 - PiController - INFO - HYDRATION WEIGHT: 835.99 g
+2026-02-16 00:22:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:07] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:08 - PiController - INFO - HYDRATION WEIGHT: 836.02 g
+2026-02-16 00:22:08 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:08] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:09 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:09 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:09 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:09 - PiController - INFO - HYDRATION WEIGHT: 836.21 g
+2026-02-16 00:22:10 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:10 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:10 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:10] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:10] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:10 - PiController - INFO - HYDRATION WEIGHT: 835.82 g
+2026-02-16 00:22:11 - PiController - INFO - HYDRATION WEIGHT: 835.96 g
+2026-02-16 00:22:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:22:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:22:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:12 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:22:12 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:22:12 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:22:12 - PiController - INFO - HYDRATION WEIGHT: 836.02 g
+2026-02-16 00:22:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:13] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:13 - PiController - INFO - HYDRATION WEIGHT: 836.17 g
+2026-02-16 00:22:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:13] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:14 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:14 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:14 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:14 - PiController - INFO - HYDRATION WEIGHT: 836.15 g
+2026-02-16 00:22:14 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:14] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:15 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:15 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:15 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:15 - PiController - INFO - HYDRATION WEIGHT: 836.28 g
+2026-02-16 00:22:15 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:15] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:16] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:16 - PiController - INFO - HYDRATION WEIGHT: 836.24 g
+2026-02-16 00:22:17 - PiController - INFO - HYDRATION WEIGHT: 836.03 g
+2026-02-16 00:22:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:17] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:17] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:18 - PiController - INFO - HYDRATION WEIGHT: 836.21 g
+2026-02-16 00:22:19 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:19 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:19 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:19 - PiController - INFO - ALERT [F0:24:F9:0C:DE:54]: Hydration Alert STOPPED.
+2026-02-16 00:22:19 - PiController - INFO - Alert display loop ended
+2026-02-16 00:22:19 - PiController - INFO - Bottle alert animation stopped
+2026-02-16 00:22:19 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021305250000
+2026-02-16 00:22:19 - PiController - INFO - Sent LED Default (Rainbow)
+2026-02-16 00:22:19 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:19] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:19 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:19 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:19 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:22:19 - PiController - INFO - Reverted LED and IR to default
+2026-02-16 00:22:19 - PiController - INFO - HYDRATION WEIGHT: -2.18 g
+2026-02-16 00:22:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:19] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:20 - PiController - INFO - HYDRATION WEIGHT: -0.10 g
+2026-02-16 00:22:20 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:20] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:21 - PiController - INFO - HYDRATION WEIGHT: 0.03 g
+2026-02-16 00:22:21 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:21] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:22] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:22 - PiController - INFO - HYDRATION WEIGHT: 0.15 g
+2026-02-16 00:22:23 - PiController - INFO - HYDRATION WEIGHT: -0.13 g
+2026-02-16 00:22:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:23] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:23] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:23 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:22:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:23] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:22:23 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 96.7 ml
+2026-02-16 00:22:24 - PiController - INFO - HYDRATION WEIGHT: -0.07 g
+2026-02-16 00:22:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:25] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:25 - PiController - INFO - HYDRATION WEIGHT: 0.21 g
+2026-02-16 00:22:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:25] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:26 - PiController - INFO - HYDRATION WEIGHT: -0.09 g
+2026-02-16 00:22:26 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:26] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:27 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:22:27 - PiController - INFO - HYDRATION WEIGHT: -0.15 g
+2026-02-16 00:22:27 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:22:27 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:22:27 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:22:27 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:22:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:27] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:28 - PiController - INFO - ALERT [F0:24:F9:0C:DE:54]: Bottle Replaced. Stabilizing...
+2026-02-16 00:22:28 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021305250000
+2026-02-16 00:22:28 - PiController - INFO - Sent LED Default (Rainbow)
+2026-02-16 00:22:28 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:28 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:28 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:28 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:22:28 - PiController - INFO - Reverted LED and IR to default
+2026-02-16 00:22:28 - PiController - INFO - HYDRATION WEIGHT: 221.82 g
+2026-02-16 00:22:29 - PiController - INFO - HYDRATION WEIGHT: 836.54 g
+2026-02-16 00:22:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:29] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:29] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:30 - PiController - INFO - [F0:24:F9:0C:DE:54] Requested Presence Check.
+2026-02-16 00:22:30 - PiController - INFO - Checking presence for 48:EF:1C:49:6A:E7...
+2026-02-16 00:22:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:31] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:32] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:32 - PiController - INFO - Presence Confirmed via l2ping.
+2026-02-16 00:22:32 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01410000803F
+2026-02-16 00:22:32 - PiController - INFO - HYDRATION WEIGHT: 834.24 g
+2026-02-16 00:22:32 - PiController - INFO - HYDRATION WEIGHT: 833.05 g
+2026-02-16 00:22:32 - PiController - WARNING - ALERT [F0:24:F9:0C:DE:54]: Hydration Reminder! Drink Detected: NO. User is HOME.
+2026-02-16 00:22:32 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03312fd0f700
+2026-02-16 00:22:32 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03312fd0f700
+2026-02-16 00:22:32 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03312fd0f700
+2026-02-16 00:22:32 - PiController - INFO - Sent IR NEC: 0x00F7D02F (Burst x3)
+2026-02-16 00:22:32 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021301260000
+2026-02-16 00:22:32 - PiController - INFO - Sent LED Alert (Red pulse)
+2026-02-16 00:22:32 - PiController - INFO - Alert display started: plz drink
+2026-02-16 00:22:32 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:32 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:32 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:32 - PiController - INFO - HYDRATION WEIGHT: 832.03 g
+2026-02-16 00:22:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:32] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:33 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:33 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:33 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:33 - PiController - INFO - HYDRATION WEIGHT: 831.88 g
+2026-02-16 00:22:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:33] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:34] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:34 - PiController - INFO - HYDRATION WEIGHT: 831.60 g
+2026-02-16 00:22:35 - PiController - INFO - HYDRATION WEIGHT: 831.34 g
+2026-02-16 00:22:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:35] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:35] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:36 - PiController - INFO - HYDRATION WEIGHT: 831.18 g
+2026-02-16 00:22:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:37] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:37 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:37 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:37 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:37 - PiController - INFO - HYDRATION WEIGHT: 830.72 g
+2026-02-16 00:22:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:37] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:38 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:38 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:38 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:38 - PiController - INFO - HYDRATION WEIGHT: 831.04 g
+2026-02-16 00:22:38 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:38] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:39 - PiController - INFO - HYDRATION WEIGHT: 830.86 g
+2026-02-16 00:22:39 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:39] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:40 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:40] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:40 - PiController - INFO - HYDRATION WEIGHT: 831.09 g
+2026-02-16 00:22:41 - PiController - INFO - HYDRATION WEIGHT: 830.44 g
+2026-02-16 00:22:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:41] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:41] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:42 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:42 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:42 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:42 - PiController - INFO - HYDRATION WEIGHT: 830.47 g
+2026-02-16 00:22:42 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:22:42 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:22:42 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:22:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:43] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:43 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:43 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:43 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:43 - PiController - INFO - HYDRATION WEIGHT: 830.43 g
+2026-02-16 00:22:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:43] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:44 - PiController - INFO - HYDRATION WEIGHT: 830.20 g
+2026-02-16 00:22:44 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:44] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:45 - PiController - INFO - HYDRATION WEIGHT: 830.77 g
+2026-02-16 00:22:45 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:22:45 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:22:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:45] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:22:45 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:22:45 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:22:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:45] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:22:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:45] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:46 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:22:46 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:22:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:46] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:22:46 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:22:46 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:22:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:46] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:22:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:46] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:46 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:22:46 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:22:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:46] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:22:46 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:22:46 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:22:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:46] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:22:46 - PiController - INFO - HYDRATION WEIGHT: 830.71 g
+2026-02-16 00:22:47 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:47 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:47 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:47 - PiController - INFO - HYDRATION WEIGHT: 830.69 g
+2026-02-16 00:22:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:47] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:47] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:48 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:48 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:48 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:48 - PiController - INFO - HYDRATION WEIGHT: 830.47 g
+2026-02-16 00:22:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:49] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:49 - PiController - INFO - HYDRATION WEIGHT: 830.55 g
+2026-02-16 00:22:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:49] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:50 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000a04003686667
+2026-02-16 00:22:50 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000a04003686667
+2026-02-16 00:22:50 - PiController - INFO - Sent ONO Text 'hfg...' 5s to 2 display(s)
+2026-02-16 00:22:50 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:50] "POST /api/ono/text HTTP/1.1" 200 -
+2026-02-16 00:22:50 - PiController - INFO - HYDRATION WEIGHT: 831.00 g
+2026-02-16 00:22:50 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:50] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:51 - PiController - INFO - HYDRATION WEIGHT: 830.65 g
+2026-02-16 00:22:51 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:51] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:52 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:52] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:52 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03500000803f
+2026-02-16 00:22:52 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03500000803f
+2026-02-16 00:22:52 - PiController - INFO - Sent ONO Rainbow 1s to 2 display(s)
+2026-02-16 00:22:52 - PiController - INFO - HYDRATION WEIGHT: 831.05 g
+2026-02-16 00:22:53 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:53 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03600000804009706c7a206472696e6b
+2026-02-16 00:22:53 - PiController - INFO - Sent ONO Text 'plz drink...' 4s to 2 display(s)
+2026-02-16 00:22:53 - PiController - INFO - HYDRATION WEIGHT: 830.70 g
+2026-02-16 00:22:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:53] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:53] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:54 - PiController - INFO - ALERT [F0:24:F9:0C:DE:54]: Hydration Alert STOPPED.
+2026-02-16 00:22:54 - PiController - INFO - Alert display loop ended
+2026-02-16 00:22:54 - PiController - INFO - Bottle alert animation stopped
+2026-02-16 00:22:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021305250000
+2026-02-16 00:22:54 - PiController - INFO - Sent LED Default (Rainbow)
+2026-02-16 00:22:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:54 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:22:54 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:22:54 - PiController - INFO - Reverted LED and IR to default
+2026-02-16 00:22:54 - PiController - INFO - HYDRATION WEIGHT: 0.11 g
+2026-02-16 00:22:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:55] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:55 - PiController - INFO - HYDRATION WEIGHT: 0.05 g
+2026-02-16 00:22:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:55] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:56 - PiController - INFO - HYDRATION WEIGHT: 0.07 g
+2026-02-16 00:22:56 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:56] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:57 - PiController - INFO - HYDRATION WEIGHT: -0.00 g
+2026-02-16 00:22:57 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:22:57 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:22:57 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:22:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:57] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:58] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:22:58 - PiController - INFO - HYDRATION WEIGHT: 0.16 g
+2026-02-16 00:22:59 - PiController - INFO - HYDRATION WEIGHT: -0.11 g
+2026-02-16 00:22:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:59] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:22:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:22:59] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:00 - PiController - INFO - HYDRATION WEIGHT: 0.04 g
+2026-02-16 00:23:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:01] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:01 - PiController - INFO - HYDRATION WEIGHT: -0.16 g
+2026-02-16 00:23:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:01] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:02 - PiController - INFO - ALERT [F0:24:F9:0C:DE:54]: Bottle Replaced. Stabilizing...
+2026-02-16 00:23:02 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021305250000
+2026-02-16 00:23:02 - PiController - INFO - Sent LED Default (Rainbow)
+2026-02-16 00:23:02 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:23:02 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:23:02 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:23:02 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:23:02 - PiController - INFO - Reverted LED and IR to default
+2026-02-16 00:23:02 - PiController - INFO - HYDRATION WEIGHT: 681.70 g
+2026-02-16 00:23:02 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:02] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:03 - PiController - INFO - HYDRATION WEIGHT: 721.09 g
+2026-02-16 00:23:03 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:03] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:04] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:04 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Drink Detected: 114.4 ml
+2026-02-16 00:23:04 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 036000004040083131342e34206d6c
+2026-02-16 00:23:04 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 036000004040083131342e34206d6c
+2026-02-16 00:23:04 - PiController - INFO - Sent ONO Text '114.4 ml...' 3s to 2 display(s)
+2026-02-16 00:23:04 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:23:04 - PiController - INFO - Sent LED Drink (Green)
+2026-02-16 00:23:04 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:23:04 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:23:04 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:23:04 - PiController - INFO - Sent IR NEC: 0x00F7A05F (Burst x3)
+2026-02-16 00:23:04 - PiController - INFO - Drink celebration: 114.4 ml for 3s
+2026-02-16 00:23:04 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:23:04 - PiController - INFO - HYDRATION WEIGHT: 721.27 g
+2026-02-16 00:23:04 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:23:04 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:23:04] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:23:04 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:23:05 - PiController - INFO - HYDRATION WEIGHT: 721.07 g
+2026-02-16 00:23:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:05] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:05] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:06 - PiController - INFO - HYDRATION WEIGHT: 721.22 g
+2026-02-16 00:23:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:07] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021305250000
+2026-02-16 00:23:07 - PiController - INFO - Sent LED Default (Rainbow)
+2026-02-16 00:23:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:23:07 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:23:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:23:07 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03310ff0f700
+2026-02-16 00:23:07 - PiController - INFO - Sent IR NEC: 0x00F7F00F (Burst x3)
+2026-02-16 00:23:07 - PiController - INFO - Reverted LED and IR to default
+2026-02-16 00:23:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:07] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:08 - PiController - INFO - HYDRATION WEIGHT: 721.71 g
+2026-02-16 00:23:08 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:08] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:09 - PiController - INFO - HYDRATION WEIGHT: 721.29 g
+2026-02-16 00:23:09 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:09] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:10] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:10 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:23:11 - PiController - INFO - HYDRATION WEIGHT: 721.19 g
+2026-02-16 00:23:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:23:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:23:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:12 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:23:12 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:23:12 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:23:12 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:23:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:13] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:13 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:23:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:13] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:14 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:23:14 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:14] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:15 - PiController - INFO - HYDRATION WEIGHT: 721.48 g
+2026-02-16 00:23:15 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:15] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:16] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:16 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:23:17 - PiController - INFO - HYDRATION WEIGHT: 721.25 g
+2026-02-16 00:23:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:17] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:17] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:18 - PiController - INFO - HYDRATION WEIGHT: 721.38 g
+2026-02-16 00:23:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:19] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:19 - PiController - INFO - HYDRATION WEIGHT: 721.19 g
+2026-02-16 00:23:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:19] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:20 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:23:20 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:20] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:21 - PiController - INFO - HYDRATION WEIGHT: 721.12 g
+2026-02-16 00:23:21 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:21] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:22] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:22 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:23:23 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:23:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:23] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:23] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:23 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:23:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:23] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:23:23 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:23:24 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:23:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:25] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:25 - PiController - INFO - HYDRATION WEIGHT: 721.50 g
+2026-02-16 00:23:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:25] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:26 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:23:26 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:26] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:27 - PiController - INFO - HYDRATION WEIGHT: 721.19 g
+2026-02-16 00:23:27 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:23:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:27] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:28 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:23:28 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:23:28 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:23:28 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:23:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:28 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:23:29 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:23:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:29] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:29] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:30 - PiController - INFO - HYDRATION WEIGHT: 721.17 g
+2026-02-16 00:23:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:31] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:31 - PiController - INFO - HYDRATION WEIGHT: 721.41 g
+2026-02-16 00:23:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:31] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:32 - PiController - INFO - HYDRATION WEIGHT: 721.38 g
+2026-02-16 00:23:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:32] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:33 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:23:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:33] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:34] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:34 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:23:35 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:23:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:35] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:35] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:36 - PiController - INFO - HYDRATION WEIGHT: 721.14 g
+2026-02-16 00:23:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:37] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:37 - PiController - INFO - HYDRATION WEIGHT: 721.10 g
+2026-02-16 00:23:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:37] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:38 - PiController - INFO - HYDRATION WEIGHT: 721.22 g
+2026-02-16 00:23:38 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:38] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:39 - PiController - INFO - HYDRATION WEIGHT: 721.22 g
+2026-02-16 00:23:39 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:39] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:40 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:40] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:40 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:23:41 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:23:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:41] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:41] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:42 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:23:43 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:23:43 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:23:43 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:23:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:43] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:43 - PiController - INFO - HYDRATION WEIGHT: 721.10 g
+2026-02-16 00:23:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:43] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:44 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:23:44 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:44] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:45 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:23:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:45] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:46] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:46 - PiController - INFO - HYDRATION WEIGHT: 721.44 g
+2026-02-16 00:23:47 - PiController - INFO - HYDRATION WEIGHT: 721.14 g
+2026-02-16 00:23:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:47] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:47] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:48 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:23:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:49] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:49 - PiController - INFO - HYDRATION WEIGHT: 721.37 g
+2026-02-16 00:23:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:49] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:50 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:23:50 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:50] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:51 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:23:51 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:51] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:52 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:52] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:52 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:23:53 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:23:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:53] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:53] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:54 - PiController - INFO - HYDRATION WEIGHT: 721.06 g
+2026-02-16 00:23:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:55] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:55 - PiController - INFO - HYDRATION WEIGHT: 721.53 g
+2026-02-16 00:23:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:55] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:56 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:23:56 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:23:56 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:23:56 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:23:56 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:56] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:23:56 - PiController - INFO - HYDRATION WEIGHT: 721.43 g
+2026-02-16 00:23:56 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:56] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:57 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:23:57 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:23:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:57] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:23:57 - PiController - INFO - HYDRATION WEIGHT: 721.39 g
+2026-02-16 00:23:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:57] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:58 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:23:58 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:23:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:58] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:23:58 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:23:58 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:23:58 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:23:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:58] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:23:58 - PiController - INFO - HYDRATION WEIGHT: 721.29 g
+2026-02-16 00:23:59 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:23:59 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:23:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:59] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:23:59 - PiController - INFO - HYDRATION WEIGHT: 721.17 g
+2026-02-16 00:23:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:59] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:23:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:23:59] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:00 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:24:00 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:24:00 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:24:00 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:24:00 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:00] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:24:00 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:24:00 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:24:00 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:24:00 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 03315fa0f700
+2026-02-16 00:24:00 - PiController - INFO - Sent IR NEC: 0x00F7A05F (Burst x3)
+2026-02-16 00:24:00 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:00] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:24:01 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:24:01 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:24:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:01] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:01 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 0331df20f700
+2026-02-16 00:24:01 - PiController - INFO - Sent IR NEC: 0x00F720DF (Burst x3)
+2026-02-16 00:24:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:01] "POST /api/ir/send HTTP/1.1" 200 -
+2026-02-16 00:24:01 - PiController - INFO - HYDRATION WEIGHT: 721.13 g
+2026-02-16 00:24:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:01] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:02 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:24:02 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:02] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:03 - PiController - INFO - HYDRATION WEIGHT: 721.47 g
+2026-02-16 00:24:03 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:03] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:04] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:04 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:24:05 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:24:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:05] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:05] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:06 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:24:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:07] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:07 - PiController - INFO - HYDRATION WEIGHT: 721.57 g
+2026-02-16 00:24:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:07] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:08 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:24:08 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:08] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:09 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:24:09 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:09] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:10] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:10 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:24:11 - PiController - INFO - HYDRATION WEIGHT: 721.16 g
+2026-02-16 00:24:11 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:24:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:24:11] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:24:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:24:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:24:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:11 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:24:12 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:24:13 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708703983cebd32d3f
+2026-02-16 00:24:13 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708703983cebd32d3f
+2026-02-16 00:24:13 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:24:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:13] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:13 - PiController - INFO - HYDRATION WEIGHT: 721.21 g
+2026-02-16 00:24:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:13] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:14 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:24:14 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:14] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:15 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:24:15 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:15] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:16] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:16 - PiController - INFO - HYDRATION WEIGHT: 721.45 g
+2026-02-16 00:24:17 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:24:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:17] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:17] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:18 - PiController - INFO - HYDRATION WEIGHT: 721.08 g
+2026-02-16 00:24:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:19] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:19 - PiController - INFO - HYDRATION WEIGHT: 721.45 g
+2026-02-16 00:24:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:19] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:20 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:24:20 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:20] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:21 - PiController - INFO - HYDRATION WEIGHT: 721.16 g
+2026-02-16 00:24:21 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:21] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:22] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:22 - PiController - INFO - HYDRATION WEIGHT: 721.12 g
+2026-02-16 00:24:23 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:24:23 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:24:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:23] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:24:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:23] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:23] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:23 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:24:24 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:24:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:25] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:25 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:24:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:25] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:26 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:24:26 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:26] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:27 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:24:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:27] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:28 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:24:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:28 - PiController - INFO - HYDRATION WEIGHT: 721.09 g
+2026-02-16 00:24:28 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:24:28 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983cddea2f3f
+2026-02-16 00:24:28 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983cddea2f3f
+2026-02-16 00:24:28 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:24:29 - PiController - INFO - HYDRATION WEIGHT: 721.25 g
+2026-02-16 00:24:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:29] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:29] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:30 - PiController - INFO - HYDRATION WEIGHT: 721.39 g
+2026-02-16 00:24:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:31] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:31 - PiController - INFO - HYDRATION WEIGHT: 721.01 g
+2026-02-16 00:24:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:31] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:32 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:24:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:32] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:33 - PiController - INFO - HYDRATION WEIGHT: 721.34 g
+2026-02-16 00:24:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:33] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:34] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:34 - PiController - INFO - HYDRATION WEIGHT: 721.08 g
+2026-02-16 00:24:35 - PiController - INFO - HYDRATION WEIGHT: 721.56 g
+2026-02-16 00:24:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:35] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:35] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:36 - PiController - INFO - HYDRATION WEIGHT: 721.52 g
+2026-02-16 00:24:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:37] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:37 - PiController - INFO - HYDRATION WEIGHT: 721.38 g
+2026-02-16 00:24:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:37] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:38 - PiController - INFO - HYDRATION WEIGHT: 721.37 g
+2026-02-16 00:24:38 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:38] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:39 - PiController - INFO - HYDRATION WEIGHT: 721.25 g
+2026-02-16 00:24:39 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:39] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:40 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:40] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:40 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:24:41 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:24:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:41] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:41] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:42 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:24:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:43] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:43 - PiController - INFO - HYDRATION WEIGHT: 721.53 g
+2026-02-16 00:24:43 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983cddea2f3f
+2026-02-16 00:24:43 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983cddea2f3f
+2026-02-16 00:24:43 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:24:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:43] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:44 - PiController - INFO - HYDRATION WEIGHT: 721.46 g
+2026-02-16 00:24:44 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:44] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:45 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:24:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:45] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:46] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:46 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:24:47 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:24:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:47] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:47] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:48 - PiController - INFO - HYDRATION WEIGHT: 721.43 g
+2026-02-16 00:24:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:49] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:49 - PiController - INFO - HYDRATION WEIGHT: 721.34 g
+2026-02-16 00:24:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:49] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:50 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:24:50 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:50] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:51 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:24:51 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:51] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:52 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:52] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:52 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:24:53 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:24:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:53] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:53] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:54 - PiController - INFO - HYDRATION WEIGHT: 721.27 g
+2026-02-16 00:24:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:55] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:55 - PiController - INFO - HYDRATION WEIGHT: 721.34 g
+2026-02-16 00:24:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:55] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:56 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:24:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:57] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:57 - PiController - INFO - HYDRATION WEIGHT: 721.16 g
+2026-02-16 00:24:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:57] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:58] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:24:58 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:24:58 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983cddea2f3f
+2026-02-16 00:24:58 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983cddea2f3f
+2026-02-16 00:24:58 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:24:59 - PiController - INFO - HYDRATION WEIGHT: 721.48 g
+2026-02-16 00:24:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:59] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:24:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:24:59] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:00 - PiController - INFO - HYDRATION WEIGHT: 721.46 g
+2026-02-16 00:25:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:01] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:01 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:25:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:01] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:02 - PiController - INFO - HYDRATION WEIGHT: 721.38 g
+2026-02-16 00:25:02 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:02] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:03 - PiController - INFO - HYDRATION WEIGHT: 721.34 g
+2026-02-16 00:25:03 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:03] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:04] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:04 - PiController - INFO - HYDRATION WEIGHT: 721.09 g
+2026-02-16 00:25:05 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:25:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:05] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:05] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:06 - PiController - INFO - HYDRATION WEIGHT: 721.11 g
+2026-02-16 00:25:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:07] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:07 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:25:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:07] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:08 - PiController - INFO - HYDRATION WEIGHT: 721.21 g
+2026-02-16 00:25:08 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:08] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:09 - PiController - INFO - HYDRATION WEIGHT: 721.11 g
+2026-02-16 00:25:09 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:09] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:10] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:10 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:25:11 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:25:11 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:25:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:25:11] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:25:11 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:25:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:25:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:25:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:11 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:12 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:25:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:13] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:13 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:25:13 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983cddea2f3f
+2026-02-16 00:25:13 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983cddea2f3f
+2026-02-16 00:25:13 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:25:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:13] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:14 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:25:14 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:14] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:15 - PiController - INFO - HYDRATION WEIGHT: 721.41 g
+2026-02-16 00:25:15 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:15] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:16] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:16 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:25:17 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:25:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:17] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:17 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:17] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:18 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:25:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:19] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:19 - PiController - INFO - HYDRATION WEIGHT: 721.06 g
+2026-02-16 00:25:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:19] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:20 - PiController - INFO - HYDRATION WEIGHT: 721.27 g
+2026-02-16 00:25:20 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:20] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:21 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:25:21 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:21] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:22] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:22 - PiController - INFO - HYDRATION WEIGHT: 721.22 g
+2026-02-16 00:25:23 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:25:23 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:25:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:23] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:25:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:23] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:23 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:23] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:23 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:25:24 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:25:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:25] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:25 - PiController - INFO - HYDRATION WEIGHT: 721.53 g
+2026-02-16 00:25:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:25] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:26 - PiController - INFO - HYDRATION WEIGHT: 721.14 g
+2026-02-16 00:25:26 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:26] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:27 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:25:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:27] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:28 - PiController - INFO - HYDRATION WEIGHT: 721.17 g
+2026-02-16 00:25:28 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:25:29 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:25:29 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983cddea2f3f
+2026-02-16 00:25:29 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983cddea2f3f
+2026-02-16 00:25:29 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:25:29 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:25:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:29] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:29 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:29] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:30 - PiController - INFO - HYDRATION WEIGHT: 721.59 g
+2026-02-16 00:25:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:31] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:31 - PiController - INFO - HYDRATION WEIGHT: 721.63 g
+2026-02-16 00:25:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:31] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:32 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:25:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:32] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:33 - PiController - INFO - HYDRATION WEIGHT: 721.07 g
+2026-02-16 00:25:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:33] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:34 - PiController - INFO - HYDRATION WEIGHT: 721.45 g
+2026-02-16 00:25:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:34] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:35 - PiController - INFO - HYDRATION WEIGHT: 721.13 g
+2026-02-16 00:25:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:35] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:35 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:35] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:36 - PiController - INFO - HYDRATION WEIGHT: 721.37 g
+2026-02-16 00:25:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:37] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:37 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:25:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:37] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:38 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:25:38 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:38] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:39 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:25:39 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:39] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:40 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:40] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:40 - PiController - INFO - HYDRATION WEIGHT: 721.21 g
+2026-02-16 00:25:41 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:25:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:41] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:41 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:41] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:42 - PiController - INFO - HYDRATION WEIGHT: 721.39 g
+2026-02-16 00:25:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:43] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:43 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:25:44 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:44] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:44 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983cddea2f3f
+2026-02-16 00:25:44 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983cddea2f3f
+2026-02-16 00:25:44 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:25:44 - PiController - INFO - HYDRATION WEIGHT: 721.46 g
+2026-02-16 00:25:44 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:44] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:45 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:25:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:45] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:46 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:46] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:46 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:25:47 - PiController - INFO - HYDRATION WEIGHT: 721.34 g
+2026-02-16 00:25:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:47] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:47] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:48 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:25:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:49] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:49 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:25:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:49] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:50 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:25:50 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:50] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:51 - PiController - INFO - HYDRATION WEIGHT: 721.06 g
+2026-02-16 00:25:51 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:51] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:52 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:52] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:52 - PiController - INFO - HYDRATION WEIGHT: 721.16 g
+2026-02-16 00:25:53 - PiController - INFO - HYDRATION WEIGHT: 721.02 g
+2026-02-16 00:25:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:53] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:53 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:53] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:54 - PiController - INFO - HYDRATION WEIGHT: 721.06 g
+2026-02-16 00:25:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:55] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:55 - PiController - INFO - HYDRATION WEIGHT: 721.05 g
+2026-02-16 00:25:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:55] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:56 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:25:56 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:56] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:57 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:25:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:57] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:58] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:25:58 - PiController - INFO - HYDRATION WEIGHT: 721.61 g
+2026-02-16 00:25:59 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983cddea2f3f
+2026-02-16 00:25:59 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983cddea2f3f
+2026-02-16 00:25:59 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:25:59 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:25:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:59] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:25:59 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:25:59] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:26:00 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:26:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:26:01] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:26:01 - PiController - INFO - HYDRATION WEIGHT: 721.56 g
+2026-02-16 00:26:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:26:01] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:03 - root - INFO - Logging to /home/mithun/projects/water_bottle/SmartHydrationSystem/house_automation/pi_controller/logs/smart-home.log (rotating, max 4 MB total; old logs auto-deleted)
+2026-02-16 00:28:03 - PiController - INFO - Connected to /dev/serial0 at 115200 baud.
+2026-02-16 00:28:03 - PiController - INFO - Watchdog started.
+2026-02-16 00:28:03 - PiController - INFO - Reader thread started.
+2026-02-16 00:28:03 - PiController - INFO - Controller started in HEADLESS mode.
+2026-02-16 00:28:03 - WebServer - INFO - Controller Background Thread Started
+2026-02-16 00:28:03 - WebServer - INFO - Daily Scheduler Started
+2026-02-16 00:28:03 - WebServer - INFO - ONO price fetcher started (fetch 60s, push 15s)
+2026-02-16 00:28:03 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.109:5000
+2026-02-16 00:28:03 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-02-16 00:28:03 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:28:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:04] "GET / HTTP/1.1" 200 -
+2026-02-16 00:28:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:04] "[36mGET /style.css?v=10 HTTP/1.1[0m" 304 -
+2026-02-16 00:28:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:04] "[36mGET /app.js?v=4 HTTP/1.1[0m" 304 -
+2026-02-16 00:28:04 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:28:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:04] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:04 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:28:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:04] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:04] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:28:04 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:28:05 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01313d179269
+2026-02-16 00:28:05 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:05 - PiController - INFO - HYDRATION WEIGHT: 721.27 g
+2026-02-16 00:28:06 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:06] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:06 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:28:06 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:06] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:06 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:28:06 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:06] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:28:06 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:28:07 - PiController - INFO - HYDRATION WEIGHT: 721.78 g
+2026-02-16 00:28:07 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:07] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:08 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:28:08 - PiController - INFO - HYDRATION WEIGHT: 721.37 g
+2026-02-16 00:28:08 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:08] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:08 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:28:08 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983c63f62f3f
+2026-02-16 00:28:08 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983c63f62f3f
+2026-02-16 00:28:08 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:28:09 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:09] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:09 - PiController - INFO - HYDRATION WEIGHT: 721.03 g
+2026-02-16 00:28:10 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013142179269
+2026-02-16 00:28:10 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:10 - PiController - INFO - HYDRATION WEIGHT: 721.38 g
+2026-02-16 00:28:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:10] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:10] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:11 - PiController - INFO - HYDRATION WEIGHT: 721.38 g
+2026-02-16 00:28:12 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:12] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:12 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:28:12 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:12] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:13 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:28:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:13] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:14 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:28:14 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:14] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:15 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:15] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:15 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013147179269
+2026-02-16 00:28:15 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:15 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 021200000040
+2026-02-16 00:28:15 - PiController - INFO - Sent LED Color 2
+2026-02-16 00:28:15 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:15] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:28:15 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:28:16 - PiController - INFO - SENT to A0:A3:B3:2A:20:C0: 02120000803f
+2026-02-16 00:28:16 - PiController - INFO - Sent LED Color 1
+2026-02-16 00:28:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:16] "POST /api/led/cmd HTTP/1.1" 200 -
+2026-02-16 00:28:16 - PiController - INFO - HYDRATION WEIGHT: 721.44 g
+2026-02-16 00:28:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:16] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:16] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:17 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:28:18 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:18] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:18 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:28:18 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:18] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:19 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:28:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:19] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:20 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01314c179269
+2026-02-16 00:28:20 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:20 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:28:20 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:20] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:21 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:21] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:21 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:28:22 - PiController - INFO - HYDRATION WEIGHT: 721.25 g
+2026-02-16 00:28:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:22] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:22] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:23 - PiController - INFO - HYDRATION WEIGHT: 721.12 g
+2026-02-16 00:28:23 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983c63f62f3f
+2026-02-16 00:28:23 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983c63f62f3f
+2026-02-16 00:28:23 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:28:24 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:24] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:24 - PiController - INFO - HYDRATION WEIGHT: 721.00 g
+2026-02-16 00:28:24 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:24] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:25 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013151179269
+2026-02-16 00:28:25 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:25 - PiController - INFO - HYDRATION WEIGHT: 721.16 g
+2026-02-16 00:28:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:25] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:26 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:26] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:26 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:28:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:27] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:27 - PiController - INFO - HYDRATION WEIGHT: 721.37 g
+2026-02-16 00:28:28 - PiController - INFO - HYDRATION WEIGHT: 721.64 g
+2026-02-16 00:28:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:28] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:29 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:28:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:30] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:30 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013156179269
+2026-02-16 00:28:30 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:30 - PiController - INFO - HYDRATION WEIGHT: 721.53 g
+2026-02-16 00:28:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:30] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:31 - PiController - INFO - HYDRATION WEIGHT: 721.10 g
+2026-02-16 00:28:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:31] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:32] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:32 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:28:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:33] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:33 - PiController - INFO - HYDRATION WEIGHT: 721.25 g
+2026-02-16 00:28:34 - PiController - INFO - HYDRATION WEIGHT: 721.37 g
+2026-02-16 00:28:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:34] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:34] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:35 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01315b179269
+2026-02-16 00:28:35 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:35 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:28:36 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:28:36 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:36] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:36 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:36] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:37 - PiController - INFO - HYDRATION WEIGHT: 721.41 g
+2026-02-16 00:28:37 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:37] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:38 - PiController - INFO - HYDRATION WEIGHT: 721.04 g
+2026-02-16 00:28:38 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:38] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:38 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983c63f62f3f
+2026-02-16 00:28:38 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983c63f62f3f
+2026-02-16 00:28:38 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:28:39 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:28:39 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:39] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:40 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013160179269
+2026-02-16 00:28:40 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:40 - PiController - INFO - HYDRATION WEIGHT: 721.11 g
+2026-02-16 00:28:40 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:40] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:40 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:40] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:41 - PiController - INFO - HYDRATION WEIGHT: 721.08 g
+2026-02-16 00:28:42 - PiController - INFO - HYDRATION WEIGHT: 721.50 g
+2026-02-16 00:28:42 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:42] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:42 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:42] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:43 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:28:43 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:43] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:44 - PiController - INFO - HYDRATION WEIGHT: 721.41 g
+2026-02-16 00:28:44 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:44] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:45 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013165179269
+2026-02-16 00:28:45 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:45 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:28:45 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:45] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:46 - PiController - INFO - HYDRATION WEIGHT: 721.46 g
+2026-02-16 00:28:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:47] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:47 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:47] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:47 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:28:48 - PiController - INFO - HYDRATION WEIGHT: 721.12 g
+2026-02-16 00:28:48 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:48] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:48 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:48] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:49 - PiController - INFO - HYDRATION WEIGHT: 721.51 g
+2026-02-16 00:28:49 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:49] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:50 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01316a179269
+2026-02-16 00:28:50 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:50 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:28:50 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:50] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:51 - PiController - INFO - HYDRATION WEIGHT: 721.28 g
+2026-02-16 00:28:51 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:51] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:52 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:28:52 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:52] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:52 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:52] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:53 - PiController - INFO - HYDRATION WEIGHT: 721.19 g
+2026-02-16 00:28:53 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 0370ad06983c63f62f3f
+2026-02-16 00:28:53 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 0370ad06983c63f62f3f
+2026-02-16 00:28:53 - PiController - INFO - Sent ONO Price $0.0186 24h +0.69% to 2 display(s)
+2026-02-16 00:28:54 - PiController - INFO - HYDRATION WEIGHT: 721.12 g
+2026-02-16 00:28:54 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:54] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:54 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:54] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:55 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 01316f179269
+2026-02-16 00:28:55 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:28:55 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:28:55 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:55] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:56 - PiController - INFO - HYDRATION WEIGHT: 721.21 g
+2026-02-16 00:28:56 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:56] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:57 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:28:57 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:57] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:58 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:28:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:58] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:28:58 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:28:58] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:28:59 - PiController - INFO - HYDRATION WEIGHT: 721.29 g
+2026-02-16 00:29:00 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 013174179269
+2026-02-16 00:29:00 - WebServer - INFO - Time push to hydration slave (startup sync)
+2026-02-16 00:29:00 - PiController - INFO - HYDRATION WEIGHT: 721.37 g
+2026-02-16 00:29:00 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:00] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:00 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:00] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:01 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:29:01 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:01] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:02 - PiController - INFO - HYDRATION WEIGHT: 721.27 g
+2026-02-16 00:29:02 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:02] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:03 - PiController - INFO - HYDRATION WEIGHT: 721.36 g
+2026-02-16 00:29:03 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:03] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:04 - PiController - INFO - HYDRATION WEIGHT: 721.09 g
+2026-02-16 00:29:04 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:29:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:04] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:29:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:04] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:04 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:04] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:04 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:29:05 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:29:06 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:29:06 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:06] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:06 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:06] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:07 - PiController - INFO - HYDRATION WEIGHT: 721.00 g
+2026-02-16 00:29:08 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:08] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:08 - PiController - INFO - HYDRATION WEIGHT: 721.11 g
+2026-02-16 00:29:08 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:08] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:08 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.coingecko.com:443
+2026-02-16 00:29:09 - urllib3.connectionpool - DEBUG - https://api.coingecko.com:443 "GET /api/v3/simple/price?ids=onocoy-token&vs_currencies=usd,inr&include_24hr_change=true HTTP/1.1" 200 None
+2026-02-16 00:29:09 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708203983c64de2d3f
+2026-02-16 00:29:09 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708203983c64de2d3f
+2026-02-16 00:29:09 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:29:09 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:29:09 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:09] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:10 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:29:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:10] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:10 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:10] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:11 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:29:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:29:11] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:29:11] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:11 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:29:11 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2026 00:29:11] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:29:11 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:29:12 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:29:12 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:12] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:12 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:12] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:13 - PiController - INFO - HYDRATION WEIGHT: 721.07 g
+2026-02-16 00:29:13 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:13] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:14 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:29:14 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:14] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:15 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:29:15 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:15] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:16 - PiController - INFO - HYDRATION WEIGHT: 721.13 g
+2026-02-16 00:29:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:16] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:16 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:16] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:17 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:29:18 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:29:18 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:18] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:18 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:18] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:19 - PiController - INFO - HYDRATION WEIGHT: 721.23 g
+2026-02-16 00:29:19 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:19] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:20 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:29:20 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:20] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:21 - PiController - INFO - HYDRATION WEIGHT: 721.44 g
+2026-02-16 00:29:21 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:21] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:22 - PiController - INFO - HYDRATION WEIGHT: 721.25 g
+2026-02-16 00:29:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:22] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:22 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:22] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:23 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:29:24 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708203983c64de2d3f
+2026-02-16 00:29:24 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708203983c64de2d3f
+2026-02-16 00:29:24 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:29:24 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:29:24 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:24] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:24 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:24] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:25 - PiController - INFO - HYDRATION WEIGHT: 721.34 g
+2026-02-16 00:29:25 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:25] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:26 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:29:27 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:27] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:27 - PiController - INFO - HYDRATION WEIGHT: 721.40 g
+2026-02-16 00:29:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:28 - PiController - INFO - HYDRATION WEIGHT: 721.14 g
+2026-02-16 00:29:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:28] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:28 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:28] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:29 - PiController - INFO - HYDRATION WEIGHT: 721.41 g
+2026-02-16 00:29:30 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:29:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:30] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:30 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:30] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:31 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:29:31 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:31] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:32 - PiController - INFO - HYDRATION WEIGHT: 721.41 g
+2026-02-16 00:29:32 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:32] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:33 - PiController - INFO - HYDRATION WEIGHT: 721.12 g
+2026-02-16 00:29:33 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:33] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:34 - PiController - INFO - HYDRATION WEIGHT: 721.42 g
+2026-02-16 00:29:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:34] "GET /api/data HTTP/1.1" 200 -
+2026-02-16 00:29:34 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:29:34] "GET /api/master/log?limit=150 HTTP/1.1" 200 -
+2026-02-16 00:29:35 - PiController - INFO - HYDRATION WEIGHT: 721.32 g
+2026-02-16 00:29:36 - PiController - INFO - HYDRATION WEIGHT: 721.48 g
+2026-02-16 00:29:37 - PiController - INFO - HYDRATION WEIGHT: 721.33 g
+2026-02-16 00:29:38 - PiController - INFO - HYDRATION WEIGHT: 721.38 g
+2026-02-16 00:29:39 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708203983c64de2d3f
+2026-02-16 00:29:39 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708203983c64de2d3f
+2026-02-16 00:29:39 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:29:39 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:29:40 - PiController - INFO - HYDRATION WEIGHT: 721.41 g
+2026-02-16 00:29:41 - PiController - INFO - HYDRATION WEIGHT: 721.04 g
+2026-02-16 00:29:42 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:29:43 - PiController - INFO - HYDRATION WEIGHT: 721.30 g
+2026-02-16 00:29:44 - PiController - INFO - HYDRATION WEIGHT: 721.14 g
+2026-02-16 00:29:45 - PiController - INFO - HYDRATION WEIGHT: 721.31 g
+2026-02-16 00:29:46 - PiController - INFO - HYDRATION WEIGHT: 721.57 g
+2026-02-16 00:29:47 - PiController - INFO - HYDRATION WEIGHT: 721.21 g
+2026-02-16 00:29:48 - PiController - INFO - HYDRATION WEIGHT: 721.27 g
+2026-02-16 00:29:49 - PiController - INFO - HYDRATION WEIGHT: 721.18 g
+2026-02-16 00:29:50 - PiController - INFO - HYDRATION WEIGHT: 721.22 g
+2026-02-16 00:29:51 - PiController - INFO - HYDRATION WEIGHT: 720.90 g
+2026-02-16 00:29:52 - PiController - INFO - HYDRATION WEIGHT: 721.26 g
+2026-02-16 00:29:53 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:29:54 - PiController - INFO - SENT to C0:CD:D6:85:70:CC: 03708203983c64de2d3f
+2026-02-16 00:29:54 - PiController - INFO - SENT to 24:DC:C3:AC:B4:14: 03708203983c64de2d3f
+2026-02-16 00:29:54 - PiController - INFO - Sent ONO Price $0.0186 24h +0.68% to 2 display(s)
+2026-02-16 00:29:54 - PiController - INFO - HYDRATION WEIGHT: 721.16 g
+2026-02-16 00:29:55 - PiController - INFO - HYDRATION WEIGHT: 721.34 g
+2026-02-16 00:29:56 - PiController - INFO - HYDRATION WEIGHT: 721.22 g
+2026-02-16 00:29:57 - PiController - INFO - HYDRATION WEIGHT: 721.24 g
+2026-02-16 00:29:58 - PiController - INFO - HYDRATION WEIGHT: 721.47 g
+2026-02-16 00:29:59 - PiController - INFO - HYDRATION WEIGHT: 721.35 g
+2026-02-16 00:30:00 - PiController - INFO - HYDRATION WEIGHT: 721.15 g
+2026-02-16 00:30:01 - PiController - INFO - HYDRATION WEIGHT: 721.49 g
+2026-02-16 00:30:02 - PiController - INFO - HYDRATION WEIGHT: 721.13 g
+2026-02-16 00:30:03 - PiController - INFO - HYDRATION WEIGHT: 721.20 g
+2026-02-16 00:30:04 - PiController - INFO - HYDRATION WEIGHT: 721.29 g
+2026-02-16 00:30:05 - PiController - INFO - SENT to F0:24:F9:0C:DE:54: 012300000000
+2026-02-16 00:30:05 - werkzeug - INFO - 192.168.0.103 - - [16/Feb/2026 00:30:05] "POST /api/hydration/cmd HTTP/1.1" 200 -
+2026-02-16 00:30:05 - PiController - INFO - HYDRATION [F0:24:F9:0C:DE:54]: Daily Total: 211.1 ml
+2026-02-16 00:30:05 - PiController - INFO - HYDRATION WEIGHT: 721.07 g
+2026-02-16 00:30:06 - PiController - INFO - HYDRATION WEIGHT: 721.47 g

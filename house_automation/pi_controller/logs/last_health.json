@@ -1,0 +1,16 @@
+{
+"ts": 1771182003.4221492,
+"mem_total_kb": 4147008,
+"mem_available_kb": 2546992,
+"load_avg": [
+"1.42",
+"1.01",
+"0.41"
+],
+"serial": {
+"serial_connected": true,
+"serial_port": "/dev/serial0",
+"last_line_time": 1771182002.637547,
+"log_entries": 242
+}
+}
