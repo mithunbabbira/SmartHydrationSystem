@@ -6,6 +6,7 @@ import sys
 import os
 import requests
 import json
+from datetime import datetime
 
 # Setup logging first: rotating file (recent logs only) + console
 from logging_setup import setup_logging
@@ -21,6 +22,21 @@ app = Flask(__name__, static_url_path='', static_folder='static', template_folde
 
 # Global Controller Instance
 controller = None
+
+
+def _local_epoch_now():
+    """Return local-time epoch seconds (UTC epoch + local UTC offset)."""
+    now_local = datetime.now().astimezone()
+    offset = now_local.utcoffset()
+    offset_sec = int(offset.total_seconds()) if offset else 0
+    return int(time.time()) + offset_sec
+
+
+def _presence_probe():
+    """Run presence check and return (is_home, metadata dict)."""
+    is_home = controller.is_phone_home()
+    meta = getattr(controller, 'last_presence_check', {}) or {}
+    return is_home, meta
 
 @app.route('/')
 def index():
@@ -133,69 +149,71 @@ def led_raw():
 # --- API: Hydration ---
 @app.route('/api/hydration/cmd', methods=['POST'])
 def hydration_cmd():
+    if not controller or 'hydration' not in controller.handlers:
+        return jsonify({"error": "Controller not ready"}), 503
+
     data = request.json or {}
     cmd = data.get('cmd') # 'tare' or raw hex/int
     val = data.get('val', 0) # optional value for the command
-    
-    if controller and 'hydration' in controller.handlers:
-        handler = controller.handlers['hydration']
-        mac = config.SLAVE_MACS.get('hydration', '00:00:00:00:00:00')
 
-        # Handle Named Commands
-        if cmd == 'tare':
-            controller.send_command(mac, "012200000000")
-            return jsonify({"status": "tare_sent"})
-        # Hydration slave LED (0x10): on/off without ESP32 changes
-        if cmd == 'led_on':
-            controller.send_command(mac, "0110" + "0000803F")  # float 1.0
-            return jsonify({"status": "led_on"})
-        if cmd == 'led_off':
-            controller.send_command(mac, "0110" + "00000000")  # float 0.0
-            return jsonify({"status": "led_off"})
-        # Hydration slave Buzzer (0x11): on/off
-        if cmd == 'buzzer_on':
-            controller.send_command(mac, "0111" + "0000803F")
-            return jsonify({"status": "buzzer_on"})
-        if cmd == 'buzzer_off':
-            controller.send_command(mac, "0111" + "00000000")
-            return jsonify({"status": "buzzer_off"})
-        if cmd == 'sync_time':
-            controller.send_command(mac, "0130" + "00000000")  # slave will reply with 0x30, we send time in 0x31
-            return jsonify({"status": "sync_time_sent"})
-        if cmd == 'ping_presence':
-            controller.send_command(mac, "0140" + "00000000")  # slave will reply with 0x40, we send presence in 0x41
-            return jsonify({"status": "ping_presence_sent"})
-        # Request current daily total from slave (slave replies with 0x61 so UI updates)
-        if cmd == 'request_daily_total':
-            import struct
-            controller.send_command(mac, "0123" + struct.pack('<f', 0.0).hex())
-            return jsonify({"status": "request_daily_total_sent"})
+    handler = controller.handlers['hydration']
+    mac = config.SLAVE_MACS.get('hydration', '00:00:00:00:00:00')
 
-        # Handle Raw/Generic Commands
-        # If cmd is integer or string representation of int
-        try:
-            cmd_id = int(cmd) if isinstance(cmd, int) else int(cmd, 16) if cmd.startswith('0x') else int(cmd)
-            
-            # Construct Generic Packet: Type (1) + Cmd + Val (Float -> Hex)
-            import struct
-            val_bytes = struct.pack('<f', float(val)).hex()
-            payload = f"01{cmd_id:02X}{val_bytes}"
-            
-            controller.send_command(mac, payload)
-            logger.info(f"Sent Generic Hydration CMD: {payload}")
-            return jsonify({"status": "sent", "payload": payload})
-            
-        except ValueError:
-            pass # Not a recognized number, might be a test string
+    # Handle Named Commands
+    if cmd == 'tare':
+        controller.send_command(mac, "012200000000")
+        return jsonify({"status": "tare_sent"})
+    if cmd == 'led_on':
+        controller.send_command(mac, "0110" + "0000803F")  # CMD_SET_LED, float 1.0
+        return jsonify({"status": "led_on"})
+    if cmd == 'led_off':
+        controller.send_command(mac, "0110" + "00000000")  # CMD_SET_LED, float 0.0
+        return jsonify({"status": "led_off"})
+    if cmd == 'buzzer_on':
+        controller.send_command(mac, "0111" + "0000803F")  # CMD_SET_BUZZER, float 1.0
+        return jsonify({"status": "buzzer_on"})
+    if cmd == 'buzzer_off':
+        controller.send_command(mac, "0111" + "00000000")  # CMD_SET_BUZZER, float 0.0
+        return jsonify({"status": "buzzer_off"})
+    if cmd == 'sync_time':
+        import struct
+        controller.send_command(mac, "0131" + struct.pack('<I', _local_epoch_now()).hex())
+        return jsonify({"status": "sync_time_sent"})
+    if cmd == 'ping_presence':
+        is_home, meta = _presence_probe()
+        payload = "0000803F" if is_home else "00000000"
+        controller.send_command(mac, "0141" + payload)
+        return jsonify({
+            "status": "ping_presence_sent",
+            "presence": "home" if is_home else "away",
+            "method": meta.get("method", "none"),
+            "error": meta.get("error", ""),
+            "checked_at": meta.get("timestamp", time.time()),
+        })
+    if cmd == 'request_daily_total':
+        import struct
+        controller.send_command(mac, "0123" + struct.pack('<f', 0.0).hex())
+        return jsonify({"status": "request_daily_total_sent"})
 
-        # Handle Legacy Test Strings (if needed, but Generic covers them)
-        if cmd == 'test_alert':
-            handler.handle_packet(0x52, 0, mac)
-            return jsonify({"status": "test_alert_triggered"})
-        elif cmd == 'test_stop':
-            handler.handle_packet(0x53, 0, mac)
-            return jsonify({"status": "test_stop_triggered"})
-            
+    # Handle Raw/Generic Commands (cmd as hex or int)
+    try:
+        cmd_id = int(cmd) if isinstance(cmd, int) else int(cmd, 16) if isinstance(cmd, str) and cmd.startswith('0x') else int(cmd)
+        import struct
+        val_bytes = struct.pack('<f', float(val)).hex()
+        payload = f"01{cmd_id:02X}{val_bytes}"
+        controller.send_command(mac, payload)
+        logger.info(f"Sent Generic Hydration CMD: {payload}")
+        return jsonify({"status": "sent", "payload": payload})
+    except (ValueError, TypeError):
+        pass
+
+    if cmd == 'test_alert':
+        handler.handle_packet(0x52, 0, mac)
+        return jsonify({"status": "test_alert_triggered"})
+    if cmd == 'test_stop':
+        handler.handle_packet(0x53, 0, mac)
+        return jsonify({"status": "test_stop_triggered"})
+
     return jsonify({"status": "ok"})
 
 # --- API: Adafruit IO ---
@@ -362,6 +380,10 @@ def get_data():
             "last_drink_ml": round(h_data.get('last_drink_ml', 0), 1),
             "last_drink_time": h_data.get('last_drink_time', 0),
             "daily_total_ml": round(h_data.get('daily_total_ml', 0), 1),
+            "presence_last_state": h_data.get('presence_last_state', 'UNKNOWN'),
+            "presence_last_checked": h_data.get('presence_last_checked', 0),
+            "presence_last_method": h_data.get('presence_last_method', 'none'),
+            "presence_last_error": h_data.get('presence_last_error', ''),
         }
         
     return jsonify(response)
@@ -492,7 +514,7 @@ def _ono_price_loop():
 
 
 def _hydration_time_push_loop():
-    """Push time to hydration slave every 5s for 60s after start so slave gets time even if its 0x30 never reaches Pi."""
+    """Push local-epoch time to hydration slave every 5s for 60s after start."""
     import struct
     time.sleep(2)  # Let serial/controller settle
     duration_sec = 60
@@ -504,8 +526,7 @@ def _hydration_time_push_loop():
     while time.time() - start < duration_sec:
         if controller and getattr(controller, 'serial_conn', None) and controller.serial_conn.is_open:
             try:
-                unix_time = int(time.time())
-                time_hex = struct.pack('<I', unix_time).hex()
+                time_hex = struct.pack('<I', _local_epoch_now()).hex()
                 controller.send_command(mac, "0131" + time_hex)
                 logger.info("Time push to hydration slave (startup sync)")
             except Exception as e:

@@ -1,6 +1,7 @@
 import logging
 import struct
 import time
+from datetime import datetime
 
 from .drink_celebration import (
     trigger as trigger_drink_celebration,
@@ -10,6 +11,14 @@ from .drink_celebration import (
 from . import bottle_alert
 
 logger = logging.getLogger("PiController")
+
+
+def local_epoch_now():
+    """Return local-time epoch seconds (UTC epoch + local UTC offset)."""
+    now_local = datetime.now().astimezone()
+    offset = now_local.utcoffset()
+    offset_sec = int(offset.total_seconds()) if offset else 0
+    return int(time.time()) + offset_sec
 
 class HydrationHandler:
     def __init__(self, controller):
@@ -21,6 +30,10 @@ class HydrationHandler:
             'last_drink_ml': 0.0,
             'last_drink_time': 0,
             'daily_total_ml': 0.0,
+            'presence_last_state': 'UNKNOWN',
+            'presence_last_checked': 0,
+            'presence_last_method': 'none',
+            'presence_last_error': '',
         }
 
     def _trigger_alert_display_and_led(self, display_text="no bottle"):
@@ -47,14 +60,18 @@ class HydrationHandler:
         # 0x30: REQUEST_TIME from Slave
         elif cmd == 0x30:
             logger.info(f"[{mac}] Requested Time.")
-            unix_time = int(time.time())
-            time_hex = struct.pack('<I', unix_time).hex()
+            time_hex = struct.pack('<I', local_epoch_now()).hex()
             self.controller.send_command(mac, "0131" + time_hex)
 
         # 0x40: REQUEST_PRESENCE from Slave
         elif cmd == 0x40:
             logger.info(f"[{mac}] Requested Presence Check.")
             is_home = self.controller.is_phone_home() # Call back to controller
+            presence = getattr(self.controller, "last_presence_check", {}) or {}
+            self.current_data['presence_last_state'] = 'HOME' if is_home else 'AWAY'
+            self.current_data['presence_last_checked'] = presence.get('timestamp', time.time())
+            self.current_data['presence_last_method'] = presence.get('method', 'none')
+            self.current_data['presence_last_error'] = presence.get('error', '')
             payload = "0000803F" if is_home else "00000000" # 1.0 or 0.0
             self.controller.send_command(mac, "0141" + payload)
 

@@ -11,9 +11,6 @@ class TimeSync {
   bool timeSynced_ = false;
   bool timedOut_ = false;
 
-  // Local time = Pi epoch + offset. Adjust for your timezone if needed (e.g. IST +19800).
-  static const unsigned long TIMEZONE_OFFSET_SEC = 19800;
-
 public:
   void begin() {
     syncStart_ = millis();
@@ -37,13 +34,14 @@ public:
 
   int getHour() const {
     if (!timeSynced_) return 12;
-    unsigned long epochSec = rtcOffset_ + (millis() / 1000) + TIMEZONE_OFFSET_SEC;
+    // Pi sends local epoch (already timezone-adjusted), so no extra offset here.
+    unsigned long epochSec = rtcOffset_ + (millis() / 1000);
     return (int)((epochSec % 86400UL) / 3600);
   }
 
   unsigned long getDay() const {
     if (!timeSynced_) return 0;
-    return (rtcOffset_ + (millis() / 1000) + TIMEZONE_OFFSET_SEC) / 86400;
+    return (rtcOffset_ + (millis() / 1000)) / 86400;
   }
 
   void tick(Comms &comms) {

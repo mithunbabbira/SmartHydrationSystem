@@ -68,7 +68,29 @@ function sendLEDRaw(hex) {
 }
 
 function sendHydration(cmd) {
-    apiCall('/api/hydration/cmd', { cmd: cmd });
+    fetch('/api/hydration/cmd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cmd: cmd })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            const statusEl = document.getElementById('hydration-cmd-status');
+            if (statusEl && data.status) {
+                const label = (data.status === 'led_on') ? 'LED ON' : (data.status === 'led_off') ? 'LED OFF' : (data.status === 'buzzer_on') ? 'Buzzer ON' : (data.status === 'buzzer_off') ? 'Buzzer OFF' : data.status;
+                statusEl.textContent = label + ' sent';
+                statusEl.style.visibility = 'visible';
+                setTimeout(() => { statusEl.style.visibility = 'hidden'; }, 2000);
+            }
+        })
+        .catch(err => {
+            console.error('Hydration cmd failed:', err);
+            alert('Request failed');
+        });
 }
 
 function sendHydrationCmd(cmd, val = 0) {

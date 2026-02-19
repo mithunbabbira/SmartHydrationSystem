@@ -1,14 +1,13 @@
 /*
- * Hydration Slave v3 - Clean rewrite
+ * Hydration Slave v3 - Stability hardened
  *
  * Flow:
- *   Boot -> Rainbow until time sync from Pi
- *   After sync: day/sleep color, weight sampling, missing bottle alert,
- *               drinking interval check with presence gate, stabilization
- *               after bottle return with immediate evaluation.
+ *   Boot -> Rainbow until time sync or timeout
+ *   Startup init -> robust bottle/baseline bootstrap
+ *   Runtime -> day/sleep color, weight sampling, missing bottle alert,
+ *              interval/stabilization evaluation, presence-gated reminders.
  *
- * Key rule: the visual section at the bottom ALWAYS runs. No early returns
- *           after time sync so the LED/buzzer/RGB are never left in a stale state.
+ * Key rule: after sync/timeout the visual section ALWAYS runs.
  */
 
 #include "Config.h"
@@ -24,36 +23,48 @@ TimeSync timeSync;
 
 // ==================== STATE ====================
 // --- Missing bottle ---
-static bool bottleMissing        = false;
-static unsigned long missingStartMs   = 0;
-static bool missingAlertActive   = false;
-static unsigned long missingAlertMs   = 0;
-static unsigned long missingBlinkMs   = 0;
-static bool missingBlinkOn       = false;
+static bool bottleMissing              = false;
+static unsigned long missingStartMs    = 0;
+static bool missingAlertActive         = false;
+static unsigned long missingAlertMs    = 0;
+static unsigned long missingBlinkMs    = 0;
+static bool missingBlinkOn             = false;
+
+// --- Bottle state confirmation (jitter filter) ---
+static unsigned long bottleSampleMs    = 0;
+static int missingConfirmCount         = 0;
+static int presentConfirmCount         = 0;
 
 // --- Stabilization (after bottle return) ---
-static bool stabilizing          = false;
-static unsigned long stabilizeStartMs = 0;
+static bool stabilizing                = false;
+static unsigned long stabilizeStartMs  = 0;
 
 // --- Drinking baseline & interval ---
-static float baselineWeight      = 0.0f;
-static bool  baselineValid       = false;
-static unsigned long lastDrinkCheckMs = 0;
+static float baselineWeight            = 0.0f;
+static bool baselineValid              = false;
+static unsigned long lastDrinkCheckMs  = 0;
 
 // --- Drinking alert ---
-static bool drinkAlertActive     = false;
+static bool drinkAlertActive           = false;
 static unsigned long drinkAlertStartMs = 0;
-static unsigned long drinkBlinkMs = 0;
-static bool drinkBlinkOn         = false;
+static unsigned long drinkBlinkMs      = 0;
+static bool drinkBlinkOn               = false;
 
 // --- Presence ---
-static bool isHome               = true;
-static bool waitingPresence      = false;
+static bool isHome                     = true;
+static bool waitingPresence            = false;
+static unsigned long waitingPresenceSinceMs = 0;
+static unsigned long presenceRetryNotBeforeMs = 0;
+static bool forceImmediateEvaluation   = false;
+
+// --- Startup ---
+static bool startupInitDone            = false;
+static bool fallbackTimeLogged         = false;
 
 // --- Daily totals ---
-static float dailyTotalMl        = 0.0f;
-static int   currentDayIndex     = 0;
-static bool  dayInitialized      = false;
+static float dailyTotalMl              = 0.0f;
+static int currentDayIndex             = 0;
+static bool dayInitialized             = false;
 
 // ==================== HELPERS ====================
 
@@ -76,6 +87,68 @@ void LOG2S(const char *msg, const char *val) {
   Serial.print("["); Serial.print(millis()); Serial.print("] ");
   Serial.print(msg); Serial.println(val);
 #endif
+}
+
+// Safe target-time comparison across millis() overflow.
+bool timeReached(unsigned long now, unsigned long target) {
+  return ((long)(now - target) >= 0);
+}
+
+float median3(float a, float b, float c) {
+  if ((a <= b && b <= c) || (c <= b && b <= a)) return b;
+  if ((b <= a && a <= c) || (c <= a && a <= b)) return a;
+  return c;
+}
+
+float readConfirmedWeight() {
+  float w1 = hw.getWeight();
+  delay(WEIGHT_CONFIRM_DELAY_MS);
+  float w2 = hw.getWeight();
+
+  float drift = fabsf(w2 - w1);
+  if (drift <= WEIGHT_CONFIRM_MAX_DRIFT_G) {
+    float avg = (w1 + w2) * 0.5f;
+    LOG2("Confirmed weight(avg): ", avg);
+    return avg;
+  }
+
+  // High drift: take a third sample and use median.
+  delay(WEIGHT_CONFIRM_DELAY_MS);
+  float w3 = hw.getWeight();
+  float med = median3(w1, w2, w3);
+  LOG2("Confirmed weight(median): ", med);
+  return med;
+}
+
+float sampleStableWeight() {
+  float sum = 0.0f;
+  for (int i = 0; i < BOTTLE_CONFIRM_SAMPLES; i++) {
+    sum += hw.getWeight();
+    if (i + 1 < BOTTLE_CONFIRM_SAMPLES) {
+      delay(BOTTLE_SAMPLE_INTERVAL_MS);
+    }
+  }
+  float avg = sum / (float)BOTTLE_CONFIRM_SAMPLES;
+  LOG2("Startup stable weight: ", avg);
+  return avg;
+}
+
+void requestPresenceIfNeeded(const char *logMsg) {
+  if (drinkAlertActive || waitingPresence) return;
+  waitingPresence = true;
+  waitingPresenceSinceMs = millis();
+  comms.send(CMD_REQUEST_PRESENCE, 0);
+  if (logMsg) LOG(logMsg);
+}
+
+void handlePresenceTimeout(unsigned long now) {
+  if (!waitingPresence) return;
+  if (now - waitingPresenceSinceMs < PRESENCE_REPLY_TIMEOUT_MS) return;
+
+  waitingPresence = false;
+  waitingPresenceSinceMs = 0;
+  presenceRetryNotBeforeMs = now + PRESENCE_RETRY_AFTER_TIMEOUT_MS;
+  LOG("Presence reply timeout. Will retry reminder check later.");
 }
 
 // --- Start drinking alert (called when presence confirmed HOME) ---
@@ -112,7 +185,11 @@ void recordDrink(float amount, float newWeight) {
   comms.sendFloat(CMD_DRINK_DETECTED, amount);
   comms.sendFloat(CMD_DAILY_TOTAL, dailyTotalMl);
   LOG2("Daily total now: ", dailyTotalMl);
-  lastDrinkCheckMs = millis();  // reset interval timer
+
+  lastDrinkCheckMs = millis();
+  presenceRetryNotBeforeMs = 0;
+  waitingPresence = false;
+  waitingPresenceSinceMs = 0;
   stopDrinkAlert();
 }
 
@@ -122,30 +199,26 @@ void recordRefill(float amount, float newWeight) {
   LOG2(" ml. New baseline: ", newWeight);
   baselineWeight = newWeight;
   hw.saveBaseline(baselineWeight);
-  lastDrinkCheckMs = millis();  // reset interval timer
+
+  lastDrinkCheckMs = millis();
+  presenceRetryNotBeforeMs = 0;
+  waitingPresence = false;
+  waitingPresenceSinceMs = 0;
   stopDrinkAlert();
 }
 
 // --- Evaluate weight vs baseline (called after stabilization OR at interval) ---
-//     Returns: true if drink or refill was detected (interval reset already done)
-//
-//     Logic matches old LogicManager.h: anything that is NOT a confirmed drink
-//     or confirmed refill triggers a presence check → drinking reminder.
-//     Baseline is preserved on "no change" so small sips accumulate until
-//     they cross DRINK_MIN_DELTA (just like old code line 314-321).
-bool evaluateWeight(float currentWeight) {
+bool evaluateWeight(float currentWeightRaw) {
+  forceImmediateEvaluation = false;
+  float currentWeight = readConfirmedWeight();
+  LOG2("Evaluate raw=", currentWeightRaw);
+
   if (!baselineValid) {
-    // First time: set baseline, request presence for first alert
     baselineWeight = currentWeight;
     baselineValid  = true;
     hw.saveBaseline(baselineWeight);
     lastDrinkCheckMs = millis();
     LOG2("First baseline set: ", baselineWeight);
-    if (!drinkAlertActive && !waitingPresence) {
-      waitingPresence = true;
-      comms.send(CMD_REQUEST_PRESENCE, 0);
-      LOG("Requesting presence for first drinking alert.");
-    }
     return false;
   }
 
@@ -166,18 +239,118 @@ bool evaluateWeight(float currentWeight) {
     return true;
   }
 
-  // --- Not a confirmed drink or refill (matches old LogicManager line 314-321) ---
-  // Baseline preserved: small sips accumulate until DRINK_MIN_DELTA crossed.
-  // Request presence for drinking reminder (no mercy).
+  // --- No confirmed drink/refill ---
   LOG2("No confirmed drink/refill (diff=", diff);
   LOG(" ). Baseline preserved. Requesting presence for reminder.");
-  lastDrinkCheckMs = millis();  // CRITICAL: prevent tight re-evaluation loop
-  if (!drinkAlertActive && !waitingPresence) {
-    waitingPresence = true;
-    comms.send(CMD_REQUEST_PRESENCE, 0);
-    LOG("Sent CMD_REQUEST_PRESENCE to Pi.");
-  }
+
+  lastDrinkCheckMs = millis();
+  requestPresenceIfNeeded("Sent CMD_REQUEST_PRESENCE to Pi.");
   return false;
+}
+
+void updateBottlePresence(unsigned long now, float currentW) {
+  if (!timeReached(now, bottleSampleMs + BOTTLE_SAMPLE_INTERVAL_MS)) return;
+  bottleSampleMs = now;
+
+  const float presentThreshold = THRESHOLD_WEIGHT + BOTTLE_HYSTERESIS_G;
+  bool missingCandidate = (currentW < THRESHOLD_WEIGHT);
+  bool presentCandidate = (currentW > presentThreshold);
+
+  if (!bottleMissing) {
+    if (missingCandidate) {
+      missingConfirmCount++;
+      if (missingConfirmCount >= BOTTLE_CONFIRM_SAMPLES) {
+        bottleMissing      = true;
+        missingStartMs     = now;
+        missingAlertActive = false;
+        missingBlinkMs     = 0;
+        missingBlinkOn     = false;
+        stabilizing        = false;
+        waitingPresence    = false;
+        waitingPresenceSinceMs = 0;
+        presenceRetryNotBeforeMs = 0;
+        presentConfirmCount = 0;
+        missingConfirmCount = 0;
+        LOG("Bottle LIFTED (confirmed).");
+
+        if (drinkAlertActive) {
+          stopDrinkAlert();
+        }
+      }
+    } else {
+      missingConfirmCount = 0;
+    }
+  } else {
+    if (presentCandidate) {
+      presentConfirmCount++;
+      if (presentConfirmCount >= BOTTLE_CONFIRM_SAMPLES) {
+        bottleMissing      = false;
+        missingAlertActive = false;
+        stabilizing        = true;
+        stabilizeStartMs   = now;
+        missingConfirmCount = 0;
+        presentConfirmCount = 0;
+        comms.send(CMD_ALERT_REPLACED, 0);
+        LOG("Bottle RETURNED (confirmed). Stabilizing...");
+      }
+    } else {
+      presentConfirmCount = 0;
+    }
+  }
+}
+
+void runStartupInit(unsigned long now) {
+  if (startupInitDone) return;
+
+  float stableW = sampleStableWeight();
+  bool missingAtBoot = (stableW < THRESHOLD_WEIGHT);
+  bool hadBaseline = baselineValid;
+
+  missingConfirmCount = 0;
+  presentConfirmCount = 0;
+  bottleSampleMs = now;
+  missingAlertActive = false;
+  missingBlinkMs = 0;
+  missingBlinkOn = false;
+  waitingPresence = false;
+  waitingPresenceSinceMs = 0;
+  presenceRetryNotBeforeMs = 0;
+  stabilizing = false;
+
+  if (missingAtBoot) {
+    bottleMissing = true;
+    missingStartMs = now;
+    baselineValid = false;
+    baselineWeight = 0.0f;
+    LOG("Startup: bottle missing -> baseline cleared, waiting for return.");
+  } else {
+    bottleMissing = false;
+
+    if (!baselineValid) {
+      baselineWeight = stableW;
+      baselineValid = true;
+      hw.saveBaseline(baselineWeight);
+      lastDrinkCheckMs = now;
+      LOG2("Startup: baseline initialized from current weight: ", baselineWeight);
+    } else {
+      float drift = fabsf(stableW - baselineWeight);
+      if (drift >= BOOT_REBASE_DELTA) {
+        baselineWeight = stableW;
+        hw.saveBaseline(baselineWeight);
+        LOG2("Startup: stale baseline rebased to: ", baselineWeight);
+      } else {
+        LOG2("Startup: baseline kept from NVM: ", baselineWeight);
+      }
+    }
+
+    // Immediate first daytime check after boot if baseline already existed.
+    if (hadBaseline) {
+      forceImmediateEvaluation = true;
+      LOG("Startup: first interval check forced for daytime.");
+    }
+  }
+
+  startupInitDone = true;
 }
 
 // ==================== PACKET HANDLER ====================
@@ -226,6 +399,9 @@ void processIncomingPackets() {
 
     if (waitingPresence) {
       waitingPresence = false;
+      waitingPresenceSinceMs = 0;
+      presenceRetryNotBeforeMs = 0;
+
       if (isHome) {
         startDrinkAlert();
       } else {
@@ -274,29 +450,50 @@ void loop() {
   processIncomingPackets();
   timeSync.tick(comms);
 
-  // --- Before time sync: rainbow and nothing else ---
-  if (!timeSync.isSynced()) {
+  // --- Before time sync timeout: rainbow and nothing else ---
+  if (!timeSync.isSynced() && !timeSync.isTimedOut()) {
     hw.animateRainbow(30);
     return;  // only early return in the whole loop
   }
 
-  // --- One-time: stop rainbow after sync ---
+  // --- One-time: stop rainbow after sync or timeout fallback ---
   static bool rainbowDone = false;
   if (!rainbowDone) {
     rainbowDone = true;
     hw.setRgb(0, 0, 0);
     hw.setLed(false);
     hw.setBuzzer(false);
-    LOG("Time synced. Rainbow off.");
+    if (timeSync.isSynced()) {
+      LOG("Time synced. Rainbow off.");
+    } else {
+      LOG("Time sync timeout fallback active. Continuing hydration logic.");
+    }
   }
 
-  // --- Compute time state ---
-  int hour = timeSync.getHour();
-  bool isSleep = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
   unsigned long now = millis();
+  runStartupInit(now);
+  now = millis();  // startup init uses short delays; refresh now afterwards.
+
+  // --- Presence reply timeout guard ---
+  handlePresenceTimeout(now);
+
+  // --- Compute time state ---
+  bool hasTime = timeSync.isSynced();
+  bool isSleep = false;
+  if (hasTime) {
+    int hour = timeSync.getHour();
+    isSleep = (hour >= SLEEP_START_HOUR || hour < SLEEP_END_HOUR);
+  } else {
+    // Timeout fallback mode: run daytime logic until a valid sync arrives.
+    isSleep = false;
+    if (!fallbackTimeLogged) {
+      fallbackTimeLogged = true;
+      LOG("No time sync yet -> using daytime fallback and skipping day reset.");
+    }
+  }
 
   // --- Day tracking (reset daily total at midnight) ---
-  {
+  if (hasTime) {
     int day = (int)timeSync.getDay();
     if (!dayInitialized) {
       dayInitialized = true;
@@ -331,37 +528,10 @@ void loop() {
   }
 
   // ====================================================
-  // SECTION 2: Bottle missing / present transitions
+  // SECTION 2: Bottle missing / present transitions (hysteresis + confirm)
   // ====================================================
   float currentW = hw.getWeight();
-
-  if (currentW < THRESHOLD_WEIGHT) {
-    // --- Bottle is OFF the scale ---
-    if (!bottleMissing) {
-      bottleMissing      = true;
-      missingStartMs     = now;
-      missingAlertActive = false;
-      missingBlinkMs     = 0;
-      missingBlinkOn     = false;
-      stabilizing        = false;
-      LOG("Bottle LIFTED.");
-
-      // Stop any active drinking alert immediately
-      if (drinkAlertActive) {
-        stopDrinkAlert();
-      }
-    }
-  } else {
-    // --- Bottle is ON the scale ---
-    if (bottleMissing) {
-      bottleMissing      = false;
-      missingAlertActive = false;
-      stabilizing        = true;
-      stabilizeStartMs   = now;
-      comms.send(CMD_ALERT_REPLACED, 0);
-      LOG("Bottle RETURNED. Stabilizing...");
-    }
-  }
+  updateBottlePresence(now, currentW);
 
   // ====================================================
   // SECTION 3: Stabilization (wait, then evaluate immediately)
@@ -374,9 +544,6 @@ void loop() {
       LOG2("Stabilized at: ", stableW);
       LOG("Evaluating drink/refill vs baseline...");
       evaluateWeight(stableW);
-      // After evaluation, lastDrinkCheckMs is reset if drink/refill detected.
-      // If no change, lastDrinkCheckMs is NOT reset, so the interval check
-      // will fire again soon (matching old v1 behaviour: no mercy).
     }
     // While stabilizing, skip interval check but DO run visuals below.
   }
@@ -384,15 +551,25 @@ void loop() {
   // ====================================================
   // SECTION 4: Interval drinking logic (daytime, bottle present, not stabilizing)
   // ====================================================
-  // Guards match old LogicManager state machine: evaluation only runs in
-  // "MONITORING" equivalent (not during alert, not waiting for presence reply).
-  else if (!isSleep && !bottleMissing && !drinkAlertActive && !waitingPresence) {
+  else if (!isSleep &&
+           !bottleMissing &&
+           !drinkAlertActive &&
+           !waitingPresence &&
+           timeReached(now, presenceRetryNotBeforeMs)) {
     float wNow = hw.getWeight();
+    bool retryDue = (presenceRetryNotBeforeMs != 0) && timeReached(now, presenceRetryNotBeforeMs);
+    if (retryDue) {
+      presenceRetryNotBeforeMs = 0;
+      LOG("Presence retry window reached. Re-evaluating.");
+    }
 
     if (!baselineValid) {
-      // First time ever: set baseline and request presence for first alert
+      // Baseline missing at runtime (e.g. booted without bottle then placed).
       evaluateWeight(wNow);
-    } else if (now - lastDrinkCheckMs >= DRINK_CHECK_INTERVAL_MS) {
+    } else if (forceImmediateEvaluation ||
+               retryDue ||
+               now - lastDrinkCheckMs >= DRINK_CHECK_INTERVAL_MS) {
+      forceImmediateEvaluation = false;
       LOG("Interval expired. Evaluating...");
       evaluateWeight(wNow);
     }
@@ -471,9 +648,8 @@ void loop() {
     }
 
     unsigned long since = now - drinkAlertStartMs;
-    if (since >= DRINK_ALERT_BUZZER_DELAY_MS &&
-        since <  DRINK_ALERT_BUZZER_DELAY_MS + DRINK_ALERT_BUZZER_WINDOW_MS) {
-      hw.setBuzzer(drinkBlinkOn);  // buzzer follows blink during window
+    if (since >= DRINK_ALERT_BUZZER_DELAY_MS) {
+      hw.setBuzzer(!drinkBlinkOn);  // buzzer ON when lights OFF (split peak current)
     } else {
       hw.setBuzzer(false);
     }

@@ -40,6 +40,12 @@ class SerialController:
         # Ring buffer of raw lines from master (for dashboard log)
         self._serial_log = deque(maxlen=500)
         self._log_lock = threading.Lock()
+        self.last_presence_check = {
+            "result": None,           # True=HOME, False=AWAY
+            "method": "none",         # l2ping / hcitool / fallback_away
+            "error": "",
+            "timestamp": 0.0,
+        }
 
         # Initialize Handlers
         self.handlers = {
@@ -113,21 +119,32 @@ class SerialController:
                 logger.error(f"Error reading from serial: {e}")
                 time.sleep(1) 
 
+    def _record_presence_check(self, result, method, error=""):
+        self.last_presence_check = {
+            "result": bool(result),
+            "method": method,
+            "error": str(error) if error else "",
+            "timestamp": time.time(),
+        }
+
     def is_phone_home(self):
         # PHONE_MAC like "F0:24:F9:0D:90:A4"
         phone_mac = config.SLAVE_MACS.get('my_phone', "00:00:00:00:00:00") 
         logger.info(f"Checking presence for {phone_mac}...")
+        errors = []
 
         # Method 1: l2ping (Preferred, needs sudo usually)
         try:
             # -c 1: count 1, -t 2: timeout 2s
             subprocess.check_output(["sudo", "l2ping", "-c", "1", "-t", "2", phone_mac], stderr=subprocess.STDOUT)
             logger.info(f"Presence Confirmed via l2ping.")
+            self._record_presence_check(True, "l2ping")
             return True
-        except subprocess.CalledProcessError:
-            pass # l2ping failed, try next method
+        except subprocess.CalledProcessError as e:
+            out = (e.output or b"").decode('utf-8', errors='ignore').strip()
+            errors.append(f"l2ping failed: {out or e}")
         except Exception as e:
-             logger.error(f"l2ping error: {e}")
+            errors.append(f"l2ping error: {e}")
 
         # Method 2: hcitool name (Fallback)
         try:
@@ -135,10 +152,14 @@ class SerialController:
             output = result.strip().decode('utf-8')
             if output:
                 logger.info(f"Presence Confirmed via hcitool name: '{output}'")
+                self._record_presence_check(True, "hcitool")
                 return True
         except Exception as e:
-            logger.error(f"hcitool error: {e}")
-        
+            errors.append(f"hcitool error: {e}")
+
+        err_msg = "; ".join(errors) if errors else "No presence method succeeded."
+        self._record_presence_check(False, "fallback_away", err_msg)
+        logger.warning("Presence Check Failed (User AWAY): %s", err_msg)
         logger.info("Presence Check Failed (User AWAY)")
         return False
 

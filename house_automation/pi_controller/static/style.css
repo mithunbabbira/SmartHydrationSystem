@@ -345,6 +345,14 @@ header {
     min-width: 64px;
 }
 
+.hydration-status {
+    grid-column: 1 / -1;
+    font-size: 0.85em;
+    color: var(--text-muted, #888);
+    visibility: hidden;
+    min-height: 1.2em;
+}
+
 /* LED card */
 .color-grid {
     display: grid;

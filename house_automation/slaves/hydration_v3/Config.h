@@ -19,11 +19,16 @@
 #define PIN_SCALE_SCK  33
 
 // ============== SCALE ==============
-#define CALIBRATION_FACTOR  350.3f
+// Negative = load cell gives lower raw values when weight increases (invert sign)
+#define CALIBRATION_FACTOR  (-350.3f)
 
 // ============== TIME SYNC ==============
 #define TIME_SYNC_TIMEOUT_MS   60000   // Stop requesting time after this
 #define TIME_SYNC_REQUEST_MS   5000    // Request time every 5s until we get it
+
+// ============== PRESENCE FLOW HARDENING ==============
+#define PRESENCE_REPLY_TIMEOUT_MS       10000   // wait this long for Pi presence reply
+#define PRESENCE_RETRY_AFTER_TIMEOUT_MS 60000   // retry reminder check after timeout
 
 // ============== WEIGHT PRINT (when awake) ==============
 #define WEIGHT_PRINT_INTERVAL_MS  1000   // Print weight to Serial this often
@@ -31,16 +36,21 @@
 // ============== BOTTLE / ALERT LOGIC ==============
 // If weight < THRESHOLD_WEIGHT, bottle is considered missing.
 #define THRESHOLD_WEIGHT           80.0f
+#define BOTTLE_HYSTERESIS_G         8.0f
+#define BOTTLE_CONFIRM_SAMPLES         3
+#define BOTTLE_SAMPLE_INTERVAL_MS    120
 // After this delay we start the \"no bottle\" alert (flash + Pi signal)
-#define MISSING_ALERT_DELAY_MS   180000   // 3 minutes before triggering missing bottle alert
+#define MISSING_ALERT_DELAY_MS    10000   // TEST: 10s before triggering missing bottle alert
+// #define MISSING_ALERT_DELAY_MS   5000
+
 // After alert is active, buzzer joins after this extra delay
 #define MISSING_BUZZER_DELAY_MS  5000    // ms after alert start before buzzer joins
 #define BLINK_INTERVAL_MS         500    // LED blink period for missing alert
 
 // Base colors when bottle is present
-#define COLOR_DAY_R     0
-#define COLOR_DAY_G   255
-#define COLOR_DAY_B    64
+#define COLOR_DAY_R   128
+#define COLOR_DAY_G     0
+#define COLOR_DAY_B   255
 
 #define COLOR_SLEEP_R   0
 #define COLOR_SLEEP_G   0
@@ -56,11 +66,14 @@
 
 // ============== DRINKING LOGIC ==============
 // How often (during daytime) we evaluate drink/refill vs last baseline
-#define DRINK_CHECK_INTERVAL_MS   1800000  // 30 minutes
+#define DRINK_CHECK_INTERVAL_MS     20000  // TEST: 20s
 // Amount decrease to consider as \"user drank\"
 #define DRINK_MIN_DELTA           50.0f
 // Amount increase to consider as \"bottle refilled\"
 #define REFILL_MIN_DELTA         100.0f
+#define BOOT_REBASE_DELTA   REFILL_MIN_DELTA
+#define WEIGHT_CONFIRM_DELAY_MS       250
+#define WEIGHT_CONFIRM_MAX_DRIFT_G    5.0f
 // Drinking reminder: first just color, after this delay buzzer joins
 #define DRINK_ALERT_BUZZER_DELAY_MS  5000
 // How long (ms) buzzer stays active after it joins the drinking alert

@@ -17,7 +17,7 @@ This document lists all ESP-NOW slaves, what data they send/receive, and what ca
 | 0x21 REPORT_WEIGHT | Current weight (g) | **Weight** (ml) – main value |
 | 0x60 DRINK_DETECTED | Last drink volume (ml) | **Last drink**; triggers drink celebration (display "X.X ml", green LED, green IR for 3s, revert to Rainbow) |
 | 0x61 DAILY_TOTAL | Today's total (ml) | **Today total** |
-| 0x30 REQUEST_TIME | Slave asks for time | Pi sends 0x31 with unix timestamp |
+| 0x30 REQUEST_TIME | Slave asks for time | Pi sends 0x31 with local epoch timestamp |
 | 0x40 REQUEST_PRESENCE | Slave asks if user is home | Pi checks phone, sends 0x41 |
 | 0x50 ALERT_MISSING | Bottle missing (timer expired) | Display loops: rainbow 1s → "no bottle" 4s; LED red pulse speed 1; IR flash |
 | 0x51 ALERT_REPLACED | Bottle replaced | Revert: stop display loop, LED Rainbow speed 5, IR Smooth |
@@ -35,8 +35,8 @@ This document lists all ESP-NOW slaves, what data they send/receive, and what ca
 | Buzzer Off | 0x11 (0.0) | Turn buzzer off | Advanced → **Buzzer OFF** |
 | Get Weight | 0x20 | Request current weight | Generic cmd |
 | Request Daily Total | 0x23 | Request today total (reply 0x61) | On load + every 60s |
-| Sync Time | 0x30 | Slave replies 0x30; Pi sends 0x31 | Advanced → **Sync Time** |
-| Ping Presence | 0x40 | Slave replies 0x40; Pi sends 0x41 | Advanced → **Ping Presence** |
+| Sync Time | 0x31 | Push local epoch time directly to slave | Advanced → **Sync Time** |
+| Ping Presence | 0x41 | Pi checks phone now and pushes HOME/AWAY directly | Advanced → **Ping Presence** |
 | Force Reminder | 0x52 | Simulate alert reminder | Advanced → **Force Reminder** |
 | Silence Alert | 0x53 | Simulate alert stopped | Advanced → **Silence Alert** |
 
@@ -50,7 +50,7 @@ This document lists all ESP-NOW slaves, what data they send/receive, and what ca
 
 - `POST /api/hydration/cmd`  
   Body: `{ "cmd": "tare" | "led_on" | "led_off" | "buzzer_on" | "buzzer_off" | "sync_time" | "ping_presence" | "request_daily_total" | "test_alert" | "test_stop" }`
-- `GET /api/data` → `hydration: { weight, status, last_update, last_drink_ml, last_drink_time, daily_total_ml }`
+- `GET /api/data` → `hydration: { weight, status, last_update, last_drink_ml, last_drink_time, daily_total_ml, presence_last_state, presence_last_checked, presence_last_method, presence_last_error }`
 
 ---
 
