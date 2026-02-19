@@ -49,6 +49,7 @@ static bool drinkAlertActive           = false;
 static unsigned long drinkAlertStartMs = 0;
 static unsigned long drinkBlinkMs      = 0;
 static bool drinkBlinkOn               = false;
+static bool resumeReminderAfterReturn  = false;
 
 // --- Presence ---
 static bool isHome                     = true;
@@ -158,6 +159,7 @@ void startDrinkAlert() {
   drinkAlertStartMs  = millis();
   drinkBlinkMs       = millis();
   drinkBlinkOn       = false;
+  resumeReminderAfterReturn = false;
   comms.send(CMD_ALERT_REMINDER, 0);
   LOG("DRINK ALERT -> STARTED (user HOME).");
 }
@@ -190,6 +192,7 @@ void recordDrink(float amount, float newWeight) {
   presenceRetryNotBeforeMs = 0;
   waitingPresence = false;
   waitingPresenceSinceMs = 0;
+  resumeReminderAfterReturn = false;
   stopDrinkAlert();
 }
 
@@ -204,11 +207,15 @@ void recordRefill(float amount, float newWeight) {
   presenceRetryNotBeforeMs = 0;
   waitingPresence = false;
   waitingPresenceSinceMs = 0;
+  resumeReminderAfterReturn = false;
   stopDrinkAlert();
 }
 
-// --- Evaluate weight vs baseline (called after stabilization OR at interval) ---
-bool evaluateWeight(float currentWeightRaw) {
+// --- Evaluate weight vs baseline ---
+// allowReminderOnNoChange:
+//   true  -> normal interval path (can request presence/reminder)
+//   false -> stabilization path after bottle return (no immediate reminder)
+bool evaluateWeight(float currentWeightRaw, bool allowReminderOnNoChange = true) {
   forceImmediateEvaluation = false;
   float currentWeight = readConfirmedWeight();
   LOG2("Evaluate raw=", currentWeightRaw);
@@ -241,8 +248,23 @@ bool evaluateWeight(float currentWeightRaw) {
 
   // --- No confirmed drink/refill ---
   LOG2("No confirmed drink/refill (diff=", diff);
-  LOG(" ). Baseline preserved. Requesting presence for reminder.");
+  if (!allowReminderOnNoChange) {
+    if (resumeReminderAfterReturn) {
+      LOG(" ). Baseline preserved. Resuming active reminder after bottle return.");
+      lastDrinkCheckMs = millis();
+      if (isHome) {
+        startDrinkAlert();
+      } else {
+        LOG("Last known presence is AWAY. Reminder not resumed.");
+      }
+      resumeReminderAfterReturn = false;
+      return false;
+    }
+    LOG(" ). Baseline preserved. Stabilization path -> no immediate reminder.");
+    return false;
+  }
 
+  LOG(" ). Baseline preserved. Requesting presence for reminder.");
   lastDrinkCheckMs = millis();
   requestPresenceIfNeeded("Sent CMD_REQUEST_PRESENCE to Pi.");
   return false;
@@ -274,7 +296,10 @@ void updateBottlePresence(unsigned long now, float currentW) {
         LOG("Bottle LIFTED (confirmed).");
 
         if (drinkAlertActive) {
+          resumeReminderAfterReturn = true;
           stopDrinkAlert();
+        } else {
+          resumeReminderAfterReturn = false;
         }
       }
     } else {
@@ -315,6 +340,7 @@ void runStartupInit(unsigned long now) {
   waitingPresence = false;
   waitingPresenceSinceMs = 0;
   presenceRetryNotBeforeMs = 0;
+  resumeReminderAfterReturn = false;
   stabilizing = false;
 
   if (missingAtBoot) {
@@ -543,7 +569,7 @@ void loop() {
       float stableW = hw.getWeight();
       LOG2("Stabilized at: ", stableW);
       LOG("Evaluating drink/refill vs baseline...");
-      evaluateWeight(stableW);
+      evaluateWeight(stableW, false);
     }
     // While stabilizing, skip interval check but DO run visuals below.
   }
