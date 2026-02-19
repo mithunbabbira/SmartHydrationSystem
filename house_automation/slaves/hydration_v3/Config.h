@@ -40,7 +40,7 @@
 #define BOTTLE_CONFIRM_SAMPLES         3
 #define BOTTLE_SAMPLE_INTERVAL_MS    120
 // After this delay we start the \"no bottle\" alert (flash + Pi signal)
-#define MISSING_ALERT_DELAY_MS    10000   // TEST: 10s before triggering missing bottle alert
+#define MISSING_ALERT_DELAY_MS   180000   // 3 minutes before triggering missing bottle alert
 // #define MISSING_ALERT_DELAY_MS   5000
 
 // After alert is active, buzzer joins after this extra delay
@@ -66,7 +66,7 @@
 
 // ============== DRINKING LOGIC ==============
 // How often (during daytime) we evaluate drink/refill vs last baseline
-#define DRINK_CHECK_INTERVAL_MS     20000  // TEST: 20s
+#define DRINK_CHECK_INTERVAL_MS   1800000  // 30 minutes
 // Amount decrease to consider as \"user drank\"
 #define DRINK_MIN_DELTA           50.0f
 // Amount increase to consider as \"bottle refilled\"
