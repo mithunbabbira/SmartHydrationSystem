@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Home Control</title>
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=11">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
@@ -53,9 +53,55 @@
                             <span id="hyd-last-drink" class="stat-value">-- ml</span>
                         </div>
                         <div class="stat-row">
+                            <span class="stat-label">Last drink at</span>
+                            <span id="hyd-last-drink-time" class="stat-subvalue">--</span>
+                        </div>
+                        <div class="stat-row">
                             <span class="stat-label">Today total</span>
                             <span id="hyd-daily-total" class="stat-value">-- ml</span>
                         </div>
+                    </div>
+                    <div class="hydration-goal">
+                        <div class="goal-head">
+                            <span class="goal-label">Daily goal</span>
+                            <div class="goal-controls">
+                                <button type="button" class="goal-btn" onclick="adjustHydrationGoal(-250)" aria-label="Decrease daily goal">-</button>
+                                <span id="hyd-goal-value" class="goal-value">2000 ml</span>
+                                <button type="button" class="goal-btn" onclick="adjustHydrationGoal(250)" aria-label="Increase daily goal">+</button>
+                            </div>
+                        </div>
+                        <div class="goal-track" aria-hidden="true">
+                            <div id="hyd-goal-fill" class="goal-fill"></div>
+                        </div>
+                        <div id="hyd-goal-caption" class="goal-caption">--</div>
+                    </div>
+                    <div class="hydration-meta-grid">
+                        <div class="meta-chip">
+                            <span class="meta-chip-label">Drink recency</span>
+                            <span id="hyd-last-drink-ago" class="meta-chip-value">--</span>
+                        </div>
+                        <div class="meta-chip">
+                            <span class="meta-chip-label">Sensor freshness</span>
+                            <span id="hyd-freshness" class="meta-chip-value">--</span>
+                        </div>
+                        <div class="meta-chip">
+                            <span class="meta-chip-label">Presence</span>
+                            <span id="hyd-presence-state" class="meta-chip-value">UNKNOWN</span>
+                            <span id="hyd-presence-time" class="meta-chip-sub">--</span>
+                        </div>
+                        <div class="meta-chip">
+                            <span class="meta-chip-label">Presence method</span>
+                            <span id="hyd-presence-method" class="meta-chip-value">none</span>
+                        </div>
+                    </div>
+                    <div class="weight-trend">
+                        <div class="trend-head">
+                            <span class="trend-label">Weight trend</span>
+                            <span id="hyd-weight-delta" class="trend-delta">--</span>
+                        </div>
+                        <svg class="trend-chart" viewBox="0 0 100 32" preserveAspectRatio="none" aria-label="Recent weight trend">
+                            <polyline id="hyd-sparkline-line" points="" />
+                        </svg>
                     </div>
                     <p class="hydration-hint">Last drink / Today total update when the bottle detects a drink. Today total is also requested on load and every 60s.</p>
 
@@ -263,7 +309,7 @@
             </div>
         </main>
     </div>
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 
 </html>

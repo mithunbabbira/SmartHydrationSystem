@@ -143,6 +143,143 @@ function masterOff() {
     apiCall('/api/master/cmd', { action: 'off' });
 }
 
+const HYDRATION_GOAL_STORAGE_KEY = 'hydration_daily_goal_ml';
+const HYDRATION_GOAL_MIN = 500;
+const HYDRATION_GOAL_MAX = 6000;
+const WEIGHT_HISTORY_WINDOW_MS = 2 * 60 * 1000;
+
+let hydrationGoalMl = loadHydrationGoal();
+let latestHydrationData = null;
+const weightHistory = [];
+
+function loadHydrationGoal() {
+    try {
+        const raw = localStorage.getItem(HYDRATION_GOAL_STORAGE_KEY);
+        const parsed = parseInt(raw, 10);
+        if (!Number.isFinite(parsed)) return 2000;
+        return Math.max(HYDRATION_GOAL_MIN, Math.min(HYDRATION_GOAL_MAX, parsed));
+    } catch (e) {
+        return 2000;
+    }
+}
+
+function saveHydrationGoal() {
+    try {
+        localStorage.setItem(HYDRATION_GOAL_STORAGE_KEY, String(hydrationGoalMl));
+    } catch (e) {}
+}
+
+function adjustHydrationGoal(delta) {
+    hydrationGoalMl = Math.max(HYDRATION_GOAL_MIN, Math.min(HYDRATION_GOAL_MAX, hydrationGoalMl + delta));
+    saveHydrationGoal();
+    renderGoal(latestHydrationData ? latestHydrationData.daily_total_ml : 0);
+}
+
+function formatTimestamp(epochSec) {
+    if (!epochSec || epochSec <= 0) return '--';
+    const d = new Date(epochSec * 1000);
+    return d.toLocaleString([], {
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+}
+
+function formatAgo(epochSec) {
+    if (!epochSec || epochSec <= 0) return '--';
+    const diff = Math.max(0, Math.floor(Date.now() / 1000 - epochSec));
+    if (diff < 5) return 'just now';
+    if (diff < 60) return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) {
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        return h + 'h ' + m + 'm ago';
+    }
+    return Math.floor(diff / 86400) + 'd ago';
+}
+
+function appendWeightHistory(weight) {
+    if (!Number.isFinite(weight)) return;
+    const now = Date.now();
+    weightHistory.push({ t: now, w: weight });
+    while (weightHistory.length > 0 && (now - weightHistory[0].t) > WEIGHT_HISTORY_WINDOW_MS) {
+        weightHistory.shift();
+    }
+    if (weightHistory.length > 120) {
+        weightHistory.splice(0, weightHistory.length - 120);
+    }
+}
+
+function renderWeightTrend() {
+    const line = document.getElementById('hyd-sparkline-line');
+    const deltaEl = document.getElementById('hyd-weight-delta');
+    if (!line || !deltaEl) return;
+
+    if (weightHistory.length < 2) {
+        line.setAttribute('points', '');
+        deltaEl.textContent = '--';
+        deltaEl.className = 'trend-delta neutral';
+        return;
+    }
+
+    const values = weightHistory.map(p => p.w);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = Math.max(1, max - min);
+    const n = values.length;
+    const points = values.map((v, i) => {
+        const x = (i / (n - 1)) * 100;
+        const y = 28 - (((v - min) / range) * 24);
+        return x.toFixed(2) + ',' + y.toFixed(2);
+    }).join(' ');
+    line.setAttribute('points', points);
+
+    const delta = values[n - 1] - values[0];
+    const sign = delta > 0 ? '+' : '';
+    deltaEl.textContent = sign + delta.toFixed(1) + ' g / 2m';
+    deltaEl.className = 'trend-delta ' + (delta > 0.2 ? 'up' : (delta < -0.2 ? 'down' : 'neutral'));
+}
+
+function renderGoal(totalMl) {
+    const goalValueEl = document.getElementById('hyd-goal-value');
+    const fillEl = document.getElementById('hyd-goal-fill');
+    const captionEl = document.getElementById('hyd-goal-caption');
+    if (!goalValueEl || !fillEl || !captionEl) return;
+
+    const total = Number.isFinite(totalMl) ? totalMl : 0;
+    const percent = Math.max(0, Math.min(100, (total / hydrationGoalMl) * 100));
+    goalValueEl.textContent = hydrationGoalMl + ' ml';
+    fillEl.style.width = percent.toFixed(1) + '%';
+    captionEl.textContent = total.toFixed(1) + ' / ' + hydrationGoalMl + ' ml (' + percent.toFixed(0) + '%)';
+}
+
+function renderHydrationMeta(h) {
+    const lastDrinkTimeEl = document.getElementById('hyd-last-drink-time');
+    const lastDrinkAgoEl = document.getElementById('hyd-last-drink-ago');
+    const freshnessEl = document.getElementById('hyd-freshness');
+    const presenceStateEl = document.getElementById('hyd-presence-state');
+    const presenceTimeEl = document.getElementById('hyd-presence-time');
+    const presenceMethodEl = document.getElementById('hyd-presence-method');
+
+    if (lastDrinkTimeEl) lastDrinkTimeEl.textContent = formatTimestamp(h.last_drink_time);
+    if (lastDrinkAgoEl) lastDrinkAgoEl.textContent = formatAgo(h.last_drink_time);
+    if (freshnessEl) freshnessEl.textContent = formatAgo(h.last_update);
+
+    if (presenceStateEl) {
+        const state = (h.presence_last_state || 'UNKNOWN').toUpperCase();
+        presenceStateEl.textContent = state;
+        presenceStateEl.className = 'meta-chip-value ' + (state === 'HOME' ? 'presence-home' : (state === 'AWAY' ? 'presence-away' : 'presence-unknown'));
+    }
+    if (presenceTimeEl) presenceTimeEl.textContent = formatTimestamp(h.presence_last_checked);
+    if (presenceMethodEl) {
+        presenceMethodEl.textContent = h.presence_last_method || 'none';
+        presenceMethodEl.title = h.presence_last_error || '';
+    }
+}
+
 // --- Data Polling ---
 function fetchData() {
     fetch('/api/data')
@@ -154,6 +291,7 @@ function fetchData() {
                 const statusEl = document.getElementById('hyd-status');
                 const lastDrinkEl = document.getElementById('hyd-last-drink');
                 const dailyTotalEl = document.getElementById('hyd-daily-total');
+                latestHydrationData = h;
 
                 if (weightEl) weightEl.innerText = h.weight ?? '--';
                 if (statusEl) {
@@ -169,6 +307,10 @@ function fetchData() {
                     const ml = h.daily_total_ml;
                     dailyTotalEl.innerText = (ml != null && ml >= 0) ? ml + ' ml' : '-- ml';
                 }
+                appendWeightHistory(Number(h.weight));
+                renderWeightTrend();
+                renderGoal(Number(h.daily_total_ml) || 0);
+                renderHydrationMeta(h);
             }
         })
         .catch(err => console.error("Poll Error:", err));
@@ -186,6 +328,7 @@ function requestDailyTotal() {
     }).catch(function () {});
 }
 document.addEventListener('DOMContentLoaded', function () {
+    renderGoal(0);
     requestDailyTotal();
     setTimeout(requestDailyTotal, 2000);
 });
@@ -209,3 +352,5 @@ document.addEventListener('DOMContentLoaded', fetchMasterLog);
 
 // Initial Call
 document.addEventListener('DOMContentLoaded', fetchData);
+
+window.adjustHydrationGoal = adjustHydrationGoal;
