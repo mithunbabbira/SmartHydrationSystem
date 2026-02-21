@@ -110,7 +110,8 @@ header {
 }
 
 .master-buttons {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto auto;
     align-items: center;
     gap: var(--space-sm);
 }
@@ -118,11 +119,13 @@ header {
     font-weight: 600;
     font-size: 0.9rem;
     color: var(--text-muted);
+    white-space: nowrap;
 }
 .master-buttons .btn-glass {
     min-height: var(--touch);
     min-width: 72px;
     padding: 0 var(--space-md);
+    flex: none;
 }
 
 /* Dashboard grid – equal columns, responsive */
@@ -508,6 +511,45 @@ header {
     grid-template-columns: repeat(6, 1fr);
     gap: var(--space-sm);
 }
+.sync-color-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+}
+.sync-color-btn {
+    min-height: var(--touch);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--radius);
+    background: var(--clr);
+    color: #f8fafc;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: transform 0.12s ease, filter 0.2s ease;
+}
+.sync-color-btn:hover {
+    filter: brightness(1.08);
+}
+.sync-color-btn:active {
+    transform: scale(0.98);
+}
+.sync-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    min-height: 1.2em;
+}
+.sync-status.pending {
+    color: var(--warning);
+}
+.sync-status.success {
+    color: var(--success);
+}
+.sync-status.warn {
+    color: var(--warning);
+}
+.sync-status.error {
+    color: var(--danger);
+}
 .color-btn {
     aspect-ratio: 1;
     min-width: 36px;
@@ -709,10 +751,8 @@ header {
         align-items: stretch;
     }
     .master-buttons {
-        justify-content: stretch;
-    }
-    .master-buttons .btn-glass {
-        flex: 1;
+        grid-template-columns: auto 1fr 1fr;
+        width: 100%;
     }
     .dashboard-grid {
         grid-template-columns: 1fr;
@@ -723,6 +763,9 @@ header {
     }
     .color-grid {
         grid-template-columns: repeat(6, 1fr);
+    }
+    .sync-color-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
     .color-btn {
         min-width: 40px;

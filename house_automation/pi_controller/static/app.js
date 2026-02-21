@@ -28,6 +28,54 @@ function sendColor(val) {
     apiCall('/api/led/cmd', { cmd: 'rgb', val: val });
 }
 
+const MASTER_COLOR_MAP = {
+    red: { ledRgb: 1, irCode: 'F720DF', label: 'Red' },
+    green: { ledRgb: 2, irCode: 'F7A05F', label: 'Green' },
+    blue: { ledRgb: 3, irCode: 'F7609F', label: 'Blue' }
+};
+
+function sendMasterColor(colorKey) {
+    const color = MASTER_COLOR_MAP[colorKey];
+    const statusEl = document.getElementById('master-color-status');
+    if (!color) return;
+
+    if (statusEl) {
+        statusEl.textContent = 'Applying ' + color.label + '...';
+        statusEl.className = 'sync-status pending';
+    }
+
+    const reqs = [
+        fetch('/api/led/cmd', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cmd: 'rgb', val: color.ledRgb })
+        }),
+        fetch('/api/ir/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: color.irCode })
+        })
+    ];
+
+    Promise.all(reqs)
+        .then(function (responses) {
+            const allOk = responses.every(function (r) { return r.ok; });
+            if (statusEl) {
+                statusEl.textContent = allOk
+                    ? ('Synced ' + color.label + ' on BLE + IR')
+                    : ('Partial sync for ' + color.label + '. Check IR/BLE availability.');
+                statusEl.className = 'sync-status ' + (allOk ? 'success' : 'warn');
+            }
+        })
+        .catch(function (err) {
+            console.error('Master color sync failed:', err);
+            if (statusEl) {
+                statusEl.textContent = 'Sync failed. Check controller connection.';
+                statusEl.className = 'sync-status error';
+            }
+        });
+}
+
 /** LED effect/mode (Rainbow, Red Pulse, etc.) – sends mode + speed, not rgb. */
 function sendLEDMode(mode, speed) {
     speed = speed ?? getLEDEffectSpeed();

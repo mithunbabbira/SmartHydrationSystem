@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Home Control</title>
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
@@ -26,7 +26,7 @@
                 <div class="status-pill online">
                     <span class="dot"></span> Online
                 </div>
-                <div class="power-toggle master-buttons">
+                <div class="master-buttons">
                     <span class="master-label">Master</span>
                     <button type="button" onclick="masterOn()" class="btn-glass success">ON</button>
                     <button type="button" onclick="masterOff()" class="btn-glass danger">OFF</button>
@@ -210,6 +210,13 @@
                         <button type="button" onclick="sendLED('on')" class="btn-glass success large">ON</button>
                         <button type="button" onclick="sendLED('off')" class="btn-glass danger large">OFF</button>
                     </div>
+                    <div class="section-label">Master Color Sync (BLE + IR)</div>
+                    <div class="sync-color-grid">
+                        <button type="button" onclick="sendMasterColor('red')" class="sync-color-btn" style="--clr:#ff2e2e">Red</button>
+                        <button type="button" onclick="sendMasterColor('green')" class="sync-color-btn" style="--clr:#2eff2e">Green</button>
+                        <button type="button" onclick="sendMasterColor('blue')" class="sync-color-btn" style="--clr:#2e2eff">Blue</button>
+                    </div>
+                    <div id="master-color-status" class="sync-status" aria-live="polite">Pick a color to apply on both lights.</div>
                     <div class="section-label">Colors</div>
                             <div class="color-grid">
                         <button type="button" class="color-btn" style="--clr:#ff2e2e" onclick="sendColor(1)" aria-label="Red"></button>
@@ -309,7 +316,7 @@
             </div>
         </main>
     </div>
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 
 </html>
