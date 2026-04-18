@@ -3,8 +3,6 @@ import struct
 import time
 from datetime import datetime
 
-import config
-
 from .drink_celebration import (
     trigger as trigger_drink_celebration,
     revert_led_and_ir_to_default,
@@ -21,23 +19,6 @@ def local_epoch_now():
     offset = now_local.utcoffset()
     offset_sec = int(offset.total_seconds()) if offset else 0
     return int(time.time()) + offset_sec
-
-
-def _primary_hydration_mac():
-    """MAC of the single hydration slave (see config.SLAVE_MACS['hydration']). Empty = accept any."""
-    try:
-        m = config.SLAVE_MACS.get("hydration")
-        return m.upper().strip() if m else ""
-    except Exception:
-        return ""
-
-
-def _mac_matches_primary_hydration(mac):
-    expected = _primary_hydration_mac()
-    if not expected:
-        return True
-    return (mac or "").upper().strip() == expected
-
 
 class HydrationHandler:
     def __init__(self, controller):
@@ -69,22 +50,6 @@ class HydrationHandler:
         revert_led_and_ir_to_default(self.controller)
 
     def handle_packet(self, cmd, val, mac):
-        # Only gate REPORT_WEIGHT (0x21) to SLAVE_MACS['hydration'].
-        #
-        # Reason: two boards can send type-1 packets; an old ESP might flood 0x21 while Tare targets
-        # the configured MAC. Filtering 0x21 fixes that mismatch.
-        #
-        # Do NOT filter 0x30 (time request), 0x40 (presence), or alerts: those must always get a
-        # reply / handling or the slave loops on "Requesting time from Pi..." and presence breaks.
-        if cmd == 0x21 and not _mac_matches_primary_hydration(mac):
-            logger.warning(
-                "Ignoring REPORT_WEIGHT from %s (expected hydration slave %s). "
-                "Power off the other device or fix SLAVE_MACS['hydration'].",
-                mac,
-                _primary_hydration_mac() or "(not set)",
-            )
-            return
-
         # 0x21: REPORT_WEIGHT
         if cmd == 0x21:
             self.current_data['weight'] = val
