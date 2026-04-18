@@ -69,24 +69,20 @@ class HydrationHandler:
         revert_led_and_ir_to_default(self.controller)
 
     def handle_packet(self, cmd, val, mac):
-        # Only accept packets from the configured hydration slave. Otherwise the dashboard can show
-        # weight from another board (e.g. old ESP still powered) while Tare/LED commands go to
-        # SLAVE_MACS['hydration'] — looks like "tare does nothing".
-        if not _mac_matches_primary_hydration(mac):
-            if cmd == 0x21:
-                logger.warning(
-                    "Ignoring REPORT_WEIGHT from %s (expected hydration slave %s). "
-                    "Power off the other device or fix SLAVE_MACS['hydration'].",
-                    mac,
-                    _primary_hydration_mac() or "(not set)",
-                )
-            else:
-                logger.debug(
-                    "Ignoring hydration cmd 0x%02X from %s (expected %s)",
-                    cmd,
-                    mac,
-                    _primary_hydration_mac() or "(any)",
-                )
+        # Only gate REPORT_WEIGHT (0x21) to SLAVE_MACS['hydration'].
+        #
+        # Reason: two boards can send type-1 packets; an old ESP might flood 0x21 while Tare targets
+        # the configured MAC. Filtering 0x21 fixes that mismatch.
+        #
+        # Do NOT filter 0x30 (time request), 0x40 (presence), or alerts: those must always get a
+        # reply / handling or the slave loops on "Requesting time from Pi..." and presence breaks.
+        if cmd == 0x21 and not _mac_matches_primary_hydration(mac):
+            logger.warning(
+                "Ignoring REPORT_WEIGHT from %s (expected hydration slave %s). "
+                "Power off the other device or fix SLAVE_MACS['hydration'].",
+                mac,
+                _primary_hydration_mac() or "(not set)",
+            )
             return
 
         # 0x21: REPORT_WEIGHT
