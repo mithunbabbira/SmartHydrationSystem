@@ -28,15 +28,35 @@ public:
     if (prefs.isKey("tare_offset")) {
       scale.set_offset(prefs.getLong("tare_offset", 0));
     } else {
-      scale.tare();
-      prefs.putLong("tare_offset", scale.get_offset());
+      if (scale.is_ready()) {
+        scale.tare();
+        prefs.putLong("tare_offset", scale.get_offset());
+      } else {
+        scale.set_offset(0);
+        prefs.putLong("tare_offset", 0);
+      }
     }
     setRgb(0, 0, 0);
   }
 
   void tare() {
+    if (!scale.is_ready()) {
+#if HYDRATION_LOG
+      Serial.println("[HW] Tare skipped: HX711 not ready (check DT/SCK wiring)");
+#endif
+      return;
+    }
     scale.tare();
     prefs.putLong("tare_offset", scale.get_offset());
+#if HYDRATION_LOG
+    Serial.println("[HW] Tare OK, offset saved");
+#endif
+  }
+
+  void stopAll() {
+    setLed(false);
+    setBuzzer(false);
+    setRgb(0, 0, 0);
   }
 
   float getWeight() {
@@ -47,13 +67,25 @@ public:
 
   // --- Baseline weight in NVM (for drinking logic) ---
   bool loadBaseline(float *baselineOut) {
-    if (!prefs.isKey("baseline_weight")) return false;
-    *baselineOut = prefs.getFloat("baseline_weight", 0.0f);
-    return true;
+    if (prefs.isKey("baseline_weight")) {
+      *baselineOut = prefs.getFloat("baseline_weight", 0.0f);
+      return true;
+    }
+    if (prefs.isKey("last_weight")) {
+      *baselineOut = prefs.getFloat("last_weight", 0.0f);
+      return true;
+    }
+    return false;
   }
 
   void saveBaseline(float baseline) {
     prefs.putFloat("baseline_weight", baseline);
+    prefs.remove("last_weight");
+  }
+
+  void clearBaseline() {
+    prefs.remove("baseline_weight");
+    prefs.remove("last_weight");
   }
 
   // --- Daily total in NVM (for stats / dashboard) ---
@@ -70,11 +102,61 @@ public:
   void setLed(bool on) { digitalWrite(PIN_LED_WHITE, on ? HIGH : LOW); }
   void setBuzzer(bool on) { digitalWrite(PIN_BUZZER, on ? HIGH : LOW); }
 
+  void setRgb(int colorCode) {
+    uint8_t r = 0, g = 0, b = 0;
+    switch (colorCode) {
+    case 1:
+      r = 255;
+      break;
+    case 2:
+      g = 255;
+      break;
+    case 3:
+      b = 255;
+      break;
+    case 4:
+      r = 255;
+      g = 255;
+      b = 255;
+      break;
+    case 5:
+      r = 255;
+      g = 90;
+      break;
+    case 6:
+      g = 32;
+      break;
+    case 7:
+      b = 32;
+      break;
+    case 8:
+      r = 48;
+      b = 72;
+      break;
+    default:
+      break;
+    }
+    setRgb(r, g, b);
+  }
+
   // Raw RGB (0–255). Common-anode: we drive 255-value.
   void setRgb(uint8_t r, uint8_t g, uint8_t b) {
     analogWrite(PIN_RGB_R, 255 - r);
     analogWrite(PIN_RGB_G, 255 - g);
     analogWrite(PIN_RGB_B, 255 - b);
+  }
+
+  void setRawRgb(uint8_t r, uint8_t g, uint8_t b) { setRgb(r, g, b); }
+
+  void saveHydrationState(float baseline, float dailyTotal, int day) {
+    saveBaseline(baseline);
+    saveTotals(dailyTotal, day);
+  }
+
+  void loadHydrationState(float *baseline, float *dailyTotal, int *day) {
+    if (!loadBaseline(baseline))
+      *baseline = 0.0f;
+    loadTotals(dailyTotal, day);
   }
 
   // Rainbow animation; call every loop. speedMs = ms between hue steps.

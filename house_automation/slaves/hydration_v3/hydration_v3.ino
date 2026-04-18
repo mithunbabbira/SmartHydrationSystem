@@ -15,6 +15,7 @@
 #include "Hardware.h"
 #include "TimeSync.h"
 #include <math.h>
+#include <string.h>
 
 // ==================== MODULES ====================
 HydrationHW hw;
@@ -93,6 +94,12 @@ void LOG2S(const char *msg, const char *val) {
 // Safe target-time comparison across millis() overflow.
 bool timeReached(unsigned long now, unsigned long target) {
   return ((long)(now - target) >= 0);
+}
+
+float packetFloat() {
+  float value = 0.0f;
+  memcpy(&value, &incomingPacket.data, sizeof(value));
+  return value;
 }
 
 float median3(float a, float b, float c) {
@@ -348,6 +355,8 @@ void runStartupInit(unsigned long now) {
     missingStartMs = now;
     baselineValid = false;
     baselineWeight = 0.0f;
+    hw.clearBaseline();
+    hw.saveTotals(dailyTotalMl, currentDayIndex);
     LOG("Startup: bottle missing -> baseline cleared, waiting for return.");
   } else {
     bottleMissing = false;
@@ -369,10 +378,10 @@ void runStartupInit(unsigned long now) {
       }
     }
 
-    // Immediate first daytime check after boot if baseline already existed.
     if (hadBaseline) {
-      forceImmediateEvaluation = true;
-      LOG("Startup: first interval check forced for daytime.");
+      forceImmediateEvaluation = false;
+      lastDrinkCheckMs = now;
+      LOG("Startup: saved baseline found. Interval restarted from boot.");
     }
   }
 
@@ -402,16 +411,25 @@ void processIncomingPackets() {
 
   case CMD_TARE:
     hw.tare();
+    baselineValid = false;
+    baselineWeight = 0.0f;
+    hw.clearBaseline();
+    hw.saveTotals(dailyTotalMl, currentDayIndex);
+    lastDrinkCheckMs = millis();
     comms.sendFloat(CMD_REPORT_WEIGHT, 0.0f);
     LOG("TARE done.");
     break;
 
   case CMD_SET_LED:
-    hw.setLed(incomingPacket.data > 0);
+    hw.setLed(packetFloat() > 0.5f);
     break;
 
   case CMD_SET_BUZZER:
-    hw.setBuzzer(incomingPacket.data > 0);
+    hw.setBuzzer(packetFloat() > 0.5f);
+    break;
+
+  case CMD_SET_RGB:
+    hw.setRgb((int)packetFloat());
     break;
 
   case CMD_REQUEST_DAILY_TOTAL:
@@ -419,7 +437,7 @@ void processIncomingPackets() {
     break;
 
   case CMD_REPORT_PRESENCE: {
-    bool home = (incomingPacket.data != 0);
+    bool home = (packetFloat() > 0.5f);
     isHome = home;
     LOG2S("PRESENCE: ", isHome ? "HOME" : "AWAY");
 

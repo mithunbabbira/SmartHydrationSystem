@@ -5,7 +5,10 @@ import os
 # MAC Registry
 # Format: 'FRIENDLY_NAME': 'MAC_ADDRESS'
 SLAVE_MACS = {
-    'hydration': 'F0:24:F9:0C:DE:54',
+    # Must match the hydration slave ESP32 WiFi STA MAC (Tools → Get Board Info, or `esptool chip-id`).
+    # Outgoing commands (Tare, LED, buzzer, time) use this; if wrong, the UI still shows weight from
+    # packets but Tare / toggles never reach the board.
+    'hydration': 'F0:24:F9:0C:AB:B0',
     'led_ble': 'A0:A3:B3:2A:20:C0', 
     'ir_remote': 'A0:A3:B3:2A:20:C0',
     'my_phone': '48:EF:1C:49:6A:E7',
