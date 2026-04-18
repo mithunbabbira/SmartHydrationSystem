@@ -402,3 +402,141 @@ document.addEventListener('DOMContentLoaded', fetchMasterLog);
 document.addEventListener('DOMContentLoaded', fetchData);
 
 window.adjustHydrationGoal = adjustHydrationGoal;
+
+// --- Onocoy Stations ---
+function formatIsoDateTime(isoString) {
+    if (!isoString) return '--';
+    try {
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) return String(isoString);
+        return d.toLocaleString();
+    } catch (e) {
+        return String(isoString);
+    }
+}
+
+function renderOnocoyStations(stations) {
+    const container = document.getElementById('onocoy-stations-container');
+    if (!container) return;
+
+    const list = stations || {};
+    const ids = Object.keys(list);
+
+    if (ids.length === 0) {
+        container.innerHTML = 'No stations configured.';
+        return;
+    }
+
+    container.innerHTML = '';
+    ids.forEach((stationId) => {
+        const info = list[stationId] || {};
+        const status = (info.status || 'Offline');
+        const cls = status === 'Online' ? 'onocoy-online' : 'onocoy-offline';
+
+        const row = document.createElement('div');
+        row.className = 'onocoy-station-row ' + cls;
+        row.innerHTML = `
+            <div class="onocoy-station-id"><b>${stationId}</b></div>
+            <div class="onocoy-station-nick">${info.nickname || '--'}</div>
+            <div class="onocoy-station-status">${status}</div>
+            <div class="onocoy-station-times">
+                <div class="onocoy-station-time">Since: ${formatIsoDateTime(info.last_updated)}</div>
+                <div class="onocoy-station-time">Checked: ${formatIsoDateTime(info.last_checked)}</div>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function setOnocoyPoolTimeInput(pollingInterval) {
+    const el = document.getElementById('onocoy-pool-time-input');
+    if (!el) return;
+    if (pollingInterval === null || pollingInterval === undefined) return;
+    // Don't overwrite user input while they are typing.
+    if (document.activeElement === el) return;
+    el.value = String(pollingInterval);
+}
+
+function fetchOnocoyStatus() {
+    fetch('/api/onocoy/status')
+        .then(r => r.json())
+        .then(data => {
+            if (!data) return;
+            setOnocoyPoolTimeInput(data.polling_interval);
+            renderOnocoyStations(data.stations);
+        })
+        .catch(err => {
+            console.error('Onocoy status fetch failed:', err);
+        });
+}
+
+function setupOnocoyControls() {
+    const poolInput = document.getElementById('onocoy-pool-time-input');
+    const poolSaveBtn = document.getElementById('onocoy-pool-time-save-btn');
+    const addBtn = document.getElementById('onocoy-add-btn');
+    const addId = document.getElementById('onocoy-add-station-id-input');
+    const addNick = document.getElementById('onocoy-add-station-nickname-input');
+    const removeBtn = document.getElementById('onocoy-remove-btn');
+    const removeId = document.getElementById('onocoy-remove-station-id-input');
+
+    if (poolInput && poolSaveBtn) {
+        poolSaveBtn.addEventListener('click', () => {
+            const pollingInterval = parseInt(poolInput.value, 10);
+            if (!Number.isFinite(pollingInterval)) {
+                alert('Enter a valid pool time in seconds.');
+                return;
+            }
+            fetch('/api/onocoy/manage-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ polling_interval: pollingInterval })
+            })
+                .then(r => r.json())
+                .then(() => fetchOnocoyStatus())
+                .catch(err => console.error('Manage-settings failed:', err));
+        });
+    }
+
+    if (addBtn && addId) {
+        addBtn.addEventListener('click', () => {
+            const stationId = (addId.value || '').trim();
+            const nickname = (addNick ? (addNick.value || '').trim() : '') || stationId;
+            if (!stationId) {
+                alert('Enter station_id.');
+                return;
+            }
+            fetch('/api/onocoy/manage-station', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'add', station_id: stationId, nickname })
+            })
+                .then(r => r.json())
+                .then(() => fetchOnocoyStatus())
+                .catch(err => console.error('Manage-station add failed:', err));
+        });
+    }
+
+    if (removeBtn && removeId) {
+        removeBtn.addEventListener('click', () => {
+            const stationId = (removeId.value || '').trim();
+            if (!stationId) {
+                alert('Enter station_id to remove.');
+                return;
+            }
+            fetch('/api/onocoy/manage-station', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'remove', station_id: stationId })
+            })
+                .then(r => r.json())
+                .then(() => fetchOnocoyStatus())
+                .catch(err => console.error('Manage-station remove failed:', err));
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupOnocoyControls();
+    fetchOnocoyStatus();
+    setInterval(fetchOnocoyStatus, 2500);
+});

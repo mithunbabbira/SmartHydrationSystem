@@ -736,6 +736,52 @@ header {
     border-radius: 50%;
 }
 
+/* Onocoy Stations */
+.onocoy-stations-container {
+    min-height: 40px;
+}
+.onocoy-stations-empty {
+    color: var(--text-muted);
+    font-style: italic;
+}
+.onocoy-station-row {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 6px 12px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+.onocoy-station-id {
+    word-break: break-word;
+}
+.onocoy-station-nick {
+    text-align: right;
+    color: var(--text-muted);
+    word-break: break-word;
+}
+.onocoy-station-status {
+    grid-column: 1 / -1;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+.onocoy-online .onocoy-station-status {
+    color: var(--success);
+}
+.onocoy-offline .onocoy-station-status {
+    color: var(--danger);
+}
+.onocoy-station-times {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
 /* Mobile */
 @media (max-width: 640px) {
     body {

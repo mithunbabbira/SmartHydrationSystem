@@ -199,6 +199,47 @@
                 </div>
             </div>
 
+            <!-- Onocoy Stations Card -->
+            <div class="card onocoy-card">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-tower-broadcast"></i></div>
+                    <h2>Onocoy Stations</h2>
+                </div>
+                <div class="card-body">
+                    <div class="section-label">Pool time (Onocoy polling interval seconds)</div>
+                    <div class="raw-row" style="align-items:center;flex-wrap:wrap;gap:8px">
+                        <input type="number" id="onocoy-pool-time-input" min="5" value="60" style="width:7em">
+                        <button type="button" id="onocoy-pool-time-save-btn" class="btn-glass secondary">Save</button>
+                    </div>
+
+                    <hr style="margin: 14px 0; border-color: rgba(255,255,255,0.1);">
+
+                    <div class="section-label">Add Station</div>
+                    <div class="raw-row">
+                        <input type="text" id="onocoy-add-station-id-input" placeholder="Station ID (e.g. INDKAR...)" class="raw-input">
+                    </div>
+                    <div class="raw-row" style="margin-top:8px;">
+                        <input type="text" id="onocoy-add-station-nickname-input" placeholder="Nickname (optional)" class="raw-input">
+                    </div>
+                    <div class="control-group" style="margin-top:10px;">
+                        <button type="button" id="onocoy-add-btn" class="btn-glass success">Add / Update</button>
+                    </div>
+
+                    <div class="section-label" style="margin-top:16px;">Remove Station</div>
+                    <div class="raw-row">
+                        <input type="text" id="onocoy-remove-station-id-input" placeholder="Station ID to remove" class="raw-input">
+                    </div>
+                    <div class="control-group" style="margin-top:10px;">
+                        <button type="button" id="onocoy-remove-btn" class="btn-glass danger">Remove</button>
+                    </div>
+
+                    <hr style="margin: 14px 0; border-color: rgba(255,255,255,0.1);">
+
+                    <div class="section-label">Status</div>
+                    <div id="onocoy-stations-container" class="onocoy-stations-empty">Loading...</div>
+                </div>
+            </div>
+
             <!-- LED Control Card -->
             <div class="card led-card">
         <div class="card-header">

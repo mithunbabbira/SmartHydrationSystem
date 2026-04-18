@@ -15,6 +15,7 @@ LOG_DIR = setup_logging()
 # Import Controller
 from controller import SerialController
 import config
+from onocoy_station_store import OnocoyStationStore
 
 logger = logging.getLogger("WebServer")
 
@@ -22,6 +23,8 @@ app = Flask(__name__, static_url_path='', static_folder='static', template_folde
 
 # Global Controller Instance
 controller = None
+onocoy_store = None
+onocoy_poll_wakeup_event = threading.Event()
 
 
 def _local_epoch_now():
@@ -37,6 +40,80 @@ def _presence_probe():
     is_home = controller.is_phone_home()
     meta = getattr(controller, 'last_presence_check', {}) or {}
     return is_home, meta
+
+
+def _repo_root() -> str:
+    """
+    Repo root for JSON persistence files.
+    `web_server.py` is in `house_automation/pi_controller/`, so we go up two dirs.
+    """
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+
+def start_onocoy_poller():
+    """
+    Start background Onocoy polling exactly once and fill `onocoy_store`.
+    Dashboard requests read cached data (fast + reliable on the Pi).
+    """
+    global onocoy_store
+    if onocoy_store is not None:
+        return
+
+    repo_root = _repo_root()
+    stations_path = os.path.join(repo_root, "onocoy_stations.json")
+    settings_path = os.path.join(repo_root, "onocoy_settings.json")
+
+    onocoy_store = OnocoyStationStore(
+        stations_path=stations_path,
+        settings_path=settings_path,
+        min_poll_interval_sec=5,
+        default_poll_interval_sec=60,
+    )
+
+    url_tmpl = "https://api.onocoy.com/api/v1/explorer/server/{station_id}/info"
+
+    def _poll_loop():
+        session = requests.Session()
+        while True:
+            try:
+                snapshot = onocoy_store.get_snapshot()
+                station_ids = list(snapshot.keys())
+                interval = onocoy_store.get_polling_interval()
+                # Single lightweight log per cycle so we can verify polling is alive
+                # and includes newly added stations.
+                logger.info(
+                    "Onocoy poller cycle: interval=%ss stations=%s",
+                    interval,
+                    ",".join(station_ids),
+                )
+
+                for station_id in station_ids:
+                    url = url_tmpl.format(station_id=station_id)
+                    try:
+                        r = session.get(url, timeout=10)
+                        if r.status_code == 200:
+                            info = r.json()
+                        else:
+                            info = {"status": {"is_up": False, "since": None}}
+                    except Exception:
+                        info = {"status": {"is_up": False, "since": None}}
+
+                    onocoy_store.update_station_from_onocoy_info(
+                        station_id=station_id,
+                        info=info,
+                    )
+
+                # Persist updated station status so it survives Pi restarts.
+                onocoy_store.save_stations()
+                # Sleep, but allow immediate wake-up when pool time or stations change.
+                onocoy_poll_wakeup_event.wait(timeout=interval)
+                onocoy_poll_wakeup_event.clear()
+            except Exception as e:
+                logger.error("Onocoy poller error: %s", e)
+                onocoy_poll_wakeup_event.wait(timeout=10)
+                onocoy_poll_wakeup_event.clear()
+
+    threading.Thread(target=_poll_loop, daemon=True).start()
 
 @app.route('/')
 def index():
@@ -276,6 +353,69 @@ def master_log():
         return jsonify({"lines": [], "error": "Controller off"})
     entries = controller.get_serial_log(limit=limit)
     return jsonify({"lines": [e["line"] for e in entries], "count": len(entries)})
+
+
+# --- API: Onocoy Stations (cached + station management) ---
+@app.route('/api/onocoy/status', methods=['GET'])
+def onocoy_status():
+    if not onocoy_store:
+        return jsonify({"stations": {}, "polling_interval": None}), 503
+    return jsonify(
+        {
+            "stations": onocoy_store.get_snapshot(),
+            "polling_interval": onocoy_store.get_polling_interval(),
+        }
+    )
+
+
+@app.route('/api/onocoy/manage-station', methods=['POST'])
+def onocoy_manage_station():
+    if not onocoy_store:
+        return jsonify({"error": "Onocoy store not ready"}), 503
+
+    data = request.get_json(silent=True) or {}
+    action = (data.get("action") or "").strip().lower()  # add | remove
+    station_id = (data.get("station_id") or "").strip()
+    nickname = (data.get("nickname") or "").strip()
+
+    if action not in ("add", "remove"):
+        return jsonify({"error": "Invalid action (use add/remove)"}), 400
+    if not station_id:
+        return jsonify({"error": "Missing station_id"}), 400
+
+    if action == "add":
+        onocoy_store.add_station(station_id, nickname=nickname or station_id)
+    else:
+        onocoy_store.remove_station(station_id)
+
+    onocoy_store.save_stations()
+    logger.info("Onocoy manage-station: action=%s station_id=%s", action, station_id)
+    # Wake poller so newly added/removed stations are polled quickly.
+    onocoy_poll_wakeup_event.set()
+    return jsonify({"status": "ok"})
+
+
+@app.route('/api/onocoy/manage-settings', methods=['POST'])
+def onocoy_manage_settings():
+    if not onocoy_store:
+        return jsonify({"error": "Onocoy store not ready"}), 503
+
+    data = request.get_json(silent=True) or {}
+    polling_interval = data.get("polling_interval")
+    if polling_interval is None:
+        return jsonify({"error": "Missing polling_interval"}), 400
+
+    try:
+        polling_interval = int(polling_interval)
+    except Exception:
+        return jsonify({"error": "polling_interval must be an integer"}), 400
+
+    # set_polling_interval persists the settings file internally.
+    pi = onocoy_store.set_polling_interval(polling_interval)
+    logger.info("Onocoy manage-settings: polling_interval=%ss", pi)
+    # Wake poller so interval changes take effect immediately.
+    onocoy_poll_wakeup_event.set()
+    return jsonify({"status": "ok", "polling_interval": pi})
 
 
 # --- API: Health (for monitoring and debugging Pi crashes) ---
@@ -545,6 +685,13 @@ def start_controller():
         logger.exception("Controller failed to start: %s", e)
         controller = None
         return
+
+    # Start Onocoy polling in parallel (does not depend on serial controller).
+    try:
+        start_onocoy_poller()
+    except Exception as e:
+        logger.error("Failed to start Onocoy poller: %s", e)
+
     threading.Thread(target=_hydration_time_push_loop, daemon=True).start()
     threading.Thread(target=daily_scheduler, daemon=True).start()
     threading.Thread(target=_ono_price_loop, daemon=True).start()
