@@ -1,0 +1,7 @@
+[Unit]
+Description=Re-enable Pi Bluetooth if blocked or down
+After=bluetooth.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/mithun/projects/water_bottle/SmartHydrationSystem/house_automation/pi_controller/scripts/ensure_bluetooth_up.sh

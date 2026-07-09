@@ -1,6 +1,7 @@
 [Unit]
 Description=Smart Hydration Home Automation Server
-After=network.target
+After=network.target bluetooth.service pi-bluetooth-up.service
+Wants=pi-bluetooth-up.service
 
 [Service]
 Type=simple

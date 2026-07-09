@@ -1,0 +1,13 @@
+[Unit]
+Description=Unblock and enable Raspberry Pi Bluetooth adapter
+After=bluetooth.service
+Wants=bluetooth.service
+Before=smart-home.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/mithun/projects/water_bottle/SmartHydrationSystem/house_automation/pi_controller/scripts/ensure_bluetooth_up.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

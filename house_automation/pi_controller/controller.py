@@ -7,8 +7,9 @@ import sys
 import re
 import struct
 import config
-import subprocess
 from collections import deque
+
+from bluetooth_presence import check_phone_presence
 
 # Import Handlers
 from handlers.hydration import HydrationHandler
@@ -128,39 +129,17 @@ class SerialController:
         }
 
     def is_phone_home(self):
-        # PHONE_MAC like "F0:24:F9:0D:90:A4"
-        phone_mac = config.SLAVE_MACS.get('my_phone', "00:00:00:00:00:00") 
+        phone_mac = config.SLAVE_MACS.get('my_phone', "00:00:00:00:00:00")
         logger.info(f"Checking presence for {phone_mac}...")
-        errors = []
 
-        # Method 1: l2ping (Preferred, needs sudo usually)
-        try:
-            # -c 1: count 1, -t 2: timeout 2s
-            subprocess.check_output(["sudo", "l2ping", "-c", "1", "-t", "2", phone_mac], stderr=subprocess.STDOUT)
-            logger.info(f"Presence Confirmed via l2ping.")
-            self._record_presence_check(True, "l2ping")
+        is_home, method, err_msg = check_phone_presence(phone_mac)
+        if is_home:
+            logger.info(f"Presence Confirmed via {method}.")
+            self._record_presence_check(True, method)
             return True
-        except subprocess.CalledProcessError as e:
-            out = (e.output or b"").decode('utf-8', errors='ignore').strip()
-            errors.append(f"l2ping failed: {out or e}")
-        except Exception as e:
-            errors.append(f"l2ping error: {e}")
 
-        # Method 2: hcitool name (Fallback)
-        try:
-            result = subprocess.check_output(["hcitool", "name", phone_mac], stderr=subprocess.STDOUT)
-            output = result.strip().decode('utf-8')
-            if output:
-                logger.info(f"Presence Confirmed via hcitool name: '{output}'")
-                self._record_presence_check(True, "hcitool")
-                return True
-        except Exception as e:
-            errors.append(f"hcitool error: {e}")
-
-        err_msg = "; ".join(errors) if errors else "No presence method succeeded."
-        self._record_presence_check(False, "fallback_away", err_msg)
+        self._record_presence_check(False, method or "fallback_away", err_msg)
         logger.warning("Presence Check Failed (User AWAY): %s", err_msg)
-        logger.info("Presence Check Failed (User AWAY)")
         return False
 
     def process_incoming_data(self, line):

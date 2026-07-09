@@ -1,0 +1,2 @@
+# Allow smart-home (user mithun) to run l2ping for phone presence without a password.
+mithun ALL=(root) NOPASSWD: /usr/bin/l2ping

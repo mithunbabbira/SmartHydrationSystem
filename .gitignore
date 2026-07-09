@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+.venv/
+venv/
+
+# Runtime logs (rotating on Pi)
+house_automation/pi_controller/logs/
+
+# macOS
+.DS_Store
+
+# Editor / local
+*.swp
+.idea/
+.vscode/

@@ -1,0 +1,26 @@
+{
+  "INDKARMAD1": {
+    "nickname": "home",
+    "status": "Offline",
+    "last_updated": "2026-07-05T11:31:22.656205+02:00",
+    "last_checked": "2026-07-09T07:20:49.730985+00:00"
+  },
+  "INDKARBEN8": {
+    "nickname": "jcr",
+    "status": "Offline",
+    "last_updated": "2026-06-21T21:02:39.21089+02:00",
+    "last_checked": "2026-07-09T07:20:49.912494+00:00"
+  },
+  "INDKARBEN9": {
+    "nickname": "jcr extra",
+    "status": "Offline",
+    "last_updated": "2026-05-25T09:20:01.22623+02:00",
+    "last_checked": "2026-07-09T07:20:50.085483+00:00"
+  },
+  "INDKARMYS1": {
+    "nickname": "mysore",
+    "status": "Online",
+    "last_updated": "2026-07-09T04:13:05.992988+02:00",
+    "last_checked": "2026-07-09T07:20:50.271529+00:00"
+  }
+}
