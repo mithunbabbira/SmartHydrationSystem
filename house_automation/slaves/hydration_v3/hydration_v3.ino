@@ -68,6 +68,12 @@ static float dailyTotalMl              = 0.0f;
 static int currentDayIndex             = 0;
 static bool dayInitialized             = false;
 
+// --- Weight reporting to Pi / Serial (must survive processIncomingPackets + loop body) ---
+// If we tare in processIncomingPackets() and then send periodic weight in the *same* loop()
+// iteration, we overwrite the 0.0 REPORT_WEIGHT with the pre-tare reading. Reset this timer on
+// TARE so the next automatic sample waits WEIGHT_PRINT_INTERVAL_MS (see v2 hydration.ino).
+static unsigned long lastWeightSampleMs  = 0;
+
 // ==================== HELPERS ====================
 
 void LOG(const char *msg) {
@@ -388,6 +394,57 @@ void runStartupInit(unsigned long now) {
   startupInitDone = true;
 }
 
+// ==================== TARE (shared: ESP-NOW + Serial test) ====================
+
+static void performTare(const char *sourceTag) {
+  hw.tare();
+  baselineValid = false;
+  baselineWeight = 0.0f;
+  hw.clearBaseline();
+  hw.saveTotals(dailyTotalMl, currentDayIndex);
+  lastDrinkCheckMs = millis();
+  lastWeightSampleMs = millis();
+  float w = hw.getWeight();
+  comms.sendFloat(CMD_REPORT_WEIGHT, w);
+  // Always print so USB serial test works even if HYDRATION_LOG is 0
+  Serial.print("["); Serial.print(millis()); Serial.print("] TARE (");
+  Serial.print(sourceTag ? sourceTag : "?");
+  Serial.print(") weight=");
+  Serial.println(w, 2);
+}
+
+/** USB Serial commands (115200): t=TARE, w=print weight, h=help. Runs every loop, including during rainbow / time-wait. */
+static void handleSerialCommands() {
+  while (Serial.available() > 0) {
+    int ch = Serial.read();
+    if (ch < 0) break;
+    char c = (char)ch;
+    if (c == '\r' || c == '\n' || c == ' ' || c == '\t') continue;
+
+    switch (c) {
+    case 't':
+    case 'T':
+      performTare("serial");
+      break;
+    case 'w':
+    case 'W': {
+      float w = hw.getWeight();
+      Serial.print("["); Serial.print(millis()); Serial.print("] weight (local) ");
+      Serial.println(w, 2);
+      break;
+    }
+    case 'h':
+    case '?':
+      Serial.println(F("Serial: t = TARE (same as dashboard), w = print weight, h = this help"));
+      break;
+    default:
+      Serial.print(F("Unknown key '")); Serial.print(c);
+      Serial.println(F("'. Send h for help."));
+      break;
+    }
+  }
+}
+
 // ==================== PACKET HANDLER ====================
 
 void processIncomingPackets() {
@@ -410,14 +467,7 @@ void processIncomingPackets() {
     break;
 
   case CMD_TARE:
-    hw.tare();
-    baselineValid = false;
-    baselineWeight = 0.0f;
-    hw.clearBaseline();
-    hw.saveTotals(dailyTotalMl, currentDayIndex);
-    lastDrinkCheckMs = millis();
-    comms.sendFloat(CMD_REPORT_WEIGHT, 0.0f);
-    LOG("TARE done.");
+    performTare("esp-now");
     break;
 
   case CMD_SET_LED:
@@ -485,11 +535,14 @@ void setup() {
   LOG2("Loaded daily total: ", dailyTotalMl);
 
   LOG("Rainbow on. Waiting for time sync from Pi...");
+  Serial.println(F("Type 't' + Enter for TARE, 'w' for weight, 'h' for help (115200)."));
 }
 
 // ==================== MAIN LOOP ====================
 
 void loop() {
+  handleSerialCommands();
+
   // --- Always: process packets and time sync ---
   processIncomingPackets();
   timeSync.tick(comms);
@@ -560,9 +613,8 @@ void loop() {
   // ====================================================
   // SECTION 1: Sample weight, send to Pi, print to Serial
   // ====================================================
-  static unsigned long lastSampleMs = 0;
-  if (now - lastSampleMs >= WEIGHT_PRINT_INTERVAL_MS) {
-    lastSampleMs = now;
+  if (now - lastWeightSampleMs >= WEIGHT_PRINT_INTERVAL_MS) {
+    lastWeightSampleMs = now;
     float w = hw.getWeight();
     comms.sendFloat(CMD_REPORT_WEIGHT, w);
     if (!isSleep) {

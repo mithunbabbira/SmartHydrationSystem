@@ -40,16 +40,20 @@ public:
   }
 
   void tare() {
-    if (!scale.is_ready()) {
+    // HX711 is often briefly "not ready"; retry a few times like a manual delay before tare.
+    for (int i = 0; i < 15; i++) {
+      if (scale.is_ready()) {
+        scale.tare();
+        prefs.putLong("tare_offset", scale.get_offset());
 #if HYDRATION_LOG
-      Serial.println("[HW] Tare skipped: HX711 not ready (check DT/SCK wiring)");
+        Serial.println("[HW] Tare OK, offset saved");
 #endif
-      return;
+        return;
+      }
+      delay(20);
     }
-    scale.tare();
-    prefs.putLong("tare_offset", scale.get_offset());
 #if HYDRATION_LOG
-    Serial.println("[HW] Tare OK, offset saved");
+    Serial.println("[HW] Tare failed: HX711 not ready (check DT/SCK wiring)");
 #endif
   }
 

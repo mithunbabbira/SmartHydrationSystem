@@ -12,12 +12,16 @@
  *   Add ~220Ω resistor per RGB pin (or cap RGB to 30 in code if no resistor).
  *
  * If boot loop: add 10k resistor from GPIO 2 to GND (keeps it LOW at boot).
+ *
+ * Auto-recovery: task watchdog reboots if setup/loop hangs (e.g. WiFi/ESP-NOW
+ * stuck after "Starting..."). OLED init failure also reboots after a short wait.
  */
 
 #include <Wire.h>
 #include <string.h>
 #include <WiFi.h>
 #include <esp_now.h>
+#include <esp_task_wdt.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -40,6 +44,11 @@
 #define MAX_TEXT_LEN      81
 #define SCROLL_SPEED_MS   120
 
+// Reboot if loop/setup does not feed WDT within this window (covers WiFi hang)
+#define WDT_TIMEOUT_SEC       20
+#define OLED_FAIL_REBOOT_MS   5000
+#define WIFI_INIT_RETRIES     3
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 float priceUsd = 0;
@@ -55,6 +64,58 @@ bool overrideRainbow = false;
 uint8_t overrideR = 0, overrideG = 0, overrideB = 0;
 char overrideText[MAX_TEXT_LEN] = "";
 bool overrideTextMode = false;
+
+bool oledReady = false;
+
+static void wdtFeed() {
+  esp_task_wdt_reset();
+}
+
+static void wdtBegin() {
+  // Ensure a clean WDT config that panics (reboots) on timeout
+  esp_task_wdt_deinit();
+#if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
+  esp_task_wdt_config_t cfg = {
+    .timeout_ms = WDT_TIMEOUT_SEC * 1000,
+    .idle_core_mask = 0,
+    .trigger_panic = true,
+  };
+  esp_task_wdt_init(&cfg);
+#else
+  esp_task_wdt_init(WDT_TIMEOUT_SEC, true);
+#endif
+  esp_task_wdt_add(NULL);
+}
+
+static void rebootSoon(const char* reason, unsigned long waitMs) {
+  Serial.printf("REBOOT: %s (in %lu ms)\n", reason ? reason : "unknown", waitMs);
+  if (oledReady) {
+    display.clearDisplay();
+    display.setTextColor(SSD1306_WHITE);
+    display.setTextSize(1);
+    display.setCursor(0, 4);
+    display.print("Rebooting...");
+    display.setCursor(0, 16);
+    if (reason) display.print(reason);
+    display.display();
+  }
+  unsigned long start = millis();
+  while (millis() - start < waitMs) {
+    wdtFeed();
+    delay(50);
+  }
+  ESP.restart();
+}
+
+static void showBootStatus(const char* msg) {
+  if (!oledReady || !msg) return;
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 12);
+  display.print(msg);
+  display.display();
+}
 
 void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len) {
   if (!data || len < 2 || data[0] != 3) return;
@@ -105,38 +166,69 @@ void OnEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len)
 
 void setup() {
   Serial.begin(115200);
-  delay(500);
+  delay(200);
+
+  // Start watchdog early so a hang in WiFi/ESP-NOW auto-reboots
+  wdtBegin();
+  wdtFeed();
 
   pinMode(RGB_RED, OUTPUT);
   pinMode(RGB_GREEN, OUTPUT);
   pinMode(RGB_BLUE, OUTPUT);
   rgbOff();
+  wdtFeed();
 
-  delay(300);
+  delay(100);
   Wire.begin(SDA_PIN, SCL_PIN);
+  wdtFeed();
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println("OLED init failed - check SDA/SCL");
-    while (1) delay(10);
+    Serial.println("OLED init failed - check SDA/SCL; will reboot");
+    // Do not spin forever — soft reboot so a flaky power/I2C bus can recover
+    rebootSoon("OLED fail", OLED_FAIL_REBOOT_MS);
+  }
+  oledReady = true;
+
+  showBootStatus("Starting...");
+  wdtFeed();
+
+  // WiFi/ESP-NOW can hang on ESP32-CAM; retry a few times, then let WDT reboot
+  bool espNowOk = false;
+  for (int attempt = 1; attempt <= WIFI_INIT_RETRIES; attempt++) {
+    wdtFeed();
+    char msg[24];
+    snprintf(msg, sizeof(msg), "WiFi %d/%d...", attempt, WIFI_INIT_RETRIES);
+    showBootStatus(msg);
+    Serial.printf("WiFi/ESP-NOW init attempt %d/%d\n", attempt, WIFI_INIT_RETRIES);
+
+    WiFi.mode(WIFI_STA);
+    wdtFeed();
+    WiFi.disconnect(true, true);
+    delay(100);
+    wdtFeed();
+
+    if (esp_now_init() == ESP_OK) {
+      esp_now_register_recv_cb(OnEspNowRecv);
+      espNowOk = true;
+      Serial.println("ESP-NOW ready");
+      break;
+    }
+    Serial.println("ESP-NOW init failed, retrying...");
+    esp_now_deinit();
+    WiFi.mode(WIFI_OFF);
+    delay(300);
+    wdtFeed();
   }
 
-  display.clearDisplay();
-  display.setTextColor(SSD1306_WHITE);
-  display.setTextSize(1);
-  display.setCursor(0, 12);
-  display.print("Starting...");
-  display.display();
-
-  WiFi.mode(WIFI_STA);
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("ESP-NOW init failed");
-  } else {
-    esp_now_register_recv_cb(OnEspNowRecv);
-    Serial.println("ESP-NOW ready");
+  if (!espNowOk) {
+    rebootSoon("ESP-NOW fail", 2000);
   }
 
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
+  showBootStatus("Ready");
+  delay(400);
+  wdtFeed();
 }
 
 void showPiDownScreen() {
@@ -260,6 +352,8 @@ void showPiText(const char* txt) {
 }
 
 void loop() {
+  wdtFeed();  // must run every loop — if anything hangs, WDT reboots
+
   if (overrideUntil > millis()) {
     if (overrideTextMode) {
       rgbOff();
